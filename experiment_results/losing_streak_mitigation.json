@@ -1,0 +1,265 @@
+{
+  "timestamp": "2026-01-21 03:02:05 UTC",
+  "baseline": {
+    "config": "Baseline_NoMitigation",
+    "trades": 1224,
+    "win_rate": 28.19,
+    "win_loss_ratio": 3.43,
+    "cum_return_pct": 1654.6,
+    "max_dd_pct": 11.1,
+    "max_consec_losses": 25,
+    "streaks_4_plus": 84,
+    "streaks_6_plus": 50,
+    "total_pnl": 1654649.0,
+    "skipped_trades": {
+      "cooldown": 0,
+      "neutral_positioning": 0,
+      "same_direction": 0,
+      "early_hours": 0,
+      "strict_entry": 0,
+      "volume": 0
+    }
+  },
+  "mitigation_results": [
+    {
+      "config": "Cooldown_4h",
+      "trades": 1163,
+      "win_rate": 28.2,
+      "win_loss_ratio": 3.36,
+      "cum_return_pct": 1441.7,
+      "max_dd_pct": 13.7,
+      "max_consec_losses": 24,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 48,
+      "total_pnl": 1441740.0,
+      "skipped_trades": {
+        "cooldown": 788,
+        "neutral_positioning": 0,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "SizeReduction_50pct",
+      "trades": 1224,
+      "win_rate": 28.19,
+      "win_loss_ratio": 3.41,
+      "cum_return_pct": 1311.3,
+      "max_dd_pct": 13.5,
+      "max_consec_losses": 25,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 50,
+      "total_pnl": 1311267.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 0,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "SkipNeutral_0.25",
+      "trades": 1210,
+      "win_rate": 28.26,
+      "win_loss_ratio": 3.39,
+      "cum_return_pct": 1587.4,
+      "max_dd_pct": 10.1,
+      "max_consec_losses": 22,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 50,
+      "total_pnl": 1587415.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 164,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "SkipNeutral_0.5",
+      "trades": 1210,
+      "win_rate": 28.26,
+      "win_loss_ratio": 3.39,
+      "cum_return_pct": 1587.4,
+      "max_dd_pct": 10.1,
+      "max_consec_losses": 22,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 50,
+      "total_pnl": 1587415.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 164,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "NoSameDirection_2h",
+      "trades": 1198,
+      "win_rate": 27.55,
+      "win_loss_ratio": 3.27,
+      "cum_return_pct": 1143.6,
+      "max_dd_pct": 19.4,
+      "max_consec_losses": 25,
+      "streaks_4_plus": 85,
+      "streaks_6_plus": 50,
+      "total_pnl": 1143599.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 0,
+        "same_direction": 61,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "SkipEarlyHours_0_1_2",
+      "trades": 928,
+      "win_rate": 28.66,
+      "win_loss_ratio": 3.15,
+      "cum_return_pct": 958.3,
+      "max_dd_pct": 25.3,
+      "max_consec_losses": 22,
+      "streaks_4_plus": 61,
+      "streaks_6_plus": 37,
+      "total_pnl": 958258.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 0,
+        "same_direction": 0,
+        "early_hours": 3354,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "StrictEntry_3loss",
+      "trades": 1217,
+      "win_rate": 28.27,
+      "win_loss_ratio": 3.43,
+      "cum_return_pct": 1662.3,
+      "max_dd_pct": 10.3,
+      "max_consec_losses": 22,
+      "streaks_4_plus": 83,
+      "streaks_6_plus": 50,
+      "total_pnl": 1662348.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 0,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 92,
+        "volume": 0
+      }
+    },
+    {
+      "config": "RequireVolume_0.8",
+      "trades": 1198,
+      "win_rate": 28.05,
+      "win_loss_ratio": 3.47,
+      "cum_return_pct": 1653.7,
+      "max_dd_pct": 11.2,
+      "max_consec_losses": 25,
+      "streaks_4_plus": 81,
+      "streaks_6_plus": 48,
+      "total_pnl": 1653680.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 0,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 664
+      }
+    },
+    {
+      "config": "Combined_Cooldown_SkipNeutral",
+      "trades": 1150,
+      "win_rate": 28.26,
+      "win_loss_ratio": 3.31,
+      "cum_return_pct": 1371.6,
+      "max_dd_pct": 14.3,
+      "max_consec_losses": 21,
+      "streaks_4_plus": 81,
+      "streaks_6_plus": 48,
+      "total_pnl": 1371587.0,
+      "skipped_trades": {
+        "cooldown": 767,
+        "neutral_positioning": 164,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "Combined_SkipNeutral_NoSameDir",
+      "trades": 1185,
+      "win_rate": 27.68,
+      "win_loss_ratio": 3.26,
+      "cum_return_pct": 1154.0,
+      "max_dd_pct": 19.3,
+      "max_consec_losses": 22,
+      "streaks_4_plus": 83,
+      "streaks_6_plus": 50,
+      "total_pnl": 1153957.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 164,
+        "same_direction": 60,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "Combined_Conservative",
+      "trades": 970,
+      "win_rate": 28.76,
+      "win_loss_ratio": 3.2,
+      "cum_return_pct": 1102.1,
+      "max_dd_pct": 14.2,
+      "max_consec_losses": 20,
+      "streaks_4_plus": 68,
+      "streaks_6_plus": 39,
+      "total_pnl": 1102073.0,
+      "skipped_trades": {
+        "cooldown": 395,
+        "neutral_positioning": 135,
+        "same_direction": 17,
+        "early_hours": 2221,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    },
+    {
+      "config": "Combined_Balanced",
+      "trades": 1210,
+      "win_rate": 28.26,
+      "win_loss_ratio": 3.39,
+      "cum_return_pct": 1449.1,
+      "max_dd_pct": 11.0,
+      "max_consec_losses": 22,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 50,
+      "total_pnl": 1449087.0,
+      "skipped_trades": {
+        "cooldown": 0,
+        "neutral_positioning": 164,
+        "same_direction": 0,
+        "early_hours": 0,
+        "strict_entry": 0,
+        "volume": 0
+      }
+    }
+  ]
+}

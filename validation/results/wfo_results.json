@@ -1,0 +1,688 @@
+{
+  "config": {
+    "training_months": 12,
+    "testing_months": 3,
+    "step_months": 3,
+    "param_grid": {
+      "entry_threshold": [
+        0.5,
+        0.75,
+        1.0,
+        1.25,
+        1.5
+      ],
+      "strong_threshold": [
+        1.0,
+        1.5,
+        2.0,
+        2.5
+      ],
+      "skip_neutral_threshold": [
+        0.0,
+        0.25,
+        0.5
+      ],
+      "strict_entry_min_score": [
+        0.25,
+        0.5,
+        0.75
+      ]
+    }
+  },
+  "periods": [
+    {
+      "period": 1,
+      "train_start": "2019-12-31",
+      "train_end": "2020-12-31",
+      "test_start": "2020-12-31",
+      "test_end": "2021-03-31",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 16,
+        "win_rate": 31.25,
+        "total_return": 55.45398568477464,
+        "max_drawdown": 12.652845975987784,
+        "profit_factor": 1.916594804707019,
+        "sharpe": 3.6203952739802916
+      },
+      "test_metrics": {
+        "trades": 135,
+        "win_rate": 25.185185185185183,
+        "total_return": 553.4393700644288,
+        "max_drawdown": 10.1556162547312,
+        "profit_factor": 2.005457423359917,
+        "sharpe": 3.3677800270475844
+      }
+    },
+    {
+      "period": 2,
+      "train_start": "2020-03-31",
+      "train_end": "2021-03-31",
+      "test_start": "2021-03-31",
+      "test_end": "2021-06-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 149,
+        "win_rate": 26.174496644295303,
+        "total_return": 619.8933557492036,
+        "max_drawdown": 9.305377912729112,
+        "profit_factor": 2.033266822376399,
+        "sharpe": 3.4715286933406015
+      },
+      "test_metrics": {
+        "trades": 126,
+        "win_rate": 20.634920634920633,
+        "total_return": 174.9838949780179,
+        "max_drawdown": 41.87427381901203,
+        "profit_factor": 1.3133613419001418,
+        "sharpe": 1.4133297207977664
+      }
+    },
+    {
+      "period": 3,
+      "train_start": "2020-06-30",
+      "train_end": "2021-06-30",
+      "test_start": "2021-06-30",
+      "test_end": "2021-09-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 275,
+        "win_rate": 23.636363636363637,
+        "total_return": 794.8772507272215,
+        "max_drawdown": 12.867408244840867,
+        "profit_factor": 1.6862182103277448,
+        "sharpe": 2.6082298030019855
+      },
+      "test_metrics": {
+        "trades": 98,
+        "win_rate": 23.46938775510204,
+        "total_return": 66.96437985722342,
+        "max_drawdown": 41.427719521003354,
+        "profit_factor": 1.1626161054547268,
+        "sharpe": 0.8995624605977219
+      }
+    },
+    {
+      "period": 4,
+      "train_start": "2020-09-30",
+      "train_end": "2021-09-30",
+      "test_start": "2021-09-30",
+      "test_end": "2021-12-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 373,
+        "win_rate": 23.59249329758713,
+        "total_return": 861.8416305844448,
+        "max_drawdown": 11.638801560716432,
+        "profit_factor": 1.5488951169336505,
+        "sharpe": 2.2433787219147394
+      },
+      "test_metrics": {
+        "trades": 97,
+        "win_rate": 20.618556701030926,
+        "total_return": -50.08214183434225,
+        "max_drawdown": 106.68868951038542,
+        "profit_factor": 0.8840107088404557,
+        "sharpe": -0.7035362412436322
+      }
+    },
+    {
+      "period": 5,
+      "train_start": "2020-12-30",
+      "train_end": "2021-12-30",
+      "test_start": "2021-12-30",
+      "test_end": "2022-03-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.5,
+        "skip_neutral_threshold": 0.5,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 454,
+        "win_rate": 22.687224669603523,
+        "total_return": 755.8055030653278,
+        "max_drawdown": 14.992733929877591,
+        "profit_factor": 1.3892049791937204,
+        "sharpe": 1.6997152766980375
+      },
+      "test_metrics": {
+        "trades": 56,
+        "win_rate": 33.92857142857143,
+        "total_return": 112.40494865554895,
+        "max_drawdown": 49.35204433226748,
+        "profit_factor": 1.530647091439524,
+        "sharpe": 2.6032774937880587
+      }
+    },
+    {
+      "period": 6,
+      "train_start": "2021-03-30",
+      "train_end": "2022-03-30",
+      "test_start": "2022-03-30",
+      "test_end": "2022-06-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.5,
+        "skip_neutral_threshold": 0.5,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 376,
+        "win_rate": 23.404255319148938,
+        "total_return": 309.2710816564477,
+        "max_drawdown": 42.40680540535826,
+        "profit_factor": 1.1922356595908552,
+        "sharpe": 0.9801906357508189
+      },
+      "test_metrics": {
+        "trades": 41,
+        "win_rate": 29.268292682926827,
+        "total_return": 97.91289624400102,
+        "max_drawdown": 29.232809241844883,
+        "profit_factor": 1.615226460310161,
+        "sharpe": 2.658376508414865
+      }
+    },
+    {
+      "period": 7,
+      "train_start": "2021-06-30",
+      "train_end": "2022-06-30",
+      "test_start": "2022-06-30",
+      "test_end": "2022-09-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.5,
+        "skip_neutral_threshold": 0.25,
+        "strict_entry_min_score": 0.5,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 295,
+        "win_rate": 25.423728813559322,
+        "total_return": 295.7917315455802,
+        "max_drawdown": 42.11877440992375,
+        "profit_factor": 1.2417483407043992,
+        "sharpe": 1.2173191798054004
+      },
+      "test_metrics": {
+        "trades": 4,
+        "win_rate": 25.0,
+        "total_return": 8.674325674325548,
+        "max_drawdown": 4.817195080869909,
+        "profit_factor": 1.5102544514309142,
+        "sharpe": 2.5363752243014144
+      }
+    },
+    {
+      "period": 8,
+      "train_start": "2021-09-30",
+      "train_end": "2022-09-30",
+      "test_start": "2022-09-30",
+      "test_end": "2022-12-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.5,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.5,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 203,
+        "win_rate": 26.60098522167488,
+        "total_return": 254.8430535914582,
+        "max_drawdown": 50.940011011441925,
+        "profit_factor": 1.3056558999870056,
+        "sharpe": 1.4682659987137778
+      },
+      "test_metrics": {
+        "trades": 3,
+        "win_rate": 33.33333333333333,
+        "total_return": 41.738996371374554,
+        "max_drawdown": 3.7354234513576743,
+        "profit_factor": 4.794454215579504,
+        "sharpe": 8.044765560189806
+      }
+    },
+    {
+      "period": 9,
+      "train_start": "2021-12-30",
+      "train_end": "2022-12-30",
+      "test_start": "2022-12-30",
+      "test_end": "2023-03-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.5,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.5,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 110,
+        "win_rate": 31.818181818181817,
+        "total_return": 340.66419179717496,
+        "max_drawdown": 23.494979281544445,
+        "profit_factor": 1.8130884913836662,
+        "sharpe": 3.1764806198282676
+      },
+      "test_metrics": {
+        "trades": 8,
+        "win_rate": 37.5,
+        "total_return": 68.46111640069317,
+        "max_drawdown": 8.673914758948015,
+        "profit_factor": 3.5355969037293757,
+        "sharpe": 5.456372973378286
+      }
+    },
+    {
+      "period": 10,
+      "train_start": "2022-03-30",
+      "train_end": "2023-03-30",
+      "test_start": "2023-03-30",
+      "test_end": "2023-06-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 66,
+        "win_rate": 30.303030303030305,
+        "total_return": 304.0209862353125,
+        "max_drawdown": 15.733582307941427,
+        "profit_factor": 2.220235880014883,
+        "sharpe": 3.8747610220949875
+      },
+      "test_metrics": {
+        "trades": 3,
+        "win_rate": 0.0,
+        "total_return": -16.5,
+        "max_drawdown": 11.64021164021164,
+        "profit_factor": 0.0,
+        "sharpe": -2.1793819018963427e+17
+      }
+    },
+    {
+      "period": 11,
+      "train_start": "2022-06-30",
+      "train_end": "2023-06-30",
+      "test_start": "2023-06-30",
+      "test_end": "2023-09-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.75,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 16,
+        "win_rate": 37.5,
+        "total_return": 141.21581467516913,
+        "max_drawdown": 6.220457330823909,
+        "profit_factor": 3.5675602668212574,
+        "sharpe": 6.1165851000667395
+      },
+      "test_metrics": {
+        "trades": 1,
+        "win_rate": 0.0,
+        "total_return": -5.5,
+        "max_drawdown": 0.0,
+        "profit_factor": 0.0,
+        "sharpe": 0
+      }
+    },
+    {
+      "period": 12,
+      "train_start": "2022-09-30",
+      "train_end": "2023-09-30",
+      "test_start": "2023-09-30",
+      "test_end": "2023-12-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.75,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 11,
+        "win_rate": 36.36363636363637,
+        "total_return": 110.20011277206771,
+        "max_drawdown": 7.073382857294383,
+        "profit_factor": 3.900002967685992,
+        "sharpe": 6.180721646161744
+      },
+      "test_metrics": {
+        "trades": 3,
+        "win_rate": 0.0,
+        "total_return": -16.5,
+        "max_drawdown": 11.64021164021164,
+        "profit_factor": 0.0,
+        "sharpe": 0
+      }
+    },
+    {
+      "period": 13,
+      "train_start": "2022-12-30",
+      "train_end": "2023-12-30",
+      "test_start": "2023-12-30",
+      "test_end": "2024-03-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.5,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 28,
+        "win_rate": 25.0,
+        "total_return": 52.277064633646106,
+        "max_drawdown": 32.798240182272174,
+        "profit_factor": 1.451411183224708,
+        "sharpe": 1.8293864190083868
+      },
+      "test_metrics": {
+        "trades": 69,
+        "win_rate": 34.78260869565217,
+        "total_return": 154.498792339966,
+        "max_drawdown": 24.65343311156859,
+        "profit_factor": 1.6567114491450265,
+        "sharpe": 2.9403078409546866
+      }
+    },
+    {
+      "period": 14,
+      "train_start": "2023-03-30",
+      "train_end": "2024-03-30",
+      "test_start": "2024-03-30",
+      "test_end": "2024-06-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 90,
+        "win_rate": 31.11111111111111,
+        "total_return": 133.31474057291896,
+        "max_drawdown": 26.70000600652444,
+        "profit_factor": 1.405126531919505,
+        "sharpe": 2.0230335429317585
+      },
+      "test_metrics": {
+        "trades": 89,
+        "win_rate": 23.595505617977526,
+        "total_return": -114.43980067109223,
+        "max_drawdown": 113.03810963322417,
+        "profit_factor": 0.6925591785122577,
+        "sharpe": -2.3301895787484077
+      }
+    },
+    {
+      "period": 15,
+      "train_start": "2023-06-30",
+      "train_end": "2024-06-30",
+      "test_start": "2024-06-30",
+      "test_end": "2024-09-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 176,
+        "win_rate": 27.84090909090909,
+        "total_return": 35.374939901826785,
+        "max_drawdown": 50.52692380102693,
+        "profit_factor": 1.0516571057066098,
+        "sharpe": 0.3052027600540491
+      },
+      "test_metrics": {
+        "trades": 103,
+        "win_rate": 28.155339805825243,
+        "total_return": 97.62877917985938,
+        "max_drawdown": 38.87210329515016,
+        "profit_factor": 1.2460962515247844,
+        "sharpe": 1.2636926676168143
+      }
+    },
+    {
+      "period": 16,
+      "train_start": "2023-09-30",
+      "train_end": "2024-09-30",
+      "test_start": "2024-09-30",
+      "test_end": "2024-12-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 278,
+        "win_rate": 28.05755395683453,
+        "total_return": 138.50371908168606,
+        "max_drawdown": 50.49483182307161,
+        "profit_factor": 1.1287194072842817,
+        "sharpe": 0.7168575044305924
+      },
+      "test_metrics": {
+        "trades": 79,
+        "win_rate": 25.31645569620253,
+        "total_return": -47.79232179035066,
+        "max_drawdown": 89.15670552603609,
+        "profit_factor": 0.8494074467807466,
+        "sharpe": -1.039312324288506
+      }
+    },
+    {
+      "period": 17,
+      "train_start": "2023-12-30",
+      "train_end": "2024-12-30",
+      "test_start": "2024-12-30",
+      "test_end": "2025-03-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 340,
+        "win_rate": 27.647058823529413,
+        "total_return": 89.89544905838262,
+        "max_drawdown": 50.64196333532297,
+        "profit_factor": 1.0680218926615546,
+        "sharpe": 0.3926384612965835
+      },
+      "test_metrics": {
+        "trades": 86,
+        "win_rate": 31.3953488372093,
+        "total_return": 140.27042277686442,
+        "max_drawdown": 34.713979762862955,
+        "profit_factor": 1.4575504100200294,
+        "sharpe": 2.1147543646352522
+      }
+    },
+    {
+      "period": 18,
+      "train_start": "2024-03-30",
+      "train_end": "2025-03-30",
+      "test_start": "2025-03-30",
+      "test_end": "2025-06-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 357,
+        "win_rate": 27.170868347338935,
+        "total_return": 75.66707949528083,
+        "max_drawdown": 70.4183159381057,
+        "profit_factor": 1.0543244505528677,
+        "sharpe": 0.3118777633473208
+      },
+      "test_metrics": {
+        "trades": 91,
+        "win_rate": 40.65934065934066,
+        "total_return": 160.35342560419198,
+        "max_drawdown": 13.965362406155712,
+        "profit_factor": 1.5786628146045198,
+        "sharpe": 2.4824192185965464
+      }
+    },
+    {
+      "period": 19,
+      "train_start": "2024-06-30",
+      "train_end": "2025-06-30",
+      "test_start": "2025-06-30",
+      "test_end": "2025-09-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 359,
+        "win_rate": 31.47632311977716,
+        "total_return": 350.4603057705654,
+        "max_drawdown": 28.50330337360688,
+        "profit_factor": 1.2700522361556301,
+        "sharpe": 1.3677606022339581
+      },
+      "test_metrics": {
+        "trades": 73,
+        "win_rate": 41.0958904109589,
+        "total_return": 79.2513377917858,
+        "max_drawdown": 21.631498601883827,
+        "profit_factor": 1.3558299347168865,
+        "sharpe": 2.023442449620776
+      }
+    },
+    {
+      "period": 20,
+      "train_start": "2024-09-30",
+      "train_end": "2025-09-30",
+      "test_start": "2025-09-30",
+      "test_end": "2025-12-30",
+      "best_config": {
+        "entry_threshold": 0.5,
+        "strong_threshold": 1.0,
+        "skip_neutral_threshold": 0.0,
+        "strict_entry_min_score": 0.25,
+        "strict_entry_after_losses": true,
+        "strict_entry_trigger": 3
+      },
+      "train_metrics": {
+        "trades": 329,
+        "win_rate": 34.650455927051674,
+        "total_return": 332.08286438249183,
+        "max_drawdown": 20.88897015522358,
+        "profit_factor": 1.295509740267687,
+        "sharpe": 1.5154838163913977
+      },
+      "test_metrics": {
+        "trades": 4,
+        "win_rate": 75.0,
+        "total_return": 19.123978572188935,
+        "max_drawdown": 5.03676931539355,
+        "profit_factor": 4.1873297620314895,
+        "sharpe": 9.464836085699602
+      }
+    }
+  ],
+  "analysis": {
+    "summary": {
+      "total_periods": 20,
+      "profitable_periods": 14,
+      "avg_test_return": 76.24462001073422,
+      "median_test_return": 67.7127481289583,
+      "std_test_return": 133.74608785481104,
+      "min_test_return": -114.43980067109223,
+      "max_test_return": 553.4393700644288,
+      "avg_test_win_rate": 27.446936872211836,
+      "avg_test_drawdown": 33.015303545155916,
+      "total_test_trades": 1169
+    },
+    "efficiency": {
+      "avg_efficiency_ratio": 0.9690017377108632,
+      "median_efficiency_ratio": 0.15625259986258075,
+      "interpretation": "ROBUST"
+    },
+    "parameter_stability": {
+      "most_common_entry_threshold": 0.5,
+      "entry_threshold_consistency": 100.0,
+      "most_common_strong_threshold": 1.0,
+      "strong_threshold_consistency": 75.0,
+      "most_common_skip_neutral": 0.0,
+      "neutral_threshold_consistency": 80.0
+    },
+    "recommended_config": {
+      "entry_threshold": 0.5,
+      "strong_threshold": 1.0,
+      "skip_neutral_threshold": 0.0,
+      "strict_entry_min_score": 0.5
+    }
+  },
+  "timestamp": "2026-01-21T06:33:36.297034+00:00"
+}

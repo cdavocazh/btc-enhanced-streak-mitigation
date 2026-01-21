@@ -1,0 +1,250 @@
+{
+  "timestamp": "2026-01-21 03:11:02 UTC",
+  "baseline_metrics": {
+    "trades": 1235,
+    "win_rate": 28.3,
+    "cum_return_pct": 1663,
+    "max_dd_pct": 11.2,
+    "max_consec_losses": 25
+  },
+  "positioning_score_experiments": [
+    {
+      "config": "Baseline_2.75",
+      "trades": 1228,
+      "win_rate": 28.26,
+      "win_loss_ratio": 3.43,
+      "cum_return_pct": 1535.1,
+      "max_dd_pct": 11.3,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 50,
+      "total_pnl": 1535123.0
+    },
+    {
+      "config": "HighCeiling_4.0",
+      "trades": 1224,
+      "win_rate": 28.19,
+      "win_loss_ratio": 3.43,
+      "cum_return_pct": 1527.4,
+      "max_dd_pct": 11.6,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 50,
+      "total_pnl": 1527364.0
+    },
+    {
+      "config": "VeryHighCeiling_5.0",
+      "trades": 1228,
+      "win_rate": 28.34,
+      "win_loss_ratio": 3.44,
+      "cum_return_pct": 1579.0,
+      "max_dd_pct": 10.8,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 49,
+      "total_pnl": 1578957.0
+    },
+    {
+      "config": "TopTraderFocused",
+      "trades": 1220,
+      "win_rate": 28.28,
+      "win_loss_ratio": 3.42,
+      "cum_return_pct": 1587.4,
+      "max_dd_pct": 10.7,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 49,
+      "total_pnl": 1587434.0
+    },
+    {
+      "config": "RSI_Confirmation",
+      "trades": 1224,
+      "win_rate": 28.19,
+      "win_loss_ratio": 3.44,
+      "cum_return_pct": 1562.5,
+      "max_dd_pct": 10.7,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 85,
+      "streaks_6_plus": 50,
+      "total_pnl": 1562513.0
+    },
+    {
+      "config": "Volume_Amplified",
+      "trades": 1227,
+      "win_rate": 28.28,
+      "win_loss_ratio": 3.44,
+      "cum_return_pct": 1559.6,
+      "max_dd_pct": 11.2,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 50,
+      "total_pnl": 1559558.0
+    }
+  ],
+  "adaptive_stop_experiments": [
+    {
+      "config": "TopTraderFocused",
+      "trades": 1220,
+      "win_rate": 28.28,
+      "win_loss_ratio": 3.42,
+      "cum_return_pct": 1587.4,
+      "max_dd_pct": 10.7,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 49,
+      "total_pnl": 1587434.0
+    },
+    {
+      "config": "TopTraderFocused + Adaptive_Wide",
+      "trades": 1257,
+      "win_rate": 23.79,
+      "win_loss_ratio": 4.43,
+      "cum_return_pct": 1908.9,
+      "max_dd_pct": 13.6,
+      "max_consec_losses": 42,
+      "streaks_4_plus": 95,
+      "streaks_6_plus": 63,
+      "total_pnl": 1908900.0
+    },
+    {
+      "config": "TopTraderFocused + Adaptive_Moderate",
+      "trades": 1257,
+      "win_rate": 23.71,
+      "win_loss_ratio": 4.45,
+      "cum_return_pct": 1921.3,
+      "max_dd_pct": 13.8,
+      "max_consec_losses": 42,
+      "streaks_4_plus": 95,
+      "streaks_6_plus": 63,
+      "total_pnl": 1921340.0
+    },
+    {
+      "config": "TopTraderFocused + Adaptive_Conservative",
+      "trades": 1257,
+      "win_rate": 23.63,
+      "win_loss_ratio": 4.5,
+      "cum_return_pct": 1976.5,
+      "max_dd_pct": 12.6,
+      "max_consec_losses": 42,
+      "streaks_4_plus": 95,
+      "streaks_6_plus": 63,
+      "total_pnl": 1976510.0
+    }
+  ],
+  "threshold_experiments": [
+    {
+      "config": "Entry=0.5, Strong=1.0",
+      "trades": 1026,
+      "win_rate": 27.88,
+      "win_loss_ratio": 3.61,
+      "cum_return_pct": 1592.0,
+      "max_dd_pct": 10.8,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 73,
+      "streaks_6_plus": 37,
+      "total_pnl": 1592049.0
+    },
+    {
+      "config": "Entry=0.75, Strong=1.25",
+      "trades": 1040,
+      "win_rate": 27.88,
+      "win_loss_ratio": 3.6,
+      "cum_return_pct": 1592.1,
+      "max_dd_pct": 10.8,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 72,
+      "streaks_6_plus": 38,
+      "total_pnl": 1592052.0
+    },
+    {
+      "config": "Entry=1.0, Strong=1.5 (baseline)",
+      "trades": 1220,
+      "win_rate": 28.28,
+      "win_loss_ratio": 3.42,
+      "cum_return_pct": 1587.4,
+      "max_dd_pct": 10.7,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 49,
+      "total_pnl": 1587434.0
+    },
+    {
+      "config": "Entry=1.0, Strong=2.0",
+      "trades": 1221,
+      "win_rate": 28.26,
+      "win_loss_ratio": 3.41,
+      "cum_return_pct": 1569.7,
+      "max_dd_pct": 11.2,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 82,
+      "streaks_6_plus": 49,
+      "total_pnl": 1569666.0
+    },
+    {
+      "config": "Entry=1.5, Strong=2.0",
+      "trades": 1232,
+      "win_rate": 28.33,
+      "win_loss_ratio": 3.44,
+      "cum_return_pct": 1656.8,
+      "max_dd_pct": 9.8,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 49,
+      "total_pnl": 1656768.0
+    },
+    {
+      "config": "Entry=1.5, Strong=2.5",
+      "trades": 1231,
+      "win_rate": 28.27,
+      "win_loss_ratio": 3.44,
+      "cum_return_pct": 1638.3,
+      "max_dd_pct": 9.9,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 49,
+      "total_pnl": 1638262.0
+    },
+    {
+      "config": "Entry=2.0, Strong=3.0",
+      "trades": 1231,
+      "win_rate": 28.19,
+      "win_loss_ratio": 3.45,
+      "cum_return_pct": 1628.4,
+      "max_dd_pct": 10.1,
+      "max_consec_losses": 32,
+      "streaks_4_plus": 84,
+      "streaks_6_plus": 50,
+      "total_pnl": 1628405.0
+    }
+  ],
+  "losing_streak_analysis": {
+    "total_trades_in_streaks": 613,
+    "exit_reasons": {
+      "stop_loss": 483,
+      "us_session": 130
+    },
+    "entry_types": {
+      "bo_long": 294,
+      "bo_short": 252,
+      "mr_long": 56,
+      "mr_short": 11
+    },
+    "sides": {
+      "long": 350,
+      "short": 263
+    },
+    "avg_positioning_score": -0.26,
+    "positioning_score_range": [
+      -1.0,
+      0.75
+    ],
+    "avg_rsi": 50.0,
+    "hours": {
+      "0": 87,
+      "2": 62,
+      "1": 57,
+      "10": 55,
+      "4": 53
+    }
+  }
+}

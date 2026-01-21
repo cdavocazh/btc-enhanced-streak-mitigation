@@ -1,0 +1,77 @@
+{
+  "config": {
+    "name": "Optimized_TopTraderFocused",
+    "entry_threshold": 1.5,
+    "strong_threshold": 2.0,
+    "skip_neutral_threshold": 0.25,
+    "strict_entry_after_losses": true,
+    "strict_entry_trigger": 3,
+    "strict_entry_min_score": 0.5
+  },
+  "n_trades": 1213,
+  "n_simulations": 1000,
+  "actual_metrics": {
+    "total_return": 1657.9263999508285,
+    "max_drawdown": 22.286948602737873,
+    "max_consecutive_losses": 22,
+    "sharpe_ratio": 1.6208051871197395,
+    "win_rate": 28.194558944765046
+  },
+  "simulation_stats": {
+    "total_return": {
+      "mean": 1657.9263999508285,
+      "std": 3.3347277789963254e-13,
+      "min": 1657.9263999508278,
+      "max": 1657.9263999508285,
+      "p5": 1657.9263999508278,
+      "p25": 1657.9263999508282,
+      "p50": 1657.9263999508282,
+      "p75": 1657.9263999508285,
+      "p95": 1657.9263999508285,
+      "ci_95": [
+        1657.9263999508278,
+        1657.9263999508285
+      ],
+      "p_value": 0.313
+    },
+    "max_drawdown": {
+      "mean": 64.32413493770099,
+      "std": 39.20853413828656,
+      "min": 14.406734861100126,
+      "max": 357.09275751904033,
+      "p5": 25.62041421193822,
+      "p50": 53.92161781139419,
+      "p95": 134.58307635864588,
+      "ci_95": [
+        21.22067851459709,
+        177.88472658503778
+      ],
+      "p_value": 0.032
+    },
+    "max_consecutive_losses": {
+      "mean": 18.882,
+      "std": 3.740331001395465,
+      "min": 11.0,
+      "max": 36.0,
+      "p5": 14.0,
+      "p50": 18.0,
+      "p95": 26.0,
+      "ci_95": [
+        13.975000000000001,
+        28.0
+      ],
+      "p_value": 0.853
+    },
+    "sharpe_ratio": {
+      "mean": 1.620805187119739,
+      "std": 4.494415374029812e-16,
+      "p_value": 0.73
+    }
+  },
+  "interpretation": {
+    "return_significance": "NOT SIGNIFICANT",
+    "drawdown_significance": "FAVORABLE",
+    "sequence_dependency": "LOW"
+  },
+  "timestamp": "2026-01-21T06:32:08.539429+00:00"
+}
