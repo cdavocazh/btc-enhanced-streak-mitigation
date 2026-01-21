@@ -44,5 +44,8 @@ Thumbs.db
 # Telegram state files
 telegram_signals/signal_state.json
 
+# Generated output
+backtest_results/
+
 # Large data files (keep in repo for now, but can be gitignored if needed)
 # BTC_OHLC_1h_gmt8_updated.csv
