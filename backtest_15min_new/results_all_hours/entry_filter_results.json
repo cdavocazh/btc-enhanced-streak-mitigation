@@ -1,0 +1,254 @@
+[
+  {
+    "filter_name": "baseline",
+    "filter_config": {
+      "min_pos_long": 0.4,
+      "rsi_long_range": [
+        20,
+        45
+      ],
+      "pullback_range": [
+        0.5,
+        3.0
+      ],
+      "min_pos_score": 0.15,
+      "consec_loss_threshold": 3,
+      "consec_loss_min_pos": 0.75
+    },
+    "initial_capital": 100000,
+    "final_equity": 614211.3902799546,
+    "total_return_pct": 514.2113902799547,
+    "total_pnl": 514211.3902799548,
+    "max_drawdown_pct": 36.25138192304886,
+    "sharpe_ratio": 1.4703982733524914,
+    "profit_factor": 1.4443965879633143,
+    "total_trades": 262,
+    "winning_trades": 90,
+    "losing_trades": 172,
+    "win_rate_pct": 34.35114503816794,
+    "avg_win": 18570.12901762103,
+    "avg_loss": 6727.3268680577785,
+    "win_loss_ratio": 2.760402368107668,
+    "expectancy": 1962.6388941983007,
+    "max_winning_streak": 6,
+    "max_losing_streak": 18,
+    "gross_profit": 1671311.6115858927,
+    "gross_loss": 1157100.221305938
+  },
+  {
+    "filter_name": "wide_pullback",
+    "filter_config": {
+      "min_pos_long": 0.4,
+      "rsi_long_range": [
+        20,
+        45
+      ],
+      "pullback_range": [
+        0.3,
+        4.0
+      ],
+      "min_pos_score": 0.15,
+      "consec_loss_threshold": 3,
+      "consec_loss_min_pos": 0.75
+    },
+    "initial_capital": 100000,
+    "final_equity": 613495.6097614842,
+    "total_return_pct": 513.4956097614843,
+    "total_pnl": 513495.60976148426,
+    "max_drawdown_pct": 34.69924806853633,
+    "sharpe_ratio": 1.4134752652260472,
+    "profit_factor": 1.343941349561014,
+    "total_trades": 329,
+    "winning_trades": 108,
+    "losing_trades": 221,
+    "win_rate_pct": 32.82674772036474,
+    "avg_win": 18578.425471574603,
+    "avg_loss": 6755.540005287659,
+    "win_loss_ratio": 2.7501022060461486,
+    "expectancy": 1560.776929366214,
+    "max_winning_streak": 5,
+    "max_losing_streak": 12,
+    "gross_profit": 2006469.950930057,
+    "gross_loss": 1492974.3411685727
+  },
+  {
+    "filter_name": "relaxed_positioning",
+    "filter_config": {
+      "min_pos_long": 0.3,
+      "rsi_long_range": [
+        20,
+        45
+      ],
+      "pullback_range": [
+        0.5,
+        3.0
+      ],
+      "min_pos_score": 0.1,
+      "consec_loss_threshold": 4,
+      "consec_loss_min_pos": 0.5
+    },
+    "initial_capital": 100000,
+    "final_equity": 572211.390279955,
+    "total_return_pct": 472.211390279955,
+    "total_pnl": 472211.3902799548,
+    "max_drawdown_pct": 41.095663036266245,
+    "sharpe_ratio": 1.275118845085466,
+    "profit_factor": 1.3750387636261214,
+    "total_trades": 283,
+    "winning_trades": 94,
+    "losing_trades": 189,
+    "win_rate_pct": 33.215547703180206,
+    "avg_win": 18418.208633892475,
+    "avg_loss": 6661.905932835651,
+    "win_loss_ratio": 2.764705599205712,
+    "expectancy": 1668.5914850881786,
+    "max_winning_streak": 6,
+    "max_losing_streak": 18,
+    "gross_profit": 1731311.6115858927,
+    "gross_loss": 1259100.221305938
+  },
+  {
+    "filter_name": "strict_positioning",
+    "filter_config": {
+      "min_pos_long": 0.6,
+      "rsi_long_range": [
+        20,
+        45
+      ],
+      "pullback_range": [
+        0.5,
+        3.0
+      ],
+      "min_pos_score": 0.3,
+      "consec_loss_threshold": 2,
+      "consec_loss_min_pos": 1.0
+    },
+    "initial_capital": 100000,
+    "final_equity": 440561.28977302386,
+    "total_return_pct": 340.5612897730239,
+    "total_pnl": 340561.2897730237,
+    "max_drawdown_pct": 71.18971733206295,
+    "sharpe_ratio": 0.837597551186222,
+    "profit_factor": 1.3346710787863834,
+    "total_trades": 213,
+    "winning_trades": 65,
+    "losing_trades": 148,
+    "win_rate_pct": 30.51643192488263,
+    "avg_win": 20894.789073431133,
+    "avg_loss": 6875.675675675676,
+    "win_loss_ratio": 3.0389433793905343,
+    "expectancy": 1598.8792947090315,
+    "max_winning_streak": 5,
+    "max_losing_streak": 16,
+    "gross_profit": 1358161.2897730237,
+    "gross_loss": 1017600.0
+  },
+  {
+    "filter_name": "tight_pullback",
+    "filter_config": {
+      "min_pos_long": 0.4,
+      "rsi_long_range": [
+        20,
+        45
+      ],
+      "pullback_range": [
+        1.0,
+        2.5
+      ],
+      "min_pos_score": 0.15,
+      "consec_loss_threshold": 3,
+      "consec_loss_min_pos": 0.75
+    },
+    "initial_capital": 100000,
+    "final_equity": 328743.6134158372,
+    "total_return_pct": 228.74361341583716,
+    "total_pnl": 228743.61341583703,
+    "max_drawdown_pct": 41.17500264111742,
+    "sharpe_ratio": 1.0639956487755013,
+    "profit_factor": 1.4226600395710218,
+    "total_trades": 124,
+    "winning_trades": 44,
+    "losing_trades": 80,
+    "win_rate_pct": 35.483870967741936,
+    "avg_win": 17498.71848672357,
+    "avg_loss": 6765.0,
+    "win_loss_ratio": 2.5866546174018583,
+    "expectancy": 1844.7065598051374,
+    "max_winning_streak": 4,
+    "max_losing_streak": 13,
+    "gross_profit": 769943.613415837,
+    "gross_loss": 541200.0
+  },
+  {
+    "filter_name": "wide_rsi",
+    "filter_config": {
+      "min_pos_long": 0.4,
+      "rsi_long_range": [
+        15,
+        50
+      ],
+      "pullback_range": [
+        0.5,
+        3.0
+      ],
+      "min_pos_score": 0.15,
+      "consec_loss_threshold": 3,
+      "consec_loss_min_pos": 0.75
+    },
+    "initial_capital": 100000,
+    "final_equity": 293405.2719260985,
+    "total_return_pct": 193.40527192609852,
+    "total_pnl": 193405.27192609853,
+    "max_drawdown_pct": 72.23997461283783,
+    "sharpe_ratio": 0.6974136712297465,
+    "profit_factor": 1.0744419681791404,
+    "total_trades": 540,
+    "winning_trades": 150,
+    "losing_trades": 390,
+    "win_rate_pct": 27.77777777777778,
+    "avg_win": 18609.819712130964,
+    "avg_loss": 6661.712012547554,
+    "win_loss_ratio": 2.793549117265765,
+    "expectancy": 358.1579109742565,
+    "max_winning_streak": 4,
+    "max_losing_streak": 14,
+    "gross_profit": 2791472.9568196447,
+    "gross_loss": 2598067.684893546
+  },
+  {
+    "filter_name": "tight_rsi",
+    "filter_config": {
+      "min_pos_long": 0.4,
+      "rsi_long_range": [
+        25,
+        40
+      ],
+      "pullback_range": [
+        0.5,
+        3.0
+      ],
+      "min_pos_score": 0.15,
+      "consec_loss_threshold": 3,
+      "consec_loss_min_pos": 0.75
+    },
+    "initial_capital": 100000,
+    "final_equity": 217399.51794606875,
+    "total_return_pct": 117.39951794606876,
+    "total_pnl": 117399.51794606878,
+    "max_drawdown_pct": 60.46407493324274,
+    "sharpe_ratio": 0.57176089290376,
+    "profit_factor": 1.3438767368074658,
+    "total_trades": 74,
+    "winning_trades": 23,
+    "losing_trades": 51,
+    "win_rate_pct": 31.08108108108108,
+    "avg_win": 19947.805128089945,
+    "avg_loss": 6694.117647058823,
+    "win_loss_ratio": 2.9799005903122064,
+    "expectancy": 1586.479972244172,
+    "max_winning_streak": 3,
+    "max_losing_streak": 10,
+    "gross_profit": 458799.5179460688,
+    "gross_loss": 341400.0
+  }
+]

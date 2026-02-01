@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Adaptive Streak Reduction - Strategy Guide</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #333; border-bottom: 3px solid #9c27b0; padding-bottom: 10px; }
+        h2 { color: #555; margin-top: 30px; border-bottom: 2px solid #2196F3; padding-bottom: 5px; }
+        h3 { color: #666; margin-top: 25px; }
+        h4 { color: #777; margin-top: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #9c27b0; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .code-block { background: #263238; color: #aed581; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em; overflow-x: auto; margin: 15px 0; }
+        .formula-box { background: #e8f5e9; padding: 15px; border-left: 4px solid #4CAF50; margin: 15px 0; font-family: 'Courier New', monospace; }
+        .indicator-box { background: #e3f2fd; padding: 20px; border-left: 4px solid #2196F3; margin: 20px 0; }
+        .strategy-box { background: #f3e5f5; padding: 20px; border-left: 4px solid #9c27b0; margin: 20px 0; }
+        .warning-box { background: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 15px 0; }
+        .entry-box { background: #e8f5e9; padding: 15px; border-left: 4px solid #4CAF50; margin: 15px 0; }
+        .exit-box { background: #ffebee; padding: 15px; border-left: 4px solid #f44336; margin: 15px 0; }
+        .filter-box { background: #fff8e1; padding: 15px; border-left: 4px solid #ffc107; margin: 15px 0; }
+        ul { margin: 10px 0; padding-left: 25px; }
+        li { margin: 5px 0; }
+        .highlight { background: #fff3e0; padding: 2px 5px; border-radius: 3px; }
+        code { background: #e0e0e0; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Adaptive Streak Reduction - Strategy Guide</h1>
+        <p>Generated: 2026-01-29 | Version: Adaptive_TieredStreak_AHours</p>
+
+        <div class="strategy-box">
+            <h3>Overview</h3>
+            <p>This guide documents the <strong>Adaptive Streak Reduction</strong> strategies designed to minimize
+            losing streaks while maintaining profitability. These strategies build upon the original Tiered Streak
+            Mitigation framework by adding two key adaptive filters:</p>
+            <ol>
+                <li><strong>ADX Filter (Market Regime Detection)</strong> - Avoids trades in ranging/choppy markets</li>
+                <li><strong>Progressive Positioning Threshold</strong> - Increases entry requirements after consecutive losses</li>
+            </ol>
+        </div>
+
+        <h2>1. Indicator Calculations</h2>
+
+        <h3>1.1 ADX (Average Directional Index)</h3>
+        <div class="indicator-box">
+            <p><strong>Purpose:</strong> Measures trend strength regardless of direction. Used to filter out ranging markets.</p>
+            <p><strong>Parameters:</strong> Period = 14</p>
+            <div class="formula-box">
+<strong>Calculation Steps:</strong>
+
+1. Calculate True Range (TR):
+   TR = max(high - low, abs(high - prev_close), abs(low - prev_close))
+
+2. Calculate Directional Movement:
+   +DM = high - prev_high (if positive and > -(low - prev_low), else 0)
+   -DM = prev_low - low (if positive and > +(high - prev_high), else 0)
+
+3. Smooth using Wilder's smoothing (EMA with alpha = 1/14):
+   ATR_14 = EMA(TR, 14)
+   +DI_14 = 100 * EMA(+DM, 14) / ATR_14
+   -DI_14 = 100 * EMA(-DM, 14) / ATR_14
+
+4. Calculate DX and ADX:
+   DX = 100 * abs(+DI_14 - -DI_14) / (+DI_14 + -DI_14)
+   ADX = EMA(DX, 14)
+            </div>
+            <p><strong>Interpretation:</strong></p>
+            <ul>
+                <li>ADX &lt; 20: Weak/No trend (ranging market) - <span class="highlight">AVOID TRADING</span></li>
+                <li>ADX 20-25: Trend emerging</li>
+                <li>ADX 25-50: Strong trend - <span class="highlight">OPTIMAL FOR TRADING</span></li>
+                <li>ADX &gt; 50: Very strong trend (potentially overbought)</li>
+            </ul>
+        </div>
+
+        <h3>1.2 ATR (Average True Range)</h3>
+        <div class="indicator-box">
+            <p><strong>Purpose:</strong> Measures volatility for position sizing and stop-loss placement.</p>
+            <div class="formula-box">
+TR = max(high - low, abs(high - prev_close), abs(low - prev_close))
+ATR_14 = SMA(TR, 14)
+ATR_5 = SMA(TR, 5)  # Short-term ATR for adaptive SL
+
+# Adaptive ATR (used in Sequential_Regime):
+Adaptive_ATR = min(ATR_5, ATR_14)  # More conservative
+            </div>
+        </div>
+
+        <h3>1.3 Positioning Indicators</h3>
+        <div class="indicator-box">
+            <p><strong>Source:</strong> Binance Futures API - Top Trader Position Ratio</p>
+            <div class="formula-box">
+# Raw positioning data (0-1 range, 0.5 = neutral):
+pos_long = Top Trader Long Position / (Long + Short)
+
+# Normalized positioning (-1 to +1):
+pos_normalized = (pos_long - 0.5) * 2
+
+# Positioning momentum (rate of change):
+pos_roc = pos_long.pct_change(periods=4)  # 1-hour lookback
+            </div>
+            <p><strong>Interpretation:</strong></p>
+            <ul>
+                <li>pos_long &gt; 0.5: Majority of top traders are long (bullish sentiment)</li>
+                <li>pos_long &lt; 0.5: Majority of top traders are short (bearish sentiment)</li>
+                <li>pos_roc &gt; 0: Positioning momentum increasing (strengthening conviction)</li>
+            </ul>
+        </div>
+
+        <h3>1.4 Volume Indicators</h3>
+        <div class="indicator-box">
+            <div class="formula-box">
+# Volume ratio (current vs average):
+vol_ma = SMA(volume, 20)
+vol_ratio = volume / vol_ma
+
+# Volume surge detection:
+vol_std = std(volume, 20)
+vol_surge = volume > (vol_ma + 2 * vol_std)
+            </div>
+            <p><strong>Adaptive Volume Threshold (based on ADX):</strong></p>
+            <ul>
+                <li>Trending market (ADX &ge; 20): vol_ratio &ge; 0.7 required</li>
+                <li>Ranging market (ADX &lt; 20): vol_ratio &ge; 1.2 required (higher bar)</li>
+            </ul>
+        </div>
+
+        <h3>1.5 RSI (Relative Strength Index)</h3>
+        <div class="indicator-box">
+            <div class="formula-box">
+# Calculate gains and losses:
+delta = close - prev_close
+gain = max(delta, 0)
+loss = max(-delta, 0)
+
+# Smooth gains and losses:
+avg_gain = EMA(gain, 14)
+avg_loss = EMA(loss, 14)
+
+# Calculate RSI:
+RS = avg_gain / avg_loss
+RSI = 100 - (100 / (1 + RS))
+            </div>
+            <p><strong>Usage:</strong> RSI &lt; 30 for oversold (long entry), RSI &gt; 70 for overbought (exit consideration)</p>
+        </div>
+
+        <h2>2. Entry Conditions</h2>
+
+        <h3>2.1 Base Entry Logic (Long Only)</h3>
+        <div class="entry-box">
+            <p><strong>Primary Entry Signal:</strong></p>
+            <ul>
+                <li>Price above SMA_50 (uptrend confirmation)</li>
+                <li>RSI not overbought (RSI &lt; 70)</li>
+                <li>Positioning filter active (pos_long &gt; threshold)</li>
+                <li>Volume filter active (vol_ratio &ge; min_volume)</li>
+            </ul>
+        </div>
+
+        <h3>2.2 Adaptive Entry Filters</h3>
+
+        <div class="filter-box">
+            <h4>Filter 1: ADX Market Regime Filter</h4>
+            <div class="code-block">
+# Only enter in trending markets
+if adx_filter_enabled:
+    if ADX < 20:
+        BLOCK_ENTRY  # Ranging market - too risky
+    else:
+        ALLOW_ENTRY  # Trending market - proceed
+            </div>
+            <p><strong>Rationale:</strong> Historical analysis showed 45% of losing streaks occurred during choppy,
+            range-bound markets where ADX was below 20.</p>
+        </div>
+
+        <div class="filter-box">
+            <h4>Filter 2: Progressive Positioning Threshold</h4>
+            <div class="code-block">
+# Threshold increases after each consecutive loss
+PROGRESSIVE_THRESHOLDS = {
+    0: 0.4,   # No recent losses - standard threshold
+    1: 0.5,   # 1 consecutive loss - slightly higher
+    2: 0.6,   # 2 consecutive losses - higher
+    3: 0.8,   # 3 consecutive losses - much higher
+    4: 1.0,   # 4+ losses - effectively blocked
+}
+
+consecutive_losses = count_recent_consecutive_losses()
+required_pos_long = PROGRESSIVE_THRESHOLDS.get(consecutive_losses, 1.0)
+
+if pos_long < required_pos_long:
+    BLOCK_ENTRY  # Positioning not strong enough
+else:
+    ALLOW_ENTRY
+            </div>
+            <p><strong>Rationale:</strong> After losses, require stronger conviction signals before re-entering.
+            This prevents "revenge trading" and allows market conditions to improve.</p>
+        </div>
+
+        <div class="filter-box">
+            <h4>Filter 3: Cooldown Period</h4>
+            <div class="code-block">
+COOLDOWN_TRIGGER = 5      # Trigger after 5 consecutive losses
+COOLDOWN_BARS = 96        # 24 hours in 15-min bars
+
+if consecutive_losses >= COOLDOWN_TRIGGER:
+    if bars_since_last_loss < COOLDOWN_BARS:
+        BLOCK_ENTRY  # Still in cooldown
+    else:
+        ALLOW_ENTRY  # Cooldown expired
+            </div>
+            <p><strong>Rationale:</strong> Extended losing streaks indicate significant regime change. Force a pause
+            to let market conditions stabilize.</p>
+        </div>
+
+        <div class="filter-box">
+            <h4>Filter 4: Higher Highs/Higher Lows (HH/HL)</h4>
+            <div class="code-block">
+# Used in Sequential_Regime strategy
+lookback = 10  # bars
+
+recent_highs = high.rolling(lookback).max()
+recent_lows = low.rolling(lookback).min()
+
+# Check for uptrend structure
+higher_high = high > recent_highs.shift(1)
+higher_low = low > recent_lows.shift(1)
+
+if hh_hl_filter_enabled:
+    if not (higher_high or higher_low):
+        BLOCK_ENTRY  # No clear uptrend structure
+            </div>
+        </div>
+
+        <div class="filter-box">
+            <h4>Filter 5: Positioning Momentum</h4>
+            <div class="code-block">
+# Rate of change in positioning over 4 bars (1 hour)
+pos_roc = (pos_long - pos_long.shift(4)) / pos_long.shift(4)
+
+if pos_momentum_filter_enabled:
+    if pos_roc < 0:
+        BLOCK_ENTRY  # Positioning momentum declining
+            </div>
+        </div>
+
+        <h2>3. Exit Conditions</h2>
+
+        <h3>3.1 Stop Loss</h3>
+        <div class="exit-box">
+            <div class="code-block">
+# Standard Stop Loss
+sl_multiplier = 2.0  # Configurable
+stop_loss = entry_price - (ATR_14 * sl_multiplier)
+
+# Adaptive Stop Loss (Sequential_Regime)
+adaptive_atr = min(ATR_5, ATR_14)
+stop_loss = entry_price - (adaptive_atr * sl_multiplier)
+            </div>
+            <p><strong>Rationale:</strong> Adaptive ATR uses the smaller of short-term and long-term ATR,
+            providing tighter stops when volatility is compressed.</p>
+        </div>
+
+        <h3>3.2 Take Profit</h3>
+        <div class="exit-box">
+            <div class="code-block">
+# Standard Take Profit
+tp_multiplier = 3.0  # 1.5:1 risk-reward ratio
+take_profit = entry_price + (ATR_14 * tp_multiplier)
+
+# Multi-TP (for Conservative strategies)
+if multi_tp_enabled:
+    tp1_pct = 0.30  # Take 30% at first target
+    tp1 = entry_price + (ATR_14 * tp_multiplier * 0.5)  # Half distance
+    tp2 = entry_price + (ATR_14 * tp_multiplier)       # Full distance
+            </div>
+        </div>
+
+        <h2>4. Position Sizing (Tiered Capital)</h2>
+
+        <div class="indicator-box">
+            <h4>Tiered Capital Risk Structure</h4>
+            <table>
+                <tr>
+                    <th>Tier</th>
+                    <th>Equity Range</th>
+                    <th>Base Risk %</th>
+                    <th>Max Risk ($)</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>$100K - $200K</td>
+                    <td>4%</td>
+                    <td>$5,000</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>$200K - $500K</td>
+                    <td>3%</td>
+                    <td>$10,000</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>$500K - $1M</td>
+                    <td>2%</td>
+                    <td>$20,000</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>$1M+</td>
+                    <td>1.5%</td>
+                    <td>$40,000</td>
+                </tr>
+            </table>
+
+            <h4>Streak Mitigation</h4>
+            <div class="code-block">
+# Reduce position size after consecutive losses
+STREAK_REDUCTION = {
+    0: 1.0,    # Full size
+    1: 1.0,    # Full size
+    2: 0.75,   # 25% reduction
+    3: 0.5,    # 50% reduction
+    4: 0.25,   # 75% reduction
+    5+: 0.1,   # 90% reduction
+}
+
+adjusted_risk = base_risk * STREAK_REDUCTION[consecutive_losses]
+            </div>
+        </div>
+
+        <h2>5. Strategy Configurations</h2>
+
+        <div class="strategy-box">
+            <h3>Adaptive_Baseline</h3>
+            <p><strong>Description:</strong> Combines ADX filter with progressive positioning threshold.</p>
+            <table>
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>ADX Filter</td><td>Enabled (threshold: 20)</td></tr>
+                <tr><td>Progressive Positioning</td><td>Enabled</td></tr>
+                <tr><td>Cooldown</td><td>Enabled (5 losses, 24hr)</td></tr>
+                <tr><td>SL Multiplier</td><td>2.0</td></tr>
+                <tr><td>TP Multiplier</td><td>3.0</td></tr>
+                <tr><td>Multi-TP</td><td>Disabled</td></tr>
+            </table>
+            <p><strong>Best For:</strong> General use with balanced risk/return.</p>
+        </div>
+
+        <div class="strategy-box">
+            <h3>Adaptive_Conservative</h3>
+            <p><strong>Description:</strong> Most defensive strategy with all filters and multi-TP.</p>
+            <table>
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>ADX Filter</td><td>Enabled (threshold: 20)</td></tr>
+                <tr><td>Progressive Positioning</td><td>Enabled</td></tr>
+                <tr><td>Cooldown</td><td>Enabled (5 losses, 24hr)</td></tr>
+                <tr><td>SL Multiplier</td><td>2.5</td></tr>
+                <tr><td>TP Multiplier</td><td>2.5</td></tr>
+                <tr><td>Multi-TP</td><td>Enabled (30% at TP1)</td></tr>
+                <tr><td>HH/HL Filter</td><td>Enabled</td></tr>
+            </table>
+            <p><strong>Best For:</strong> Maximum streak protection, lower drawdown tolerance.</p>
+        </div>
+
+        <div class="strategy-box">
+            <h3>Adaptive_ADX_Only</h3>
+            <p><strong>Description:</strong> Uses only ADX filtering without progressive positioning.</p>
+            <table>
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>ADX Filter</td><td>Enabled (threshold: 20)</td></tr>
+                <tr><td>Progressive Positioning</td><td>Disabled</td></tr>
+                <tr><td>Cooldown</td><td>Disabled</td></tr>
+                <tr><td>SL Multiplier</td><td>2.0</td></tr>
+                <tr><td>TP Multiplier</td><td>3.0</td></tr>
+            </table>
+            <p><strong>Best For:</strong> Testing ADX filter effectiveness in isolation.</p>
+        </div>
+
+        <div class="strategy-box">
+            <h3>Adaptive_ProgPos_Only</h3>
+            <p><strong>Description:</strong> Uses only progressive positioning without ADX filtering.</p>
+            <table>
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>ADX Filter</td><td>Disabled</td></tr>
+                <tr><td>Progressive Positioning</td><td>Enabled</td></tr>
+                <tr><td>Cooldown</td><td>Enabled (5 losses, 24hr)</td></tr>
+                <tr><td>SL Multiplier</td><td>2.0</td></tr>
+                <tr><td>TP Multiplier</td><td>3.0</td></tr>
+            </table>
+            <p><strong>Best For:</strong> Higher trade frequency while still limiting streaks.</p>
+        </div>
+
+        <div class="strategy-box">
+            <h3>Sequential_Regime</h3>
+            <p><strong>Description:</strong> Multi-layer sequential filtering. Checks market regime first,
+            then applies additional filters in sequence.</p>
+            <table>
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>ADX Filter</td><td>Enabled (threshold: 25 - stricter)</td></tr>
+                <tr><td>Progressive Positioning</td><td>Enabled</td></tr>
+                <tr><td>HH/HL Filter</td><td>Enabled</td></tr>
+                <tr><td>Positioning Momentum</td><td>Enabled</td></tr>
+                <tr><td>Adaptive ATR SL</td><td>Enabled</td></tr>
+                <tr><td>SL Multiplier</td><td>1.5</td></tr>
+                <tr><td>TP Multiplier</td><td>4.0</td></tr>
+            </table>
+            <p><strong>Filter Sequence:</strong></p>
+            <ol>
+                <li>Check ADX &ge; 25 (strong trend only)</li>
+                <li>Check HH/HL structure (uptrend confirmation)</li>
+                <li>Check positioning momentum &gt; 0</li>
+                <li>Check progressive position threshold</li>
+                <li>Check volume threshold</li>
+            </ol>
+            <p><strong>Best For:</strong> Ultra-selective entries, research/comparison purposes.</p>
+        </div>
+
+        <h2>6. Performance Summary</h2>
+
+        <table>
+            <tr>
+                <th>Strategy</th>
+                <th>Return</th>
+                <th>Max DD</th>
+                <th>Trades</th>
+                <th>Win Rate</th>
+                <th>Max Streak</th>
+                <th>Streaks 6+</th>
+            </tr>
+            <tr>
+                <td>Adaptive_Baseline</td>
+                <td>641.9%</td>
+                <td>27.0%</td>
+                <td>62</td>
+                <td>45.2%</td>
+                <td>7</td>
+                <td>1</td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td><strong>Adaptive_Conservative</strong></td>
+                <td>353.5%</td>
+                <td><strong>24.8%</strong></td>
+                <td>65</td>
+                <td><strong>47.7%</strong></td>
+                <td><strong>5</strong></td>
+                <td><strong>0</strong></td>
+            </tr>
+            <tr>
+                <td>Adaptive_ADX_Only</td>
+                <td>551.5%</td>
+                <td>33.7%</td>
+                <td>72</td>
+                <td>38.9%</td>
+                <td>9</td>
+                <td>3</td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td><strong>Adaptive_ProgPos_Only</strong></td>
+                <td><strong>1754.5%</strong></td>
+                <td>24.1%</td>
+                <td>94</td>
+                <td>43.6%</td>
+                <td><strong>5</strong></td>
+                <td><strong>0</strong></td>
+            </tr>
+            <tr>
+                <td>Sequential_Regime</td>
+                <td>18.3%</td>
+                <td>8.9%</td>
+                <td>4</td>
+                <td>50.0%</td>
+                <td>2</td>
+                <td>0</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <h3>Recommendations</h3>
+            <ul>
+                <li><strong>For Maximum Returns:</strong> Use <code>Adaptive_ProgPos_Only</code> - 1754% return with max 5 losing streak</li>
+                <li><strong>For Minimum Risk:</strong> Use <code>Adaptive_Conservative</code> - Zero 6+ streaks, 24.8% max DD</li>
+                <li><strong>For Balanced Approach:</strong> Use <code>Adaptive_Baseline</code> - Good returns with controlled risk</li>
+            </ul>
+        </div>
+
+        <h2>7. Implementation Notes</h2>
+
+        <div class="indicator-box">
+            <h4>Data Requirements</h4>
+            <ul>
+                <li>15-minute OHLCV candles</li>
+                <li>Binance Futures positioning data (top trader ratios)</li>
+                <li>Minimum 50 bars for indicator warmup</li>
+            </ul>
+
+            <h4>Key Files</h4>
+            <ul>
+                <li><code>run_adaptive_streak_backtest.py</code> - Main backtest script</li>
+                <li><code>results/strategy_statistics.json</code> - Performance metrics</li>
+                <li><code>results/trades_*.csv</code> - Trade logs</li>
+                <li><code>results/equity_*.csv</code> - Equity curves</li>
+                <li><code>results/losing_streaks_*.csv</code> - Streak analysis</li>
+            </ul>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "Baseline_TieredStreak": {
+    "total_streaks_3plus": 13,
+    "total_streaks_6plus": 4,
+    "total_streaks_9plus": 1,
+    "avg_streak_length": 5.538461538461538,
+    "max_streak_length": 13,
+    "avg_streak_loss": -171977.83846153846,
+    "total_streak_loss": -2235711.9
+  },
+  "PosVol_Combined_TieredStreak": {
+    "total_streaks_3plus": 17,
+    "total_streaks_6plus": 1,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 3.8823529411764706,
+    "max_streak_length": 6,
+    "avg_streak_loss": -41727.597811502914,
+    "total_streak_loss": -709369.1627955495
+  },
+  "MultiTP_30_TieredStreak": {
+    "total_streaks_3plus": 13,
+    "total_streaks_6plus": 4,
+    "total_streaks_9plus": 1,
+    "avg_streak_length": 5.538461538461538,
+    "max_streak_length": 13,
+    "avg_streak_loss": -122441.2601923077,
+    "total_streak_loss": -1591736.3825
+  },
+  "VolFilter_Adaptive_TieredStreak": {
+    "total_streaks_3plus": 8,
+    "total_streaks_6plus": 1,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 4.0,
+    "max_streak_length": 6,
+    "avg_streak_loss": -42606.30008069561,
+    "total_streak_loss": -340850.4006455649
+  },
+  "Conservative_TieredStreak": {
+    "total_streaks_3plus": 8,
+    "total_streaks_6plus": 1,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 4.125,
+    "max_streak_length": 7,
+    "avg_streak_loss": -61041.0625,
+    "total_streak_loss": -488328.5
+  }
+}

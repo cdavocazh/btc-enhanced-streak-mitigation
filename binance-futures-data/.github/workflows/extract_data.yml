@@ -1,0 +1,61 @@
+name: Extract Binance Futures Data
+
+on:
+  schedule:
+    # Run every 4 hours at minute 5
+    # This fetches ~48 new 5-min records per run (well within 500 record limit)
+    # Provides buffer if a run is missed (can recover up to ~41 hours of data)
+    - cron: '5 */4 * * *'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Extraction mode'
+        required: true
+        default: 'incremental'
+        type: choice
+        options:
+          - incremental
+          - historical
+          - summary
+      days:
+        description: 'Days of historical data (only for historical mode)'
+        required: false
+        default: '30'
+
+jobs:
+  extract-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests
+
+      - name: Run data extraction (scheduled)
+        if: github.event_name == 'schedule'
+        run: python extract_binance_data.py --mode incremental
+
+      - name: Run data extraction (manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python extract_binance_data.py --mode ${{ github.event.inputs.mode }} --days ${{ github.event.inputs.days || 30 }}
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "Data update: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          git push

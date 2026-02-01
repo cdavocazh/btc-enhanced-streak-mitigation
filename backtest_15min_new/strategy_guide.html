@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Enhanced Strategy Guide - Complete Reference</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --purple: #7c3aed;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--gray-800);
+            background: var(--gray-50);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        header {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; font-size: 1.1rem; }
+
+        .meta-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        h2 {
+            color: var(--gray-900);
+            font-size: 1.75rem;
+            margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        h3 { color: var(--gray-800); font-size: 1.35rem; margin: 1.5rem 0 0.75rem; }
+        h4 { color: var(--gray-700); font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
+
+        .toc {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toc h3 { margin-top: 0; color: var(--primary); }
+        .toc ul { margin-left: 1.5rem; }
+        .toc li { margin-bottom: 0.5rem; }
+        .toc a { color: var(--primary); text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .indicator-card {
+            background: var(--gray-100);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .indicator-card h4 { margin-top: 0; color: var(--primary); }
+
+        .formula-box {
+            background: var(--gray-900);
+            color: #e5e7eb;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .formula-box .comment { color: #9ca3af; }
+        .formula-box .var { color: #93c5fd; }
+        .formula-box .func { color: #c084fc; }
+        .formula-box .num { color: #86efac; }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.5rem;
+            border-radius: 12px 12px 0 0;
+            color: white;
+            margin: -2rem -2rem 1.5rem -2rem;
+        }
+        .strategy-header.baseline { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .strategy-header.posvol { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
+        .strategy-header.multitp { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .strategy-header.volfilter { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+        .strategy-header.conservative { background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%); }
+
+        .strategy-title { font-size: 1.5rem; font-weight: 600; }
+        .strategy-subtitle { opacity: 0.9; margin-top: 0.25rem; font-size: 0.95rem; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #ede9fe; color: #5b21b6; }
+        .badge-white { background: rgba(255,255,255,0.2); color: white; }
+
+        .condition-list {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+        }
+        .condition-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        .condition-list code {
+            background: var(--gray-200);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 0.85rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .comparison-table th { background: var(--gray-800); color: white; font-weight: 500; }
+        .comparison-table tr:hover { background: var(--gray-50); }
+        .comparison-table .highlight { background: #eff6ff; }
+
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .info-box h4 { color: var(--primary); margin-top: 0; }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .warning-box h4 { color: var(--warning); margin-top: 0; }
+
+        .success-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .success-box h4 { color: var(--success); margin-top: 0; }
+
+        .perf-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .perf-item {
+            background: var(--gray-100);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .perf-item .label { font-size: 0.8rem; color: var(--gray-600); }
+        .perf-item .value { font-size: 1.35rem; font-weight: 600; color: var(--gray-900); margin-top: 0.25rem; }
+        .perf-item .value.positive { color: var(--success); }
+        .perf-item .value.negative { color: var(--danger); }
+
+        .diagram {
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.25rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .tier-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .tier-table th, .tier-table td {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--gray-200);
+            text-align: left;
+        }
+        .tier-table th { background: var(--gray-100); font-weight: 600; }
+        .tier-table .tier-highlight { background: #fef3c7; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--gray-200);
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .meta-info { flex-direction: column; gap: 0.5rem; }
+            .strategy-header { flex-direction: column; gap: 1rem; }
+            .perf-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>BTC Enhanced Strategy Guide</h1>
+            <p>Complete Reference for Entry, Exit, Position Sizing & Indicator Methodology</p>
+            <div class="meta-info">
+                <span>Generated: January 28, 2026</span>
+                <span>Timeframe: 15-minute candles</span>
+                <span>Data: Binance Futures (BTCUSDT)</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#indicators">Part 1: Indicator Calculations & Methodology</a></li>
+                <li><a href="#entry-logic">Part 2: Entry Signal Logic</a></li>
+                <li><a href="#exit-logic">Part 3: Exit Logic (TP & SL)</a></li>
+                <li><a href="#position-sizing">Part 4: Position Sizing Approaches</a></li>
+                <li><a href="#strategies">Part 5: Strategy Variants Explained</a></li>
+                <li><a href="#performance">Part 6: Performance Comparison</a></li>
+            </ul>
+        </div>
+
+        <!-- PART 1: INDICATORS -->
+        <section id="indicators" class="section-card">
+            <h2 style="margin-top: 0; border: none;">Part 1: Indicator Calculations & Methodology</h2>
+            <p>All indicators are computed from 15-minute OHLCV data and Binance positioning metrics. Below is the exact calculation methodology for each indicator used in the strategy.</p>
+
+            <h3>1.1 Technical Indicators</h3>
+
+            <div class="indicator-card">
+                <h4>Average True Range (ATR)</h4>
+                <p><strong>Purpose:</strong> Measures market volatility. Used for stop-loss and take-profit distance calculations.</p>
+                <p><strong>Default Period:</strong> 14 (configurable: tested 14, 28, 42, 56)</p>
+                <div class="formula-box">
+<span class="comment"># True Range = Maximum of:</span>
+<span class="var">TR</span> = max(
+    <span class="var">high</span> - <span class="var">low</span>,                    <span class="comment"># Current bar range</span>
+    abs(<span class="var">high</span> - <span class="var">prev_close</span>),        <span class="comment"># Gap up from previous close</span>
+    abs(<span class="var">low</span> - <span class="var">prev_close</span>)          <span class="comment"># Gap down from previous close</span>
+)
+
+<span class="comment"># ATR = Simple Moving Average of True Range</span>
+<span class="var">ATR</span> = <span class="func">rolling_mean</span>(<span class="var">TR</span>, period=<span class="num">14</span>)
+                </div>
+                <p><strong>Interpretation:</strong> Higher ATR = more volatile market = wider SL/TP distances. Lower ATR = tighter ranges.</p>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Relative Strength Index (RSI)</h4>
+                <p><strong>Purpose:</strong> Identifies oversold conditions for pullback entries.</p>
+                <p><strong>Default Period:</strong> 56 (configurable: tested 14, 28, 42, 56)</p>
+                <div class="formula-box">
+<span class="comment"># Price change</span>
+<span class="var">delta</span> = <span class="var">close</span> - <span class="var">prev_close</span>
+
+<span class="comment"># Separate gains and losses</span>
+<span class="var">gain</span> = <span class="func">rolling_mean</span>(<span class="func">max</span>(<span class="var">delta</span>, <span class="num">0</span>), period=<span class="num">56</span>)
+<span class="var">loss</span> = <span class="func">rolling_mean</span>(<span class="func">abs</span>(<span class="func">min</span>(<span class="var">delta</span>, <span class="num">0</span>)), period=<span class="num">56</span>)
+
+<span class="comment"># RSI calculation</span>
+<span class="var">RS</span> = <span class="var">gain</span> / <span class="var">loss</span>
+<span class="var">RSI</span> = <span class="num">100</span> - (<span class="num">100</span> / (<span class="num">1</span> + <span class="var">RS</span>))
+                </div>
+                <p><strong>Entry Range:</strong> 20 &lt; RSI &lt; 45 (pullback but not extreme oversold)</p>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Simple Moving Average (SMA)</h4>
+                <p><strong>Purpose:</strong> Determines trend direction. Only long trades when price is above SMA.</p>
+                <p><strong>Default Period:</strong> 200 (configurable: tested 50, 100, 150, 200)</p>
+                <div class="formula-box">
+<span class="var">SMA200</span> = <span class="func">rolling_mean</span>(<span class="var">close</span>, period=<span class="num">200</span>)
+
+<span class="comment"># Trend determination</span>
+<span class="var">uptrend</span> = <span class="var">close</span> > <span class="var">SMA200</span>  <span class="comment"># Only take longs in uptrend</span>
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Bollinger Bands</h4>
+                <p><strong>Purpose:</strong> Identifies price deviation from mean. Used for context, not direct entry signals.</p>
+                <p><strong>Period:</strong> 80 (fixed)</p>
+                <div class="formula-box">
+<span class="var">middle_band</span> = <span class="func">rolling_mean</span>(<span class="var">close</span>, period=<span class="num">80</span>)
+<span class="var">std_dev</span> = <span class="func">rolling_std</span>(<span class="var">close</span>, period=<span class="num">80</span>)
+
+<span class="var">upper_band</span> = <span class="var">middle_band</span> + (<span class="num">2</span> * <span class="var">std_dev</span>)
+<span class="var">lower_band</span> = <span class="var">middle_band</span> - (<span class="num">2</span> * <span class="var">std_dev</span>)
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Pullback Percentage</h4>
+                <p><strong>Purpose:</strong> Measures how far price has pulled back from recent highs.</p>
+                <p><strong>Lookback:</strong> 16 bars (4 hours)</p>
+                <div class="formula-box">
+<span class="var">recent_high</span> = <span class="func">rolling_max</span>(<span class="var">high</span>, period=<span class="num">16</span>)
+<span class="var">pullback_pct</span> = (<span class="var">recent_high</span> - <span class="var">close</span>) / <span class="var">close</span> * <span class="num">100</span>
+
+<span class="comment"># Entry filter: 0.5% to 3.0% pullback</span>
+<span class="var">valid_pullback</span> = (<span class="num">0.5</span> <= <span class="var">pullback_pct</span>) and (<span class="var">pullback_pct</span> <= <span class="num">3.0</span>)
+                </div>
+                <p><strong>Logic:</strong> We want a meaningful pullback (not chasing highs) but not too deep (potential trend reversal).</p>
+            </div>
+
+            <h3>1.2 Volume Indicators</h3>
+
+            <div class="indicator-card">
+                <h4>Volume Ratio</h4>
+                <p><strong>Purpose:</strong> Compares current volume to recent average. Identifies high-conviction moves.</p>
+                <div class="formula-box">
+<span class="var">vol_ma</span> = <span class="func">rolling_mean</span>(<span class="var">volume</span>, period=<span class="num">96</span>)  <span class="comment"># 24 hours of 15-min bars</span>
+<span class="var">vol_ratio</span> = <span class="var">volume</span> / <span class="var">vol_ma</span>
+
+<span class="comment"># Interpretation:</span>
+<span class="comment"># vol_ratio > 1.5 = High volume (strong conviction)</span>
+<span class="comment"># vol_ratio > 1.0 = Above average</span>
+<span class="comment"># vol_ratio < 0.8 = Low volume (weak conviction)</span>
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Volume Trend</h4>
+                <p><strong>Purpose:</strong> Determines if volume is increasing or decreasing over time.</p>
+                <div class="formula-box">
+<span class="var">vol_ma_4h</span> = <span class="func">rolling_mean</span>(<span class="var">volume</span>, period=<span class="num">16</span>)   <span class="comment"># 4-hour average</span>
+<span class="var">vol_trend</span> = <span class="var">vol_ma_4h</span> - <span class="func">shift</span>(<span class="var">vol_ma_4h</span>, <span class="num">4</span>)  <span class="comment"># Change vs 1 hour ago</span>
+<span class="var">volume_increasing</span> = <span class="var">vol_trend</span> > <span class="num">0</span>
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Volume Quality Score (0-2 scale)</h4>
+                <p><strong>Purpose:</strong> Composite score combining volume metrics for position sizing adjustment.</p>
+                <div class="formula-box">
+<span class="var">vol_score</span> = <span class="num">0</span>
+
+<span class="comment"># Base volume ratio scoring</span>
+<span class="keyword">if</span> <span class="var">vol_ratio</span> > <span class="num">1.5</span>:   <span class="var">vol_score</span> += <span class="num">1.0</span>
+<span class="keyword">elif</span> <span class="var">vol_ratio</span> > <span class="num">1.2</span>: <span class="var">vol_score</span> += <span class="num">0.7</span>
+<span class="keyword">elif</span> <span class="var">vol_ratio</span> > <span class="num">1.0</span>: <span class="var">vol_score</span> += <span class="num">0.5</span>
+<span class="keyword">elif</span> <span class="var">vol_ratio</span> > <span class="num">0.8</span>: <span class="var">vol_score</span> += <span class="num">0.3</span>
+
+<span class="comment"># Volume trend bonus</span>
+<span class="keyword">if</span> <span class="var">volume_increasing</span>: <span class="var">vol_score</span> += <span class="num">0.5</span>
+
+<span class="comment"># Bullish volume bonus (price up + good volume)</span>
+<span class="keyword">if</span> <span class="var">close</span> > <span class="var">open</span> and <span class="var">vol_ratio</span> > <span class="num">1.0</span>: <span class="var">vol_score</span> += <span class="num">0.5</span>
+
+<span class="var">vol_score</span> = <span class="func">min</span>(<span class="var">vol_score</span>, <span class="num">2.0</span>)  <span class="comment"># Cap at 2.0</span>
+                </div>
+            </div>
+
+            <h3>1.3 Positioning Indicators (Binance Data)</h3>
+
+            <div class="indicator-card">
+                <h4>Positioning Score</h4>
+                <p><strong>Purpose:</strong> Composite score based on Binance top trader positioning, funding rate, and global long/short ratio. Identifies smart money positioning.</p>
+                <div class="formula-box">
+<span class="var">pos_score</span> = <span class="num">0</span>
+
+<span class="comment"># Top Trader Position Ratio (most important)</span>
+<span class="keyword">if</span> <span class="var">top_trader_long_pct</span> > <span class="num">60</span>:   <span class="var">pos_score</span> += <span class="num">1.5</span>   <span class="comment"># Strong bullish</span>
+<span class="keyword">elif</span> <span class="var">top_trader_long_pct</span> > <span class="num">55</span>: <span class="var">pos_score</span> += <span class="num">1.0</span>   <span class="comment"># Bullish</span>
+<span class="keyword">elif</span> <span class="var">top_trader_short_pct</span> > <span class="num">60</span>: <span class="var">pos_score</span> -= <span class="num">1.5</span>  <span class="comment"># Strong bearish</span>
+<span class="keyword">elif</span> <span class="var">top_trader_short_pct</span> > <span class="num">55</span>: <span class="var">pos_score</span> -= <span class="num">1.0</span>  <span class="comment"># Bearish</span>
+
+<span class="comment"># Top Trader Account Ratio (secondary)</span>
+<span class="keyword">if</span> <span class="var">account_long_pct</span> > <span class="num">55</span>:   <span class="var">pos_score</span> += <span class="num">0.25</span>
+<span class="keyword">elif</span> <span class="var">account_short_pct</span> > <span class="num">55</span>: <span class="var">pos_score</span> -= <span class="num">0.25</span>
+
+<span class="comment"># Global Long/Short Ratio (contrarian)</span>
+<span class="keyword">if</span> <span class="var">global_ls_ratio</span> < <span class="num">0.7</span>:  <span class="var">pos_score</span> += <span class="num">0.5</span>   <span class="comment"># Crowd is short = bullish</span>
+<span class="keyword">elif</span> <span class="var">global_ls_ratio</span> > <span class="num">1.5</span>: <span class="var">pos_score</span> -= <span class="num">0.5</span>   <span class="comment"># Crowd is long = bearish</span>
+
+<span class="comment"># Funding Rate (contrarian)</span>
+<span class="keyword">if</span> <span class="var">funding_rate</span> > <span class="num">0.0005</span>:  <span class="var">pos_score</span> -= <span class="num">0.5</span>   <span class="comment"># Expensive to be long</span>
+<span class="keyword">elif</span> <span class="var">funding_rate</span> < <span class="num">-0.0005</span>: <span class="var">pos_score</span> += <span class="num">0.5</span>  <span class="comment"># Cheap to be long</span>
+                </div>
+                <p><strong>Entry Threshold:</strong> Positioning score >= 0.4 (increases to 0.75 after 3+ consecutive losses)</p>
+            </div>
+        </section>
+
+        <!-- PART 2: ENTRY LOGIC -->
+        <section id="entry-logic" class="section-card">
+            <h2 style="margin-top: 0; border: none;">Part 2: Entry Signal Logic</h2>
+            <p>The strategy is <strong>long-only</strong>, entering on pullbacks during uptrends when top trader positioning is favorable.</p>
+
+            <h3>2.1 Entry Conditions (All Must Be True)</h3>
+
+            <div class="condition-list">
+                <ol>
+                    <li><strong>Uptrend Check:</strong> <code>close > SMA200</code> - Price must be above the 200-period SMA</li>
+                    <li><strong>Positioning Score:</strong> <code>positioning_score >= 0.4</code> - Top traders must be net long</li>
+                    <li><strong>RSI Filter:</strong> <code>20 < RSI < 45</code> - Must be in pullback zone (not overbought)</li>
+                    <li><strong>Pullback Range:</strong> <code>0.5% < pullback_pct < 3.0%</code> - Meaningful but not excessive pullback</li>
+                    <li><strong>Minimum Activity:</strong> <code>abs(positioning_score) >= 0.15</code> - Some positioning signal present</li>
+                    <li><strong>No Open Trade:</strong> Only one position at a time</li>
+                    <li><strong>Entry Hours:</strong> 0-11 UTC (Asian hours) or 0-23 UTC (all hours)</li>
+                </ol>
+            </div>
+
+            <h3>2.2 Entry Flow Diagram</h3>
+            <div class="diagram">
+New 15-min Bar
+     |
+     v
+[Price > SMA200?] --No--> Skip (not uptrend)
+     |
+    Yes
+     v
+[Positioning Score >= 0.4?] --No--> Skip (smart money not bullish)
+     |
+    Yes
+     v
+[20 < RSI < 45?] --No--> Skip (not in pullback zone)
+     |
+    Yes
+     v
+[0.5% < Pullback < 3%?] --No--> Skip (pullback too small or too large)
+     |
+    Yes
+     v
+[Volume Filter Pass?] --No--> Skip (only for VolFilter/Conservative strategies)
+     |
+    Yes
+     v
+[No Open Position?] --No--> Skip (already in trade)
+     |
+    Yes
+     v
+   ENTER LONG
+     |
+     +-- Calculate position size based on risk model
+     +-- Set SL at entry - (ATR x 1.8)
+     +-- Set TP at entry + (ATR x 4.5 x adjustments)
+            </div>
+
+            <div class="info-box">
+                <h4>Adaptive Entry Threshold</h4>
+                <p>After 3+ consecutive losses, the positioning score threshold increases from 0.4 to 0.75. This prevents entering marginal setups during losing streaks, requiring stronger conviction before risking capital again.</p>
+            </div>
+
+            <h3>2.3 Entry Hour Comparison</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>Mode</th>
+                    <th>Entry Hours (UTC)</th>
+                    <th>Rationale</th>
+                    <th>Trade Count Impact</th>
+                </tr>
+                <tr>
+                    <td><strong>Asian Hours</strong></td>
+                    <td>0:00 - 11:59 UTC</td>
+                    <td>Lower volatility, more predictable moves, higher win rate</td>
+                    <td>~60% fewer trades</td>
+                </tr>
+                <tr>
+                    <td><strong>All Hours</strong></td>
+                    <td>0:00 - 23:59 UTC</td>
+                    <td>Maximum opportunity capture, more signals</td>
+                    <td>Full trade count</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- PART 3: EXIT LOGIC -->
+        <section id="exit-logic" class="section-card">
+            <h2 style="margin-top: 0; border: none;">Part 3: Exit Logic (Take Profit & Stop Loss)</h2>
+
+            <h3>3.1 Stop Loss (SL) Methodology</h3>
+
+            <div class="indicator-card">
+                <h4>Base Stop Loss: ATR-Based</h4>
+                <p><strong>Multiplier:</strong> 1.8 x ATR below entry price</p>
+                <div class="formula-box">
+<span class="var">stop_price</span> = <span class="var">entry_price</span> - (<span class="var">ATR</span> * <span class="num">1.8</span>)
+
+<span class="comment"># Example: Entry at $50,000, ATR = $500</span>
+<span class="comment"># Stop Loss = $50,000 - ($500 * 1.8) = $49,100</span>
+                </div>
+            </div>
+
+            <h4>Dynamic SL Adjustments (Strategy-Specific)</h4>
+
+            <div class="condition-list">
+                <p><strong>1. Positioning Decline to Breakeven</strong> (PosVol_Combined, Conservative)</p>
+                <ul>
+                    <li><strong>Trigger:</strong> Positioning score drops by > 0.4-0.5 points from entry</li>
+                    <li><strong>Action:</strong> Move SL to <code>entry_price + (ATR x 0.1)</code> (slight profit)</li>
+                    <li><strong>Rationale:</strong> Smart money exiting = reduce risk immediately</li>
+                </ul>
+            </div>
+
+            <div class="condition-list">
+                <p><strong>2. Volume Collapse SL Tightening</strong> (PosVol_Combined, VolFilter_Adaptive)</p>
+                <ul>
+                    <li><strong>Trigger:</strong> <code>vol_ratio < 0.5</code> AND <code>bars_held > 4</code></li>
+                    <li><strong>Action:</strong> Tighten SL to <code>close - (ATR x 1.0)</code></li>
+                    <li><strong>Rationale:</strong> Low volume = weak conviction = protect gains</li>
+                </ul>
+            </div>
+
+            <h3>3.2 Take Profit (TP) Methodology</h3>
+
+            <div class="indicator-card">
+                <h4>Single TP Approach (Baseline, VolFilter_Adaptive)</h4>
+                <p><strong>Base Multiplier:</strong> 4.5 x ATR above entry price</p>
+                <div class="formula-box">
+<span class="comment"># Base TP calculation</span>
+<span class="var">tp_mult</span> = <span class="num">4.5</span>
+
+<span class="comment"># Positioning score adjustments</span>
+<span class="keyword">if</span> <span class="var">positioning_score</span> >= <span class="num">1.5</span>:
+    <span class="var">tp_mult</span> *= <span class="num">1.30</span>   <span class="comment"># Very strong = 5.85x ATR</span>
+<span class="keyword">elif</span> <span class="var">positioning_score</span> >= <span class="num">1.0</span>:
+    <span class="var">tp_mult</span> *= <span class="num">1.15</span>   <span class="comment"># Strong = 5.175x ATR</span>
+
+<span class="var">take_profit_price</span> = <span class="var">entry_price</span> + (<span class="var">ATR</span> * <span class="var">tp_mult</span>)
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <h4>Multi-Level TP Approach (MultiTP_30, Conservative)</h4>
+                <p><strong>Purpose:</strong> Lock in partial profits early while letting remainder run.</p>
+                <div class="formula-box">
+<span class="comment"># TP1: Partial exit (30-40% of position)</span>
+<span class="var">tp1_price</span> = <span class="var">entry_price</span> + (<span class="var">ATR</span> * <span class="num">2.0</span>)
+<span class="var">tp1_exit_pct</span> = <span class="num">0.30</span>  <span class="comment"># or 0.40 for Conservative</span>
+
+<span class="comment"># TP2: Remaining position (60-70%)</span>
+<span class="var">tp2_price</span> = <span class="var">entry_price</span> + (<span class="var">ATR</span> * <span class="var">tp_mult</span>)  <span class="comment"># 4.5x adjusted</span>
+
+<span class="comment"># Execution flow:</span>
+<span class="comment"># 1. Price hits TP1 -> Exit 30% at tp1_price</span>
+<span class="comment"># 2. Remaining 70% continues toward TP2</span>
+<span class="comment"># 3. If SL hit before TP2 -> Exit remaining at SL</span>
+                </div>
+            </div>
+
+            <h3>3.3 Positioning Exit</h3>
+            <div class="warning-box">
+                <h4>Emergency Exit on Positioning Reversal</h4>
+                <p>If positioning score drops below 0.0 (smart money turns bearish), exit entire position immediately at market price, regardless of P&L. This overrides both TP and SL.</p>
+                <div class="formula-box" style="margin-top: 1rem;">
+<span class="keyword">if</span> <span class="var">positioning_score</span> < <span class="num">0.0</span>:
+    <span class="func">exit_position</span>(reason=<span class="string">"pos_exit"</span>)
+                </div>
+            </div>
+
+            <h3>3.4 Exit Flow Summary</h3>
+            <div class="diagram">
+Every 15-min Bar (while in position):
+     |
+     v
+[Price <= Stop Loss?] --Yes--> EXIT (loss)
+     |
+    No
+     v
+[Positioning Score < 0?] --Yes--> EXIT (positioning reversal)
+     |
+    No
+     v
+[Dynamic SL Triggered?] --Yes--> Adjust SL (tighten)
+     |
+    No
+     v
+[Price >= TP1?] --Yes--> Partial EXIT (30-40%, MultiTP only)
+     |
+    No
+     v
+[Price >= Main TP?] --Yes--> EXIT (full profit)
+     |
+    No
+     v
+   HOLD POSITION
+            </div>
+        </section>
+
+        <!-- PART 4: POSITION SIZING -->
+        <section id="position-sizing" class="section-card">
+            <h2 style="margin-top: 0; border: none;">Part 4: Position Sizing Approaches</h2>
+
+            <h3>4.1 Fixed Risk Model (Asian Hours / All Hours)</h3>
+            <p>Simple approach: risk a fixed dollar amount per trade.</p>
+            <div class="formula-box">
+<span class="var">BASE_RISK</span> = <span class="num">$6,000</span>  <span class="comment"># Fixed risk per trade</span>
+
+<span class="var">unit_risk</span> = abs(<span class="var">entry_price</span> - <span class="var">stop_price</span>)
+<span class="var">position_size</span> = <span class="var">BASE_RISK</span> / <span class="var">unit_risk</span>
+
+<span class="comment"># Example: Entry $50,000, SL $49,100 (diff = $900)</span>
+<span class="comment"># Position = $6,000 / $900 = 6.67 BTC contracts</span>
+            </div>
+
+            <h3>4.2 Tiered Capital Model (Tiered Capital Results)</h3>
+            <p>Risk scales with equity. Larger account = larger absolute risk (but controlled percentage).</p>
+
+            <table class="tier-table">
+                <tr>
+                    <th>Equity Range</th>
+                    <th>Risk Per Trade</th>
+                    <th>Effective Risk %</th>
+                </tr>
+                <tr>
+                    <td>$0 - $150k</td>
+                    <td>$5,000</td>
+                    <td>5.0% of $100k</td>
+                </tr>
+                <tr>
+                    <td>$150k - $225k</td>
+                    <td>$10,500</td>
+                    <td>7.0% of $150k</td>
+                </tr>
+                <tr>
+                    <td>$225k - $337.5k</td>
+                    <td>$14,625</td>
+                    <td>6.5% of $225k</td>
+                </tr>
+                <tr>
+                    <td>$337.5k - $507k</td>
+                    <td>$20,250</td>
+                    <td>6.0% of $337.5k</td>
+                </tr>
+                <tr>
+                    <td>$507k - $760k</td>
+                    <td>$28,000</td>
+                    <td>5.5% of $507k</td>
+                </tr>
+                <tr>
+                    <td>$760k - $1.2M</td>
+                    <td>$38,000</td>
+                    <td>5.0% of $760k</td>
+                </tr>
+                <tr class="tier-highlight">
+                    <td>$1.2M+</td>
+                    <td>$54,000</td>
+                    <td>Fixed cap</td>
+                </tr>
+            </table>
+
+            <h3>4.3 Tiered Capital + Streak Mitigation (Tiered Streak Results)</h3>
+            <p>Combines tiered capital with automatic risk reduction during losing streaks.</p>
+
+            <div class="success-box">
+                <h4>Streak Mitigation Rules</h4>
+                <table class="tier-table" style="margin-top: 1rem;">
+                    <tr>
+                        <th>Consecutive Losses</th>
+                        <th>Risk Reduction</th>
+                        <th>Cumulative Effect</th>
+                        <th>Recovery After Win</th>
+                    </tr>
+                    <tr>
+                        <td>0-2 losses</td>
+                        <td>None</td>
+                        <td>100% of base risk</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>3+ losses</td>
+                        <td>-40%</td>
+                        <td>60% of base risk</td>
+                        <td>Return to initial tier</td>
+                    </tr>
+                    <tr>
+                        <td>6+ losses</td>
+                        <td>Additional -30%</td>
+                        <td>42% of base risk</td>
+                        <td>Return to initial tier</td>
+                    </tr>
+                    <tr class="tier-highlight">
+                        <td>9+ losses</td>
+                        <td>Additional -30%</td>
+                        <td>29.4% of base risk</td>
+                        <td>Return to 5% capital risk</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="formula-box">
+<span class="comment"># Streak adjustment calculation</span>
+<span class="var">reduction</span> = <span class="num">1.0</span>
+
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">3</span>:
+    <span class="var">reduction</span> *= <span class="num">0.60</span>    <span class="comment"># 60% of original</span>
+
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">6</span>:
+    <span class="var">reduction</span> *= <span class="num">0.70</span>    <span class="comment"># 42% of original</span>
+
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">9</span>:
+    <span class="var">reduction</span> *= <span class="num">0.70</span>    <span class="comment"># 29.4% of original</span>
+
+<span class="var">adjusted_risk</span> = <span class="var">base_tiered_risk</span> * <span class="var">reduction</span>
+            </div>
+
+            <h3>4.4 Additional Size Adjustments</h3>
+            <div class="condition-list">
+                <p><strong>Positioning Score Bonus:</strong></p>
+                <ul>
+                    <li>If <code>positioning_score >= 1.5</code>: Multiply size by 1.2 (20% increase)</li>
+                    <li>If <code>positioning_score >= 1.0</code>: Multiply size by 1.1 (10% increase)</li>
+                </ul>
+                <p><strong>Volume-Based Adjustment (VolFilter_Adaptive, Conservative):</strong></p>
+                <ul>
+                    <li>If <code>vol_ratio > 1.2</code>: Multiply size by 1.25 (25% increase)</li>
+                    <li>If <code>vol_ratio < 0.8</code>: Multiply size by 0.8 (20% decrease)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PART 5: STRATEGIES -->
+        <section id="strategies" class="section-card">
+            <h2 style="margin-top: 0; border: none;">Part 5: Strategy Variants Explained</h2>
+
+            <!-- Baseline Strategy -->
+            <div class="section-card" style="margin-top: 1.5rem;">
+                <div class="strategy-header baseline">
+                    <div>
+                        <div class="strategy-title">1. Baseline</div>
+                        <div class="strategy-subtitle">Pure trend-following with positioning filter</div>
+                    </div>
+                    <span class="badge badge-white">Highest Returns</span>
+                </div>
+
+                <h4>Description</h4>
+                <p>The simplest strategy variant. Enters on pullbacks when positioning is favorable, exits at single TP or SL. No dynamic adjustments during trade.</p>
+
+                <h4>Key Characteristics</h4>
+                <ul>
+                    <li><strong>Entry:</strong> Standard conditions (RSI, pullback, positioning)</li>
+                    <li><strong>Exit:</strong> Single TP (4.5x ATR adjusted) or SL (1.8x ATR)</li>
+                    <li><strong>Position Size:</strong> Standard risk model only</li>
+                    <li><strong>Dynamic Features:</strong> None</li>
+                </ul>
+
+                <h4>Best For</h4>
+                <p>Traders who want maximum simplicity and are comfortable with larger drawdowns for potentially higher returns.</p>
+
+                <div class="perf-grid">
+                    <div class="perf-item">
+                        <div class="label">Asian Hours</div>
+                        <div class="value positive">+421.4%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">All Hours</div>
+                        <div class="value positive">+514.2%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Tiered+Streak</div>
+                        <div class="value positive">+1,456.3%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Win Rate</div>
+                        <div class="value">37.6%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Max Streak</div>
+                        <div class="value negative">13 losses</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MultiTP_30 Strategy -->
+            <div class="section-card">
+                <div class="strategy-header multitp">
+                    <div>
+                        <div class="strategy-title">2. MultiTP_30</div>
+                        <div class="strategy-subtitle">Partial profit taking at intermediate target</div>
+                    </div>
+                    <span class="badge badge-white">Profit Locking</span>
+                </div>
+
+                <h4>Description</h4>
+                <p>Takes 30% of position at an early TP (2x ATR), letting the remaining 70% run to the main target. Locks in profits while maintaining upside exposure.</p>
+
+                <h4>Key Characteristics</h4>
+                <ul>
+                    <li><strong>Entry:</strong> Standard conditions</li>
+                    <li><strong>TP1:</strong> Exit 30% at entry + (2.0 x ATR)</li>
+                    <li><strong>TP2:</strong> Exit remaining 70% at main TP (4.5x ATR adjusted)</li>
+                    <li><strong>SL:</strong> Standard 1.8x ATR</li>
+                </ul>
+
+                <h4>Trade-off</h4>
+                <p>Lower average win size (due to partial exit) but more consistent realized profits. Reduces the "round-trip" problem where winning trades reverse before hitting full TP.</p>
+
+                <div class="perf-grid">
+                    <div class="perf-item">
+                        <div class="label">Asian Hours</div>
+                        <div class="value positive">+349.6%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">All Hours</div>
+                        <div class="value positive">+400.8%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Tiered+Streak</div>
+                        <div class="value positive">+846.7%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Win Rate</div>
+                        <div class="value">37.6%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Max DD</div>
+                        <div class="value">21.5%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VolFilter_Adaptive Strategy -->
+            <div class="section-card">
+                <div class="strategy-header volfilter">
+                    <div>
+                        <div class="strategy-title">3. VolFilter_Adaptive</div>
+                        <div class="strategy-subtitle">Volume-filtered entries with adaptive sizing</div>
+                    </div>
+                    <span class="badge badge-white">Best Profit Factor</span>
+                </div>
+
+                <h4>Description</h4>
+                <p>Only enters when volume is adequate (ratio >= 0.8). Adjusts position size based on volume quality. Tightens SL if volume collapses during trade.</p>
+
+                <h4>Key Characteristics</h4>
+                <ul>
+                    <li><strong>Entry Filter:</strong> Requires <code>vol_ratio >= 0.8</code></li>
+                    <li><strong>Position Sizing:</strong>
+                        <ul>
+                            <li>If vol_ratio > 1.2: +25% size</li>
+                            <li>If vol_ratio < 0.8: -20% size (entry blocked anyway)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Dynamic SL:</strong> Tightens to 1.0x ATR if volume drops below 0.5</li>
+                </ul>
+
+                <h4>Best For</h4>
+                <p>Traders who want higher win rate through stricter entry criteria. Fewer trades but higher quality setups.</p>
+
+                <div class="perf-grid">
+                    <div class="perf-item">
+                        <div class="label">Asian Hours</div>
+                        <div class="value positive">+331.9%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">All Hours</div>
+                        <div class="value positive">+346.8%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Tiered+Streak</div>
+                        <div class="value positive">+728.3%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Win Rate</div>
+                        <div class="value">43.2%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Profit Factor</div>
+                        <div class="value positive">2.22</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conservative Strategy -->
+            <div class="section-card">
+                <div class="strategy-header conservative">
+                    <div>
+                        <div class="strategy-title">4. Conservative</div>
+                        <div class="strategy-subtitle">Multi-layered risk management</div>
+                    </div>
+                    <span class="badge badge-white">Lowest Drawdown</span>
+                </div>
+
+                <h4>Description</h4>
+                <p>Combines multiple protective features: volume filter, multi-TP, positioning-based breakeven, and volume-based sizing. Most defensive approach.</p>
+
+                <h4>Key Characteristics</h4>
+                <ul>
+                    <li><strong>Entry Filter:</strong> Requires <code>vol_ratio >= 0.7</code></li>
+                    <li><strong>Multi-TP:</strong> Exit 40% at 2.0x ATR, 60% at main TP</li>
+                    <li><strong>Positioning Protection:</strong> Move to breakeven if score drops 0.4 points</li>
+                    <li><strong>Volume Sizing:</strong> Adjust size based on volume quality</li>
+                </ul>
+
+                <h4>Best For</h4>
+                <p>Risk-averse traders who prioritize capital preservation over maximum returns. Highest win rate, lowest drawdowns.</p>
+
+                <div class="perf-grid">
+                    <div class="perf-item">
+                        <div class="label">Asian Hours</div>
+                        <div class="value positive">+311.6%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">All Hours</div>
+                        <div class="value positive">+378.3%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Tiered+Streak</div>
+                        <div class="value positive">+775.1%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Win Rate</div>
+                        <div class="value positive">47.0%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Max DD</div>
+                        <div class="value positive">21.5%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PosVol_Combined Strategy -->
+            <div class="section-card">
+                <div class="strategy-header posvol">
+                    <div>
+                        <div class="strategy-title">5. PosVol_Combined</div>
+                        <div class="strategy-subtitle">Dynamic protection based on positioning and volume</div>
+                    </div>
+                    <span class="badge badge-white">Balanced</span>
+                </div>
+
+                <h4>Description</h4>
+                <p>No entry filter, but aggressive dynamic protection during trades. Monitors both positioning score and volume to tighten stops when conditions deteriorate.</p>
+
+                <h4>Key Characteristics</h4>
+                <ul>
+                    <li><strong>Entry:</strong> Standard conditions (no volume filter)</li>
+                    <li><strong>Positioning Protection:</strong> Move to breakeven if score drops 0.5 points</li>
+                    <li><strong>Volume Protection:</strong> Tighten SL to 1.0x ATR if volume collapses</li>
+                    <li><strong>Exit:</strong> Single TP at main target</li>
+                </ul>
+
+                <h4>Trade-off</h4>
+                <p>Takes more trades than filtered strategies but protects capital aggressively during trades. Higher trade count, moderate win rate.</p>
+
+                <div class="perf-grid">
+                    <div class="perf-item">
+                        <div class="label">Asian Hours</div>
+                        <div class="value positive">+348.9%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">All Hours</div>
+                        <div class="value positive">+418.2%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Tiered+Streak</div>
+                        <div class="value positive">+544.6%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Win Rate</div>
+                        <div class="value">44.4%</div>
+                    </div>
+                    <div class="perf-item">
+                        <div class="label">Max Streak</div>
+                        <div class="value positive">6 losses</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 6: PERFORMANCE -->
+        <section id="performance" class="section-card">
+            <h2 style="margin-top: 0; border: none;">Part 6: Performance Comparison</h2>
+
+            <h3>6.1 Asian Hours Results (Fixed $6k Risk)</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>Strategy</th>
+                    <th>Return</th>
+                    <th>Max DD</th>
+                    <th>Trades</th>
+                    <th>Win Rate</th>
+                    <th>Profit Factor</th>
+                    <th>Sharpe</th>
+                </tr>
+                <tr class="highlight">
+                    <td><strong>Baseline</strong></td>
+                    <td><span class="badge badge-green">+421.4%</span></td>
+                    <td>27.2%</td>
+                    <td>157</td>
+                    <td>37.6%</td>
+                    <td>1.64</td>
+                    <td>1.57</td>
+                </tr>
+                <tr>
+                    <td>MultiTP_30</td>
+                    <td>+349.6%</td>
+                    <td><span class="badge badge-green">21.5%</span></td>
+                    <td>157</td>
+                    <td>37.6%</td>
+                    <td>1.27</td>
+                    <td>1.75</td>
+                </tr>
+                <tr>
+                    <td>PosVol_Combined</td>
+                    <td>+348.9%</td>
+                    <td>22.2%</td>
+                    <td>180</td>
+                    <td>44.4%</td>
+                    <td>1.75</td>
+                    <td>1.40</td>
+                </tr>
+                <tr>
+                    <td>VolFilter_Adaptive</td>
+                    <td>+331.9%</td>
+                    <td>31.5%</td>
+                    <td>95</td>
+                    <td>43.2%</td>
+                    <td><span class="badge badge-green">2.14</span></td>
+                    <td>1.25</td>
+                </tr>
+                <tr>
+                    <td>Conservative</td>
+                    <td>+311.6%</td>
+                    <td><span class="badge badge-green">21.5%</span></td>
+                    <td>100</td>
+                    <td><span class="badge badge-green">47.0%</span></td>
+                    <td>1.45</td>
+                    <td>1.75</td>
+                </tr>
+            </table>
+
+            <h3>6.2 All Hours Results (Fixed $6k Risk)</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>Strategy</th>
+                    <th>Return</th>
+                    <th>Max DD</th>
+                    <th>Trades</th>
+                    <th>Win Rate</th>
+                    <th>Max Losing Streak</th>
+                </tr>
+                <tr class="highlight">
+                    <td><strong>Baseline</strong></td>
+                    <td><span class="badge badge-green">+514.2%</span></td>
+                    <td><span class="badge badge-red">36.3%</span></td>
+                    <td>262</td>
+                    <td>34.4%</td>
+                    <td><span class="badge badge-red">18</span></td>
+                </tr>
+                <tr>
+                    <td>PosVol_Combined</td>
+                    <td>+418.2%</td>
+                    <td>24.2%</td>
+                    <td>317</td>
+                    <td>39.1%</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td>MultiTP_30</td>
+                    <td>+400.8%</td>
+                    <td>32.3%</td>
+                    <td>261</td>
+                    <td>34.1%</td>
+                    <td><span class="badge badge-red">18</span></td>
+                </tr>
+                <tr>
+                    <td>Conservative</td>
+                    <td>+378.3%</td>
+                    <td>28.3%</td>
+                    <td>208</td>
+                    <td><span class="badge badge-green">42.3%</span></td>
+                    <td>8</td>
+                </tr>
+                <tr>
+                    <td>VolFilter_Adaptive</td>
+                    <td>+346.8%</td>
+                    <td>32.8%</td>
+                    <td>211</td>
+                    <td>35.5%</td>
+                    <td>10</td>
+                </tr>
+            </table>
+
+            <h3>6.3 Tiered + Streak Mitigation Results (Asian Hours)</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>Strategy</th>
+                    <th>Return</th>
+                    <th>Max DD</th>
+                    <th>Trades</th>
+                    <th>Win Rate</th>
+                    <th>Profit Factor</th>
+                    <th>Streaks 3+</th>
+                    <th>Max Streak</th>
+                </tr>
+                <tr class="highlight">
+                    <td><strong>Baseline</strong></td>
+                    <td><span class="badge badge-green">+1,456.3%</span></td>
+                    <td>36.9%</td>
+                    <td>157</td>
+                    <td>37.6%</td>
+                    <td>1.46</td>
+                    <td>13</td>
+                    <td>13</td>
+                </tr>
+                <tr>
+                    <td>MultiTP_30</td>
+                    <td>+846.7%</td>
+                    <td>36.4%</td>
+                    <td>157</td>
+                    <td>37.6%</td>
+                    <td>1.11</td>
+                    <td>13</td>
+                    <td>13</td>
+                </tr>
+                <tr>
+                    <td>Conservative</td>
+                    <td>+775.1%</td>
+                    <td><span class="badge badge-green">25.0%</span></td>
+                    <td>100</td>
+                    <td><span class="badge badge-green">47.0%</span></td>
+                    <td>1.42</td>
+                    <td><span class="badge badge-green">8</span></td>
+                    <td><span class="badge badge-green">7</span></td>
+                </tr>
+                <tr>
+                    <td>VolFilter_Adaptive</td>
+                    <td>+728.3%</td>
+                    <td>28.8%</td>
+                    <td>95</td>
+                    <td>43.2%</td>
+                    <td><span class="badge badge-green">2.22</span></td>
+                    <td><span class="badge badge-green">8</span></td>
+                    <td><span class="badge badge-green">6</span></td>
+                </tr>
+                <tr>
+                    <td>PosVol_Combined</td>
+                    <td>+544.6%</td>
+                    <td>35.1%</td>
+                    <td>180</td>
+                    <td>44.4%</td>
+                    <td>1.49</td>
+                    <td>17</td>
+                    <td><span class="badge badge-green">6</span></td>
+                </tr>
+            </table>
+
+            <h3>6.4 Risk Model Comparison</h3>
+            <table class="comparison-table">
+                <tr>
+                    <th>Risk Model</th>
+                    <th>Baseline Return</th>
+                    <th>Improvement</th>
+                    <th>Max Drawdown</th>
+                    <th>Key Benefit</th>
+                </tr>
+                <tr>
+                    <td>Fixed $6k</td>
+                    <td>+421.4%</td>
+                    <td>-</td>
+                    <td>27.2%</td>
+                    <td>Simplicity</td>
+                </tr>
+                <tr>
+                    <td>Tiered Capital</td>
+                    <td>+1,333.2%</td>
+                    <td><span class="badge badge-green">+3.2x</span></td>
+                    <td>51.4%</td>
+                    <td>Compound growth</td>
+                </tr>
+                <tr class="highlight">
+                    <td><strong>Tiered + Streak</strong></td>
+                    <td><strong>+1,456.3%</strong></td>
+                    <td><span class="badge badge-green">+3.5x</span></td>
+                    <td>36.9%</td>
+                    <td>Compound + protection</td>
+                </tr>
+            </table>
+
+            <div class="success-box">
+                <h4>Key Insights</h4>
+                <ul style="margin-top: 0.75rem;">
+                    <li><strong>Highest absolute returns:</strong> Baseline with Tiered+Streak (+1,456%)</li>
+                    <li><strong>Best risk-adjusted:</strong> VolFilter_Adaptive (2.22 profit factor, 6 max streak)</li>
+                    <li><strong>Lowest drawdown:</strong> Conservative (25.0% max DD with Tiered+Streak)</li>
+                    <li><strong>Best win rate:</strong> Conservative (47.0%)</li>
+                    <li><strong>Tiered capital:</strong> Provides 3x+ improvement over fixed risk</li>
+                    <li><strong>Streak mitigation:</strong> Adds 10-15% additional returns while reducing DD</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>BTC Enhanced Strategy Guide - Complete Reference</p>
+        <p>Generated: January 28, 2026 | Backtest Period: 4+ years of 15-minute data</p>
+        <p>Data Source: Binance Futures (BTCUSDT)</p>
+    </footer>
+</body>
+</html>

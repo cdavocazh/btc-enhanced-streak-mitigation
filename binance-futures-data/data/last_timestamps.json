@@ -1,0 +1,56 @@
+{
+  "top_trader_position": {
+    "last_timestamp_ms": 1769790900000,
+    "last_timestamp_utc": "2026-01-30 16:35:00 UTC",
+    "last_timestamp_gmt8": "2026-01-31 00:35:00 GMT+8",
+    "last_timestamp_iso": "2026-01-30T16:35:00+00:00",
+    "updated_at_utc": "2026-01-30 16:46:07 UTC",
+    "updated_at_gmt8": "2026-01-31 00:46:07 GMT+8",
+    "updated_at_iso": "2026-01-30T16:46:07.166624+00:00"
+  },
+  "top_trader_account": {
+    "last_timestamp_ms": 1769791200000,
+    "last_timestamp_utc": "2026-01-30 16:40:00 UTC",
+    "last_timestamp_gmt8": "2026-01-31 00:40:00 GMT+8",
+    "last_timestamp_iso": "2026-01-30T16:40:00+00:00",
+    "updated_at_utc": "2026-01-30 16:46:07 UTC",
+    "updated_at_gmt8": "2026-01-31 00:46:07 GMT+8",
+    "updated_at_iso": "2026-01-30T16:46:07.166624+00:00"
+  },
+  "global_ls_ratio": {
+    "last_timestamp_ms": 1769791200000,
+    "last_timestamp_utc": "2026-01-30 16:40:00 UTC",
+    "last_timestamp_gmt8": "2026-01-31 00:40:00 GMT+8",
+    "last_timestamp_iso": "2026-01-30T16:40:00+00:00",
+    "updated_at_utc": "2026-01-30 16:46:07 UTC",
+    "updated_at_gmt8": "2026-01-31 00:46:07 GMT+8",
+    "updated_at_iso": "2026-01-30T16:46:07.166624+00:00"
+  },
+  "funding_rate": {
+    "last_timestamp_ms": 1769788800001,
+    "last_timestamp_utc": "2026-01-30 16:00:00 UTC",
+    "last_timestamp_gmt8": "2026-01-31 00:00:00 GMT+8",
+    "last_timestamp_iso": "2026-01-30T16:00:00.001000+00:00",
+    "updated_at_utc": "2026-01-30 16:46:07 UTC",
+    "updated_at_gmt8": "2026-01-31 00:46:07 GMT+8",
+    "updated_at_iso": "2026-01-30T16:46:07.166624+00:00"
+  },
+  "open_interest": {
+    "last_timestamp_ms": 1769791200000,
+    "last_timestamp_utc": "2026-01-30 16:40:00 UTC",
+    "last_timestamp_gmt8": "2026-01-31 00:40:00 GMT+8",
+    "last_timestamp_iso": "2026-01-30T16:40:00+00:00",
+    "updated_at_utc": "2026-01-30 16:46:07 UTC",
+    "updated_at_gmt8": "2026-01-31 00:46:07 GMT+8",
+    "updated_at_iso": "2026-01-30T16:46:07.166624+00:00"
+  },
+  "price": {
+    "last_timestamp_ms": 1769790600000,
+    "last_timestamp_utc": "2026-01-30 16:30:00 UTC",
+    "last_timestamp_gmt8": "2026-01-31 00:30:00 GMT+8",
+    "last_timestamp_iso": "2026-01-30T16:30:00+00:00",
+    "updated_at_utc": "2026-01-30 16:46:07 UTC",
+    "updated_at_gmt8": "2026-01-31 00:46:07 GMT+8",
+    "updated_at_iso": "2026-01-30T16:46:07.166624+00:00"
+  }
+}

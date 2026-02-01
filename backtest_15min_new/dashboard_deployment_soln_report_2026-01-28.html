@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Strategy Dashboard - Deployment Solutions Report</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --purple: #7c3aed;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; font-size: 1.1rem; }
+
+        .meta-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        h2 {
+            color: var(--gray-900);
+            font-size: 1.75rem;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h3 { color: var(--gray-800); font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        h4 { color: var(--gray-700); font-size: 1rem; margin: 1rem 0 0.5rem; }
+
+        .requirements-box {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .req-item {
+            background: var(--gray-100);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .req-item strong {
+            display: block;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .req-item span { font-size: 1.1rem; color: var(--gray-900); }
+
+        .solution-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .solution-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .solution-header.aws { background: linear-gradient(135deg, #ff9900 0%, #ff6600 100%); color: white; }
+        .solution-header.gcp { background: linear-gradient(135deg, #4285f4 0%, #0d47a1 100%); color: white; }
+        .solution-header.railway { background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: white; }
+        .solution-header.selfhosted { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .solution-header.local { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: white; }
+
+        .solution-title { font-size: 1.5rem; font-weight: 600; }
+        .solution-subtitle { opacity: 0.9; margin-top: 0.25rem; }
+
+        .cost-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .solution-body { padding: 1.5rem; }
+
+        .architecture-diagram {
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .pros, .cons { padding: 1rem; border-radius: 8px; }
+        .pros { background: #ecfdf5; border: 1px solid #86efac; }
+        .cons { background: #fef2f2; border: 1px solid #fca5a5; }
+        .pros h4 { color: var(--success); }
+        .cons h4 { color: var(--danger); }
+        .pros ul, .cons ul { margin-left: 1.25rem; margin-top: 0.5rem; }
+        .pros li, .cons li { margin-bottom: 0.25rem; }
+
+        .cost-breakdown {
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .cost-breakdown table { width: 100%; border-collapse: collapse; }
+        .cost-breakdown th, .cost-breakdown td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .cost-breakdown th { color: var(--gray-600); font-weight: 500; }
+        .cost-breakdown .total { font-weight: 600; background: var(--gray-200); }
+
+        .complexity-meter { display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+        .complexity-bar { height: 8px; width: 30px; background: var(--gray-200); border-radius: 4px; }
+        .complexity-bar.filled { background: var(--primary); }
+        .complexity-bar.filled.warning { background: var(--warning); }
+        .complexity-bar.filled.danger { background: var(--danger); }
+        .complexity-bar.filled.success { background: var(--success); }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 0.9rem;
+        }
+        .comparison-table th { background: var(--gray-800); color: white; font-weight: 500; }
+        .comparison-table tr:hover { background: var(--gray-50); }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+        .recommendation-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .recommendation-box h3 { color: var(--success); margin-top: 0; }
+
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .info-box h3 { color: var(--primary); margin-top: 0; }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .warning-box h3 { color: var(--warning); margin-top: 0; }
+
+        .code-block {
+            background: var(--gray-900);
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+        }
+        .code-block .comment { color: #9ca3af; }
+        .code-block .keyword { color: #c084fc; }
+        .code-block .string { color: #86efac; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--gray-200);
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .pros-cons { grid-template-columns: 1fr; }
+            .meta-info { flex-direction: column; gap: 0.5rem; }
+            .solution-header { flex-direction: column; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>BTC Strategy Dashboard</h1>
+            <p>Deployment Solutions Report</p>
+            <div class="meta-info">
+                <span>Generated: January 28, 2026</span>
+                <span>Data Granularity: 15-minute (5-min positioning resampled)</span>
+                <span>Data Size: ~290MB</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Requirements Section -->
+        <section class="requirements-box">
+            <h2 style="margin-top: 0; border: none;">System Requirements Analysis</h2>
+            <div class="requirements-grid">
+                <div class="req-item">
+                    <strong>Minimum Refresh Interval</strong>
+                    <span>5 minutes</span>
+                </div>
+                <div class="req-item">
+                    <strong>Data Sources</strong>
+                    <span>6 Binance API endpoints</span>
+                </div>
+                <div class="req-item">
+                    <strong>Historical Data</strong>
+                    <span>~145,000 candles (4+ years)</span>
+                </div>
+                <div class="req-item">
+                    <strong>Positioning Data</strong>
+                    <span>5-min granularity, resampled to 15-min</span>
+                </div>
+                <div class="req-item">
+                    <strong>Dashboard Framework</strong>
+                    <span>Streamlit (Python)</span>
+                </div>
+                <div class="req-item">
+                    <strong>Memory Requirements</strong>
+                    <span>~1-2 GB RAM minimum</span>
+                </div>
+            </div>
+
+            <h3>Data Pipeline Components</h3>
+            <div class="architecture-diagram">
+Binance API (5-min intervals)
+    │
+    ├── price.csv          (OHLC data)
+    ├── top_trader_position_ratio.csv
+    ├── top_trader_account_ratio.csv
+    ├── global_ls_ratio.csv
+    ├── funding_rate.csv   (8-hour intervals)
+    └── open_interest.csv
+           │
+           ▼
+    Data Loader (load_15min_data.py)
+    - Resample 5-min → 15-min
+    - Merge all positioning data
+    - Forward fill missing values
+           │
+           ▼
+    Streamlit Dashboard
+    - Compute indicators (ATR, RSI, SMA, BB)
+    - Calculate entry signals
+    - Display real-time charts
+            </div>
+        </section>
+
+        <!-- Important: GitHub & API Traffic Clarification -->
+        <div class="info-box">
+            <h3>Important: Understanding GitHub vs Runtime Traffic</h3>
+            <p style="margin-top: 1rem;">
+                A common question: <strong>"If GitHub restricts Binance API traffic, will cloud deployments work?"</strong>
+            </p>
+            <div class="architecture-diagram" style="background: white; margin-top: 1rem;">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      TRAFFIC FLOW CLARIFICATION                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   GitHub is ONLY used for:                                                   │
+│   ┌──────────────────────────────────────────────────────────────────────┐  │
+│   │  • Storing your source code                                           │  │
+│   │  • Triggering deployments (on git push)                              │  │
+│   │  • NOT involved in any runtime API calls                             │  │
+│   └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                              │
+│   Runtime API calls go DIRECTLY from deployment server to Binance:          │
+│                                                                              │
+│   ┌─────────────────┐                    ┌─────────────────┐                │
+│   │  Railway/Render │───── API Call ────▶│  Binance API    │                │
+│   │  AWS/GCP/VPS    │                    │  (fapi.binance) │                │
+│   │  Local Laptop   │◀──── Response ─────│                 │                │
+│   └─────────────────┘                    └─────────────────┘                │
+│          │                                                                   │
+│          │ (serves dashboard)                                                │
+│          ▼                                                                   │
+│     Your Browser                                                             │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+            </div>
+            <p style="margin-top: 1rem;">
+                <strong>Answer:</strong> Yes, all cloud solutions will work. The fetch script runs on the deployment server's infrastructure,
+                making direct calls to Binance. GitHub has no involvement in runtime data fetching.
+            </p>
+            <p style="margin-top: 0.5rem;">
+                <strong>Note:</strong> For Railway/Render, choose EU server region if US IPs have restricted Binance access.
+            </p>
+        </div>
+
+        <!-- Solution 1: Local Laptop (NEW - Featured) -->
+        <div class="solution-card">
+            <div class="solution-header local">
+                <div>
+                    <div class="solution-title">Solution 1: Local Laptop (macOS/Linux/Windows)</div>
+                    <div class="solution-subtitle">Zero-cost deployment with local data storage and scheduled refresh</div>
+                </div>
+                <div class="cost-badge">$0/month</div>
+            </div>
+            <div class="solution-body">
+                <h3>Architecture Overview</h3>
+                <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Local Laptop / Desktop                          │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────────┐│
+│  │                     Operating System                             ││
+│  │                                                                  ││
+│  │  ┌─────────────────┐     ┌─────────────────────────────────────┐││
+│  │  │   Scheduler     │────▶│         Local CSV Files             │││
+│  │  │  (launchd/cron) │     │  ~/Github/btc-enhanced-.../data/    │││
+│  │  │  Every 5 min    │     │  - price.csv                        │││
+│  │  └─────────────────┘     │  - top_trader_position_ratio.csv    │││
+│  │         │                │  - global_ls_ratio.csv              │││
+│  │         │                │  - funding_rate.csv                 │││
+│  │         ▼                │  - open_interest.csv                │││
+│  │  ┌─────────────────┐     └─────────────────────────────────────┘││
+│  │  │  fetch_data.py  │                    │                       ││
+│  │  │  (API calls)    │                    ▼                       ││
+│  │  └─────────────────┘     ┌─────────────────────────────────────┐││
+│  │                          │      Streamlit Dashboard            │││
+│  │                          │      http://localhost:8501          │││
+│  │                          └─────────────────────────────────────┘││
+│  └──────────────────────────────────────────────────────────────────┘│
+│                                                                      │
+│  Direct connection (no cloud, no GitHub at runtime):                 │
+│         │                                                            │
+│         ▼                                                            │
+│    Binance Futures API (fapi.binance.com)                           │
+└─────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h3>Scheduler Options</h3>
+                <div class="cost-breakdown">
+                    <table>
+                        <tr>
+                            <th>Method</th>
+                            <th>Platform</th>
+                            <th>Reliability</th>
+                            <th>Survives Reboot</th>
+                        </tr>
+                        <tr>
+                            <td><strong>launchd</strong> (Recommended for Mac)</td>
+                            <td>macOS</td>
+                            <td><span class="badge badge-green">Excellent</span></td>
+                            <td><span class="badge badge-green">Yes</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>crontab</strong></td>
+                            <td>macOS / Linux</td>
+                            <td><span class="badge badge-green">Good</span></td>
+                            <td><span class="badge badge-green">Yes</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Task Scheduler</strong></td>
+                            <td>Windows</td>
+                            <td><span class="badge badge-green">Good</span></td>
+                            <td><span class="badge badge-green">Yes</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Python schedule library</strong></td>
+                            <td>All</td>
+                            <td><span class="badge badge-yellow">Medium</span></td>
+                            <td><span class="badge badge-red">No</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>tmux/screen session</strong></td>
+                            <td>macOS / Linux</td>
+                            <td><span class="badge badge-yellow">Medium</span></td>
+                            <td><span class="badge badge-red">No</span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3>Setup Complexity</h3>
+                <div class="complexity-meter">
+                    <div class="complexity-bar filled success"></div>
+                    <div class="complexity-bar filled success"></div>
+                    <div class="complexity-bar"></div>
+                    <div class="complexity-bar"></div>
+                    <div class="complexity-bar"></div>
+                    <span style="margin-left: 0.5rem; color: var(--success);">Low (2/5)</span>
+                </div>
+
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>Advantages</h4>
+                        <ul>
+                            <li><strong>Zero cost</strong> - no cloud fees</li>
+                            <li>Full data privacy - stays on your machine</li>
+                            <li>No vendor lock-in</li>
+                            <li>Fast local access</li>
+                            <li>Easy debugging</li>
+                            <li>Direct Binance API calls</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>Disadvantages</h4>
+                        <ul>
+                            <li>Stops when laptop sleeps/closes</li>
+                            <li>Not accessible remotely</li>
+                            <li>No 24/7 uptime</li>
+                            <li>Single point of failure</li>
+                            <li>Manual management</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h4>Option A: macOS launchd (Recommended)</h4>
+                <div class="code-block">
+<span class="comment"># Create plist file</span>
+cat > ~/Library/LaunchAgents/com.btc.datafetch.plist << 'EOF'
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+    &lt;key&gt;Label&lt;/key&gt;
+    &lt;string&gt;com.btc.datafetch&lt;/string&gt;
+    &lt;key&gt;ProgramArguments&lt;/key&gt;
+    &lt;array&gt;
+        &lt;string&gt;/usr/bin/python3&lt;/string&gt;
+        &lt;string&gt;/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/fetch_data.py&lt;/string&gt;
+    &lt;/array&gt;
+    &lt;key&gt;StartInterval&lt;/key&gt;
+    &lt;integer&gt;300&lt;/integer&gt;  <span class="comment">&lt;!-- 300 seconds = 5 minutes --&gt;</span>
+    &lt;key&gt;RunAtLoad&lt;/key&gt;
+    &lt;true/&gt;
+    &lt;key&gt;StandardOutPath&lt;/key&gt;
+    &lt;string&gt;/tmp/btc-fetch.log&lt;/string&gt;
+    &lt;key&gt;StandardErrorPath&lt;/key&gt;
+    &lt;string&gt;/tmp/btc-fetch-error.log&lt;/string&gt;
+    &lt;key&gt;WorkingDirectory&lt;/key&gt;
+    &lt;string&gt;/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+EOF
+
+<span class="comment"># Load the job (starts immediately and on every boot)</span>
+launchctl load ~/Library/LaunchAgents/com.btc.datafetch.plist
+
+<span class="comment"># Check status</span>
+launchctl list | grep btc
+
+<span class="comment"># To stop</span>
+launchctl unload ~/Library/LaunchAgents/com.btc.datafetch.plist
+                </div>
+
+                <h4>Option B: crontab (Mac/Linux)</h4>
+                <div class="code-block">
+<span class="comment"># Edit crontab</span>
+crontab -e
+
+<span class="comment"># Add this line (runs every 5 minutes)</span>
+*/5 * * * * cd /Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data && /usr/bin/python3 fetch_data.py >> /tmp/btc-fetch.log 2>&1
+                </div>
+
+                <h4>Option C: Python Background Daemon</h4>
+                <div class="code-block">
+<span class="comment">#!/usr/bin/env python3</span>
+<span class="comment"># fetch_daemon.py - Run with: python3 fetch_daemon.py</span>
+
+<span class="keyword">import</span> schedule
+<span class="keyword">import</span> time
+<span class="keyword">import</span> subprocess
+<span class="keyword">import</span> logging
+
+logging.basicConfig(level=logging.INFO, format=<span class="string">'%(asctime)s - %(message)s'</span>)
+
+<span class="keyword">def</span> fetch_data():
+    logging.info(<span class="string">"Fetching data from Binance..."</span>)
+    subprocess.run([<span class="string">'python3'</span>, <span class="string">'fetch_data.py'</span>],
+        cwd=<span class="string">'/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data'</span>)
+
+<span class="comment"># Run every 5 minutes</span>
+schedule.every(5).minutes.do(fetch_data)
+fetch_data()  <span class="comment"># Run immediately</span>
+
+<span class="keyword">while</span> True:
+    schedule.run_pending()
+    time.sleep(1)
+                </div>
+
+                <h4>Running the Dashboard</h4>
+                <div class="code-block">
+<span class="comment"># Start Streamlit dashboard (separate terminal)</span>
+cd /Users/kris.zhang/Github/btc-enhanced-streak-mitigation/backtest_15min_new
+streamlit run dashboard_asian_hours.py
+
+<span class="comment"># Access at http://localhost:8501</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning about sleep mode -->
+        <div class="warning-box">
+            <h3>Important: Laptop Sleep/Power Considerations</h3>
+            <p style="margin-top: 1rem;">
+                <strong>All local solutions pause when your laptop sleeps or lid is closed.</strong> To maintain 24/7 data refresh:
+            </p>
+            <ul style="margin: 1rem 0 0 1.5rem;">
+                <li><strong>macOS:</strong> Use <code>caffeinate -i</code> command or install "Amphetamine" app to prevent sleep</li>
+                <li><strong>Windows:</strong> Adjust power settings to "Never sleep when plugged in"</li>
+                <li><strong>Linux:</strong> Use <code>systemd-inhibit</code> or adjust power settings</li>
+                <li><strong>Best solution:</strong> For 24/7 operation, use a Raspberry Pi ($50 one-time) or a VPS ($5/month)</li>
+            </ul>
+        </div>
+
+        <!-- Solution 2: Railway/Render -->
+        <div class="solution-card">
+            <div class="solution-header railway">
+                <div>
+                    <div class="solution-title">Solution 2: Railway / Render (PaaS)</div>
+                    <div class="solution-subtitle">Simple cloud deployment with managed infrastructure - 24/7 uptime</div>
+                </div>
+                <div class="cost-badge">$7-25/month</div>
+            </div>
+            <div class="solution-body">
+                <h3>Architecture Overview</h3>
+                <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Railway / Render Platform                        │
+│                                                                      │
+│  ┌──────────────────────────────────────────────────────────────────┐│
+│  │                   Managed Container Service                      ││
+│  │  ┌─────────────────┐     ┌─────────────────────────────────────┐││
+│  │  │   Cron Job      │────▶│         Streamlit App              │││
+│  │  │  (5-min fetch)  │     │   (2GB RAM, persistent volume)     │││
+│  │  └─────────────────┘     └─────────────────────────────────────┘││
+│  │         │                             │                         ││
+│  │         ▼                             ▼                         ││
+│  │  ┌─────────────────────────────────────────────────────────────┐││
+│  │  │  Auto SSL + Custom Domain + CDN                             │││
+│  │  └─────────────────────────────────────────────────────────────┘││
+│  └──────────────────────────────────────────────────────────────────┘│
+│                                                                      │
+│  API calls go DIRECTLY to Binance (not via GitHub):                 │
+│         │                                                            │
+│         ▼                                                            │
+│    Binance Futures API                                               │
+└─────────────────────────────────────────────────────────────────────┘
+
+GitHub is ONLY used for: code storage + deployment triggers
+(NOT involved in runtime API calls)
+                </div>
+
+                <h3>Cost Breakdown</h3>
+                <div class="cost-breakdown">
+                    <table>
+                        <tr><th>Platform</th><th>Plan</th><th>Monthly Cost</th></tr>
+                        <tr><td>Railway</td><td>Hobby ($5) + usage</td><td>$15-25</td></tr>
+                        <tr><td>Render</td><td>Starter instance</td><td>$7-25</td></tr>
+                        <tr><td>Streamlit Cloud</td><td>Free tier</td><td>$0 (public only)</td></tr>
+                    </table>
+                </div>
+
+                <h3>Setup Complexity</h3>
+                <div class="complexity-meter">
+                    <div class="complexity-bar filled success"></div>
+                    <div class="complexity-bar"></div>
+                    <div class="complexity-bar"></div>
+                    <div class="complexity-bar"></div>
+                    <div class="complexity-bar"></div>
+                    <span style="margin-left: 0.5rem; color: var(--success);">Very Low (1/5)</span>
+                </div>
+
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>Advantages</h4>
+                        <ul>
+                            <li>24/7 uptime</li>
+                            <li>Git push to deploy</li>
+                            <li>Built-in cron jobs</li>
+                            <li>Free SSL certificates</li>
+                            <li>Accessible from anywhere</li>
+                            <li>No DevOps knowledge needed</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>Disadvantages</h4>
+                        <ul>
+                            <li>Monthly cost ($7-25)</li>
+                            <li>Data on third-party servers</li>
+                            <li>Limited customization</li>
+                            <li>Potential cold starts</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h4>Quick Setup</h4>
+                <div class="code-block">
+<span class="comment"># 1. Create Procfile</span>
+web: streamlit run dashboard_asian_hours.py --server.port=$PORT
+
+<span class="comment"># 2. Create railway.toml (for cron)</span>
+[cron]
+schedule = <span class="string">"*/5 * * * *"</span>
+command = <span class="string">"python fetch_data.py"</span>
+
+<span class="comment"># 3. Push to GitHub, connect to Railway/Render</span>
+<span class="comment"># 4. Deploy!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solution 3: Self-Hosted VPS -->
+        <div class="solution-card">
+            <div class="solution-header selfhosted">
+                <div>
+                    <div class="solution-title">Solution 3: Self-Hosted VPS (Hetzner/DigitalOcean)</div>
+                    <div class="solution-subtitle">Full control with maximum cost efficiency - 24/7 uptime</div>
+                </div>
+                <div class="cost-badge">$5-15/month</div>
+            </div>
+            <div class="solution-body">
+                <h3>Cost Breakdown</h3>
+                <div class="cost-breakdown">
+                    <table>
+                        <tr><th>Provider</th><th>Specification</th><th>Monthly Cost</th></tr>
+                        <tr><td><strong>Hetzner</strong> (Recommended)</td><td>CX21 (2 vCPU, 4GB RAM)</td><td><span class="badge badge-green">$5-6</span></td></tr>
+                        <tr><td>Vultr</td><td>Cloud Compute (2GB RAM)</td><td>$10</td></tr>
+                        <tr><td>DigitalOcean</td><td>Droplet (2GB RAM)</td><td>$12</td></tr>
+                        <tr><td>Raspberry Pi</td><td>One-time purchase</td><td>$0 (electricity)</td></tr>
+                    </table>
+                </div>
+
+                <h3>Setup Complexity</h3>
+                <div class="complexity-meter">
+                    <div class="complexity-bar filled warning"></div>
+                    <div class="complexity-bar filled warning"></div>
+                    <div class="complexity-bar filled warning"></div>
+                    <div class="complexity-bar"></div>
+                    <div class="complexity-bar"></div>
+                    <span style="margin-left: 0.5rem; color: var(--warning);">Medium (3/5)</span>
+                </div>
+
+                <div class="pros-cons">
+                    <div class="pros">
+                        <h4>Advantages</h4>
+                        <ul>
+                            <li>Very low cost ($5/month)</li>
+                            <li>24/7 uptime</li>
+                            <li>Full control</li>
+                            <li>Privacy - your server</li>
+                            <li>Can run multiple apps</li>
+                        </ul>
+                    </div>
+                    <div class="cons">
+                        <h4>Disadvantages</h4>
+                        <ul>
+                            <li>Requires Linux knowledge</li>
+                            <li>Manual maintenance</li>
+                            <li>Self-managed security</li>
+                            <li>SSL setup required</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solution 4: AWS/GCP (Enterprise) -->
+        <div class="solution-card">
+            <div class="solution-header aws">
+                <div>
+                    <div class="solution-title">Solution 4: AWS / GCP (Enterprise)</div>
+                    <div class="solution-subtitle">Production-grade cloud infrastructure with high availability</div>
+                </div>
+                <div class="cost-badge">$25-80/month</div>
+            </div>
+            <div class="solution-body">
+                <h3>When to Use</h3>
+                <ul style="margin-left: 1.5rem;">
+                    <li>Team/organization deployment</li>
+                    <li>Need 99.9% SLA guarantees</li>
+                    <li>Compliance requirements</li>
+                    <li>Auto-scaling needed</li>
+                    <li>Already using AWS/GCP</li>
+                </ul>
+
+                <h3>Cost Comparison</h3>
+                <div class="cost-breakdown">
+                    <table>
+                        <tr><th>Platform</th><th>Configuration</th><th>Monthly Cost</th></tr>
+                        <tr><td>GCP Cloud Run</td><td>Serverless container</td><td>$25-50</td></tr>
+                        <tr><td>AWS (EC2 + Lambda)</td><td>Full stack</td><td>$45-80</td></tr>
+                    </table>
+                </div>
+
+                <h3>Setup Complexity</h3>
+                <div class="complexity-meter">
+                    <div class="complexity-bar filled danger"></div>
+                    <div class="complexity-bar filled danger"></div>
+                    <div class="complexity-bar filled danger"></div>
+                    <div class="complexity-bar filled danger"></div>
+                    <div class="complexity-bar"></div>
+                    <span style="margin-left: 0.5rem; color: var(--danger);">High (4/5)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <h2>Solution Comparison Matrix</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Criteria</th>
+                    <th>Local Laptop</th>
+                    <th>Railway/Render</th>
+                    <th>VPS (Hetzner)</th>
+                    <th>AWS/GCP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Monthly Cost</strong></td>
+                    <td><span class="badge badge-green">$0</span></td>
+                    <td><span class="badge badge-green">$7-25</span></td>
+                    <td><span class="badge badge-green">$5-15</span></td>
+                    <td><span class="badge badge-yellow">$25-80</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Setup Time</strong></td>
+                    <td><span class="badge badge-green">15 min</span></td>
+                    <td><span class="badge badge-green">30 min</span></td>
+                    <td><span class="badge badge-yellow">2-4 hours</span></td>
+                    <td><span class="badge badge-red">4-8 hours</span></td>
+                </tr>
+                <tr>
+                    <td><strong>24/7 Uptime</strong></td>
+                    <td><span class="badge badge-red">No</span></td>
+                    <td><span class="badge badge-green">Yes</span></td>
+                    <td><span class="badge badge-green">Yes</span></td>
+                    <td><span class="badge badge-green">Yes</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Remote Access</strong></td>
+                    <td><span class="badge badge-red">No</span></td>
+                    <td><span class="badge badge-green">Yes</span></td>
+                    <td><span class="badge badge-green">Yes</span></td>
+                    <td><span class="badge badge-green">Yes</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Data Privacy</strong></td>
+                    <td><span class="badge badge-green">Full</span></td>
+                    <td><span class="badge badge-yellow">Platform</span></td>
+                    <td><span class="badge badge-green">Your server</span></td>
+                    <td><span class="badge badge-yellow">Cloud</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Maintenance</strong></td>
+                    <td><span class="badge badge-green">Minimal</span></td>
+                    <td><span class="badge badge-green">None</span></td>
+                    <td><span class="badge badge-yellow">Medium</span></td>
+                    <td><span class="badge badge-yellow">Medium</span></td>
+                </tr>
+                <tr>
+                    <td><strong>5-min Cron</strong></td>
+                    <td>launchd/crontab</td>
+                    <td>Built-in</td>
+                    <td>System cron</td>
+                    <td>CloudWatch/Scheduler</td>
+                </tr>
+                <tr>
+                    <td><strong>Best For</strong></td>
+                    <td><span class="badge badge-purple">Personal use</span></td>
+                    <td><span class="badge badge-blue">Most users</span></td>
+                    <td>Tech-savvy</td>
+                    <td>Enterprise</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Recommendation -->
+        <div class="recommendation-box">
+            <h3>Recommendations by Use Case</h3>
+            <table style="width: 100%; margin-top: 1rem; border-collapse: collapse;">
+                <tr style="border-bottom: 1px solid #86efac;">
+                    <td style="padding: 0.75rem;"><strong>Personal use, laptop always on</strong></td>
+                    <td style="padding: 0.75rem;"><strong>Solution 1: Local Laptop</strong> - $0/month, simplest setup</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #86efac;">
+                    <td style="padding: 0.75rem;"><strong>Need 24/7 + remote access</strong></td>
+                    <td style="padding: 0.75rem;"><strong>Solution 2: Railway/Render</strong> - $7-25/month, easiest cloud option</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #86efac;">
+                    <td style="padding: 0.75rem;"><strong>Budget + 24/7 + Linux skills</strong></td>
+                    <td style="padding: 0.75rem;"><strong>Solution 3: Hetzner VPS</strong> - $5/month, best value</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem;"><strong>Enterprise/compliance needs</strong></td>
+                    <td style="padding: 0.75rem;"><strong>Solution 4: GCP/AWS</strong> - $25-80/month, production-grade</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Data Flow Summary -->
+        <h2>Data Flow Summary</h2>
+        <div class="architecture-diagram">
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                           DATA REFRESH PIPELINE                                │
+│                                                                                │
+│   Every 5 Minutes (via scheduler):                                             │
+│   ┌─────────────┐     ┌──────────────┐     ┌────────────────────────────────┐ │
+│   │  Binance    │────▶│  fetch_data  │────▶│  CSV Files (5-min granularity) │ │
+│   │  Futures    │     │  .py script  │     │  - price.csv                   │ │
+│   │  API        │     │              │     │  - top_trader_position_ratio   │ │
+│   └─────────────┘     └──────────────┘     │  - global_ls_ratio             │ │
+│         ▲                                   │  - funding_rate                │ │
+│         │                                   │  - open_interest               │ │
+│    Direct API call                          └────────────────────────────────┘ │
+│    (NOT via GitHub!)                                       │                   │
+│                                                            ▼                   │
+│   On Dashboard Load:                                                           │
+│   ┌────────────────────────────────────────────────────────────────────────┐  │
+│   │  load_15min_data.py → Resample → Merge → Streamlit Dashboard          │  │
+│   └────────────────────────────────────────────────────────────────────────┘  │
+└───────────────────────────────────────────────────────────────────────────────┘
+        </div>
+    </div>
+
+    <footer>
+        <p>BTC Enhanced Strategy Dashboard - Deployment Solutions Report</p>
+        <p>Generated: January 28, 2026 | Data Granularity: 15-minute | API: Binance Futures</p>
+        <p style="margin-top: 0.5rem;">Key insight: GitHub is only for code storage - all API calls go directly from your deployment to Binance</p>
+    </footer>
+</body>
+</html>

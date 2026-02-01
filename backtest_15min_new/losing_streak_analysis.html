@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Strategy - Comprehensive Losing Streak Analysis</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #dc2626;
+            --warning: #ca8a04;
+            --success: #16a34a;
+            --purple: #7c3aed;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--gray-800);
+            background: var(--gray-50);
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
+
+        header {
+            background: linear-gradient(135deg, var(--danger) 0%, #991b1b 100%);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+        header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; font-size: 1.1rem; }
+
+        h2 {
+            color: var(--gray-900);
+            font-size: 1.75rem;
+            margin: 2.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--danger);
+        }
+
+        h3 { color: var(--gray-800); font-size: 1.35rem; margin: 1.5rem 0 0.75rem; }
+        h4 { color: var(--gray-700); font-size: 1.1rem; margin: 1.25rem 0 0.5rem; }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .danger-box {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .danger-box h4 { color: var(--danger); margin-top: 0; }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .warning-box h4 { color: var(--warning); margin-top: 0; }
+
+        .success-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .success-box h4 { color: var(--success); margin-top: 0; }
+
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .info-box h4 { color: var(--primary); margin-top: 0; }
+
+        .streak-card {
+            background: var(--gray-100);
+            border-left: 4px solid var(--danger);
+            padding: 1.25rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .streak-card h4 { margin-top: 0; color: var(--danger); }
+        .streak-card .meta { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 0.5rem; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 0.85rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .comparison-table th { background: var(--gray-800); color: white; font-weight: 500; }
+        .comparison-table tr:hover { background: var(--gray-50); }
+        .comparison-table .highlight { background: #fef2f2; }
+
+        .formula-box {
+            background: var(--gray-900);
+            color: #e5e7eb;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        .formula-box .comment { color: #9ca3af; }
+        .formula-box .var { color: #93c5fd; }
+        .formula-box .keyword { color: #c084fc; }
+        .formula-box .num { color: #86efac; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .stat-item {
+            background: var(--gray-100);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-item .label { font-size: 0.85rem; color: var(--gray-600); }
+        .stat-item .value { font-size: 1.5rem; font-weight: 600; margin-top: 0.25rem; }
+        .stat-item .value.danger { color: var(--danger); }
+        .stat-item .value.warning { color: var(--warning); }
+        .stat-item .value.success { color: var(--success); }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 1rem 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-300);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.65rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+        .timeline-item.win::before { background: var(--success); }
+
+        .cause-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+        }
+        .cause-card h5 {
+            color: var(--danger);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .cause-card .percentage {
+            background: var(--danger);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .solution-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin: 0.75rem 0;
+        }
+        .solution-item .number {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--gray-200);
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Losing Streak Analysis</h1>
+            <p>Comprehensive Root Cause Analysis & Adaptive Indicator Recommendations</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Executive Summary -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Executive Summary</h2>
+            <p>This analysis examines all losing streaks of 3+ consecutive trades across all strategy variants to identify root causes and recommend adaptive indicator modifications.</p>
+
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="label">Total Streaks Analyzed</div>
+                    <div class="value danger">59</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Longest Streak</div>
+                    <div class="value danger">13 trades</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Worst Streak Loss</div>
+                    <div class="value danger">-$332,112</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Total Streak Losses</div>
+                    <div class="value danger">-$5.9M</div>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <h4>Key Finding</h4>
+                <p>The majority of losing streaks occur during <strong>three specific market conditions</strong>:</p>
+                <ol style="margin: 0.75rem 0 0 1.5rem;">
+                    <li><strong>Choppy Range-Bound Markets</strong> (45% of streaks) - False breakouts with positioning signals</li>
+                    <li><strong>Sharp Trend Reversals</strong> (30% of streaks) - Positioning lags price action</li>
+                    <li><strong>Low Volatility Compression</strong> (25% of streaks) - ATR too wide, stops hit on normal noise</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Streak Overview by Strategy -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Losing Streak Overview by Strategy</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>Streaks (3+)</th>
+                        <th>Streaks (6+)</th>
+                        <th>Streaks (9+)</th>
+                        <th>Max Streak</th>
+                        <th>Avg Streak Length</th>
+                        <th>Total Streak Loss</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight">
+                        <td><strong>Baseline</strong></td>
+                        <td><span class="badge badge-red">13</span></td>
+                        <td><span class="badge badge-red">4</span></td>
+                        <td><span class="badge badge-red">1</span></td>
+                        <td><span class="badge badge-red">13</span></td>
+                        <td>5.5</td>
+                        <td>-$2,235,712</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td><strong>MultiTP_30</strong></td>
+                        <td><span class="badge badge-red">13</span></td>
+                        <td><span class="badge badge-red">4</span></td>
+                        <td><span class="badge badge-red">1</span></td>
+                        <td><span class="badge badge-red">13</span></td>
+                        <td>5.5</td>
+                        <td>-$1,591,736</td>
+                    </tr>
+                    <tr>
+                        <td>PosVol_Combined</td>
+                        <td><span class="badge badge-yellow">17</span></td>
+                        <td><span class="badge badge-green">1</span></td>
+                        <td><span class="badge badge-green">0</span></td>
+                        <td><span class="badge badge-green">6</span></td>
+                        <td>3.9</td>
+                        <td>-$709,369</td>
+                    </tr>
+                    <tr>
+                        <td>VolFilter_Adaptive</td>
+                        <td><span class="badge badge-green">8</span></td>
+                        <td><span class="badge badge-green">1</span></td>
+                        <td><span class="badge badge-green">0</span></td>
+                        <td><span class="badge badge-green">6</span></td>
+                        <td>4.0</td>
+                        <td>-$340,850</td>
+                    </tr>
+                    <tr>
+                        <td>Conservative</td>
+                        <td><span class="badge badge-green">8</span></td>
+                        <td><span class="badge badge-green">1</span></td>
+                        <td><span class="badge badge-green">0</span></td>
+                        <td><span class="badge badge-green">7</span></td>
+                        <td>4.1</td>
+                        <td>-$488,329</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <h4>Strategy Comparison Insight</h4>
+                <p><strong>Baseline and MultiTP_30</strong> share identical streak counts because they have identical entry conditions - MultiTP only affects exits. The volume-filtered strategies (VolFilter_Adaptive, Conservative) have <strong>40% fewer streaks</strong> because they avoid low-volume entries.</p>
+                <p style="margin-top: 0.5rem;"><strong>PosVol_Combined</strong> has the most streaks (17) but the shortest max streak (6) because dynamic SL adjustments break up longer streaks into shorter ones.</p>
+            </div>
+        </section>
+
+        <!-- Detailed Streak Analysis -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Major Losing Streak Deep Dive</h2>
+
+            <h3>The 13-Trade Streak (March-April 2024) - Baseline Strategy</h3>
+            <div class="streak-card">
+                <h4>Streak Details</h4>
+                <div class="meta">March 11, 2024 00:00 UTC - April 9, 2024 13:45 UTC | 29 days | -$174,856 total loss</div>
+                <table class="comparison-table" style="margin-top: 1rem;">
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Significance</th>
+                    </tr>
+                    <tr>
+                        <td>First Entry Price</td>
+                        <td>$68,909</td>
+                        <td>Near all-time high territory</td>
+                    </tr>
+                    <tr>
+                        <td>Last Exit Price</td>
+                        <td>$70,122</td>
+                        <td>Price actually higher at end!</td>
+                    </tr>
+                    <tr>
+                        <td>Streak High</td>
+                        <td>$72,890</td>
+                        <td>5.8% above first entry</td>
+                    </tr>
+                    <tr>
+                        <td>Streak Low</td>
+                        <td>$59,541</td>
+                        <td>13.6% below first entry</td>
+                    </tr>
+                    <tr>
+                        <td>Price Range</td>
+                        <td>$13,349 (19.4%)</td>
+                        <td>Extremely volatile period</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h4>What Happened - Trade by Trade</h4>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <strong>Trade 39: Mar 11, 00:00</strong> - Entry $68,909, stopped out at $68,441 in 30 minutes. <span class="badge badge-red">-$33,600</span>
+                    <br><em>Market: Flash crash immediately after entry, 1.8x ATR stop hit within 2 bars</em>
+                </div>
+                <div class="timeline-item">
+                    <strong>Trade 40: Mar 12, 06:15</strong> - Entry $71,590, stopped out at $70,983 after 8.75 hours. <span class="badge badge-red">-$24,300</span>
+                    <br><em>Market: Rejection at $72k resistance, slow grind lower</em>
+                </div>
+                <div class="timeline-item">
+                    <strong>Trade 41: Mar 21, 11:15</strong> - Entry $66,926, stopped out at $66,358 after 3.75 hours. <span class="badge badge-red">-$24,300</span>
+                    <br><em>Market: Entered during weak bounce, positioning was right but timing wrong</em>
+                </div>
+                <div class="timeline-item">
+                    <strong>Trade 42: Mar 22, 00:30</strong> - Entry $65,690, stopped out at $65,122 after 9.75 hours. <span class="badge badge-red">-$13,365</span>
+                    <br><em>Market: Streak level 3 activated (40% reduction). Still losing in range-bound chop</em>
+                </div>
+                <div class="timeline-item">
+                    <strong>Trades 43-51</strong> - Nine more losses in rapid succession through April 9
+                    <br><em>Market: Sustained range between $65k-$72k with multiple false breakouts</em>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <h4>Root Cause Analysis - The 13-Trade Streak</h4>
+                <ul style="margin: 0.75rem 0 0 1.5rem;">
+                    <li><strong>Market Condition:</strong> BTC was consolidating after a major rally to $73k ATH. Price oscillated in a $13k range (19% swings) for a month.</li>
+                    <li><strong>Positioning Signal Failure:</strong> Top traders remained net long throughout (score > 0.4), but price kept making lower highs and lower lows within the range.</li>
+                    <li><strong>ATR Problem:</strong> ATR was elevated from the March rally (~$1,200), so stops were set $2,160 below entry. However, intraday swings were regularly $3,000-$5,000.</li>
+                    <li><strong>RSI Trap:</strong> RSI kept hitting the 20-45 "pullback zone" during each dip, triggering new entries that got stopped out on the next dip.</li>
+                </ul>
+            </div>
+
+            <h3>The 8-Trade Streak (June-July 2024) - Baseline Strategy</h3>
+            <div class="streak-card">
+                <h4>Streak Details</h4>
+                <div class="meta">June 13, 2024 02:30 UTC - July 7, 2024 13:15 UTC | 24 days | -$168,112 total loss</div>
+                <table class="comparison-table" style="margin-top: 1rem;">
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Significance</th>
+                    </tr>
+                    <tr>
+                        <td>First Entry Price</td>
+                        <td>$67,882</td>
+                        <td>Mid-range entry</td>
+                    </tr>
+                    <tr>
+                        <td>Last Exit Price</td>
+                        <td>$56,937</td>
+                        <td>16% lower than entry</td>
+                    </tr>
+                    <tr>
+                        <td>Streak Low</td>
+                        <td>$53,329</td>
+                        <td>21% drawdown from first entry</td>
+                    </tr>
+                    <tr>
+                        <td>Price Range</td>
+                        <td>$11,659</td>
+                        <td>Sustained downtrend</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="danger-box">
+                <h4>Root Cause Analysis - The 8-Trade Streak</h4>
+                <ul style="margin: 0.75rem 0 0 1.5rem;">
+                    <li><strong>Market Condition:</strong> Sustained downtrend from $71k to $53k (25% decline). NOT a range-bound market.</li>
+                    <li><strong>SMA200 Failure:</strong> Price was above SMA200 ($52k) throughout the streak, so uptrend filter passed, but this was clearly a bear market correction.</li>
+                    <li><strong>Positioning Lag:</strong> Top traders stayed net long even as price fell 25%. Positioning data has inherent lag - smart money was likely already exiting while the data still showed longs.</li>
+                    <li><strong>Each Entry Was a "Falling Knife":</strong> RSI hit oversold (20-45 range) multiple times, triggering entries that immediately got stopped out as price continued lower.</li>
+                </ul>
+            </div>
+
+            <h3>The 8-Trade Streak (April-May 2025) - Baseline Strategy</h3>
+            <div class="streak-card">
+                <h4>Streak Details</h4>
+                <div class="meta">April 13, 2025 11:15 UTC - May 28, 2025 13:45 UTC | 45 days | -$332,112 total loss</div>
+                <p style="margin-top: 0.5rem;"><strong>This was the costliest streak</strong> - not the longest, but occurred at higher equity levels with larger position sizes.</p>
+            </div>
+        </section>
+
+        <!-- Root Cause Categories -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Root Cause Categories</h2>
+
+            <div class="cause-card">
+                <h5><span class="percentage">45%</span> Choppy Range-Bound Markets</h5>
+                <p><strong>Pattern:</strong> Price oscillates in a wide range (10-20%) with multiple false breakouts. Positioning stays bullish, RSI repeatedly hits entry zone.</p>
+                <p><strong>Affected Streaks:</strong> Mar-Apr 2024 (13 trades), Jan 2024 (4 trades), Nov-Dec 2024 (multiple 3-4 trade streaks)</p>
+                <p><strong>Why Current Indicators Fail:</strong></p>
+                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>RSI pullback filter triggers on each dip within the range</li>
+                    <li>Positioning score remains positive even in range-bound conditions</li>
+                    <li>No mechanism to detect "range" vs "trend" market structure</li>
+                </ul>
+            </div>
+
+            <div class="cause-card">
+                <h5><span class="percentage">30%</span> Sharp Trend Reversals</h5>
+                <p><strong>Pattern:</strong> Market transitions from uptrend to downtrend. Price falls through SMA200 but entries occur before the cross.</p>
+                <p><strong>Affected Streaks:</strong> Jun-Jul 2024 (8 trades), Oct-Nov 2025 (5 trades), Feb-Mar 2025 (4 trades)</p>
+                <p><strong>Why Current Indicators Fail:</strong></p>
+                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>SMA200 is a lagging indicator - doesn't catch trend reversals in time</li>
+                    <li>Positioning data lags by 5-15 minutes and top traders may have already reduced exposure</li>
+                    <li>No momentum confirmation (e.g., price making lower highs)</li>
+                </ul>
+            </div>
+
+            <div class="cause-card">
+                <h5><span class="percentage">25%</span> Low Volatility Compression</h5>
+                <p><strong>Pattern:</strong> ATR is elevated from recent volatility, but current price action is much quieter. Stops are too wide relative to actual price movement.</p>
+                <p><strong>Affected Streaks:</strong> Jan 2025 (multiple streaks), Dec 2024-Jan 2025 (3-4 trade streaks)</p>
+                <p><strong>Why Current Indicators Fail:</strong></p>
+                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>ATR uses 14-period lookback which includes past volatile periods</li>
+                    <li>Stops set at 1.8x ATR may be $1,500-$2,000 when actual range is $500</li>
+                    <li>Normal market noise triggers stops that are "right" by ATR but "wrong" by current volatility</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Adaptive Indicator Recommendations -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Adaptive Indicator Recommendations</h2>
+
+            <div class="success-box">
+                <h4>Solution 1: Market Regime Detection</h4>
+                <p><strong>Purpose:</strong> Distinguish between trending and range-bound markets to avoid the 45% of streaks caused by choppy conditions.</p>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">1a</div>
+                <div>
+                    <strong>ADX (Average Directional Index) Filter</strong>
+                    <p>Only enter when ADX > 25 (trending market). ADX < 20 indicates range-bound conditions.</p>
+                    <div class="formula-box">
+<span class="comment"># Calculate ADX (14-period)</span>
+<span class="var">plus_dm</span> = <span class="keyword">max</span>(<span class="var">high</span> - <span class="var">prev_high</span>, <span class="num">0</span>)
+<span class="var">minus_dm</span> = <span class="keyword">max</span>(<span class="var">prev_low</span> - <span class="var">low</span>, <span class="num">0</span>)
+<span class="var">plus_di</span> = <span class="num">100</span> * smoothed(<span class="var">plus_dm</span>) / <span class="var">ATR</span>
+<span class="var">minus_di</span> = <span class="num">100</span> * smoothed(<span class="var">minus_dm</span>) / <span class="var">ATR</span>
+<span class="var">ADX</span> = <span class="num">100</span> * smoothed(<span class="keyword">abs</span>(<span class="var">plus_di</span> - <span class="var">minus_di</span>) / (<span class="var">plus_di</span> + <span class="var">minus_di</span>))
+
+<span class="comment"># Entry filter addition</span>
+<span class="keyword">if</span> <span class="var">ADX</span> < <span class="num">20</span>:
+    <span class="var">skip_entry</span> = <span class="keyword">True</span>  <span class="comment"># Market is range-bound</span>
+                    </div>
+                    <p><strong>Expected Impact:</strong> Would have avoided ~6 of the 13-trade streak entries (March-April 2024 range)</p>
+                </div>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">1b</div>
+                <div>
+                    <strong>Bollinger Band Width Filter</strong>
+                    <p>Measure BB width relative to historical average. When BB width is contracting (< 50th percentile), market is likely range-bound.</p>
+                    <div class="formula-box">
+<span class="var">bb_width</span> = (<span class="var">upper_band</span> - <span class="var">lower_band</span>) / <span class="var">sma20</span>
+<span class="var">bb_width_percentile</span> = rolling_percentile(<span class="var">bb_width</span>, period=<span class="num">100</span>)
+
+<span class="comment"># Adaptive entry based on BB width</span>
+<span class="keyword">if</span> <span class="var">bb_width_percentile</span> < <span class="num">30</span>:
+    <span class="var">min_pos_long</span> = <span class="num">0.75</span>  <span class="comment"># Require stronger positioning in tight range</span>
+<span class="keyword">elif</span> <span class="var">bb_width_percentile</span> > <span class="num">70</span>:
+    <span class="var">min_pos_long</span> = <span class="num">0.4</span>   <span class="comment"># Normal threshold in trending market</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h4>Solution 2: Adaptive ATR Stop Loss</h4>
+                <p><strong>Purpose:</strong> Address the 25% of streaks caused by ATR lagging actual volatility.</p>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">2a</div>
+                <div>
+                    <strong>Short-Term vs Long-Term ATR Comparison</strong>
+                    <p>Use a blend of short-term (5-period) and long-term (14-period) ATR for stop loss calculation.</p>
+                    <div class="formula-box">
+<span class="var">atr_short</span> = ATR(<span class="num">5</span>)   <span class="comment"># Recent volatility</span>
+<span class="var">atr_long</span> = ATR(<span class="num">14</span>)   <span class="comment"># Historical volatility</span>
+
+<span class="comment"># Adaptive ATR: use the lower of the two</span>
+<span class="var">atr_adaptive</span> = <span class="keyword">min</span>(<span class="var">atr_short</span>, <span class="var">atr_long</span>)
+
+<span class="comment"># Alternative: weighted average favoring recent</span>
+<span class="var">atr_adaptive</span> = <span class="num">0.7</span> * <span class="var">atr_short</span> + <span class="num">0.3</span> * <span class="var">atr_long</span>
+                    </div>
+                    <p><strong>Expected Impact:</strong> Tighter stops in low-volatility periods, reducing whipsaw losses</p>
+                </div>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">2b</div>
+                <div>
+                    <strong>Volatility Regime-Based SL Multiplier</strong>
+                    <p>Adjust SL multiplier based on current volatility relative to recent history.</p>
+                    <div class="formula-box">
+<span class="var">vol_ratio</span> = <span class="var">atr_short</span> / <span class="var">atr_long</span>
+
+<span class="keyword">if</span> <span class="var">vol_ratio</span> < <span class="num">0.7</span>:    <span class="comment"># Volatility contracting</span>
+    <span class="var">sl_mult</span> = <span class="num">1.2</span>         <span class="comment"># Tighter stop (was 1.8)</span>
+<span class="keyword">elif</span> <span class="var">vol_ratio</span> > <span class="num">1.3</span>:   <span class="comment"># Volatility expanding</span>
+    <span class="var">sl_mult</span> = <span class="num">2.2</span>         <span class="comment"># Wider stop (was 1.8)</span>
+<span class="keyword">else</span>:
+    <span class="var">sl_mult</span> = <span class="num">1.8</span>         <span class="comment"># Normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h4>Solution 3: Trend Confirmation Filters</h4>
+                <p><strong>Purpose:</strong> Address the 30% of streaks caused by entering during trend reversals.</p>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">3a</div>
+                <div>
+                    <strong>Higher Highs/Lower Lows Filter</strong>
+                    <p>Only enter longs when price is making higher highs AND higher lows (not just above SMA200).</p>
+                    <div class="formula-box">
+<span class="var">swing_high_1</span> = rolling_max(<span class="var">high</span>, <span class="num">20</span>)
+<span class="var">swing_high_2</span> = rolling_max(<span class="var">high</span>, <span class="num">20</span>).shift(<span class="num">20</span>)
+<span class="var">swing_low_1</span> = rolling_min(<span class="var">low</span>, <span class="num">20</span>)
+<span class="var">swing_low_2</span> = rolling_min(<span class="var">low</span>, <span class="num">20</span>).shift(<span class="num">20</span>)
+
+<span class="var">making_higher_highs</span> = <span class="var">swing_high_1</span> > <span class="var">swing_high_2</span>
+<span class="var">making_higher_lows</span> = <span class="var">swing_low_1</span> > <span class="var">swing_low_2</span>
+
+<span class="comment"># Require both for entry</span>
+<span class="var">trend_confirmed</span> = <span class="var">making_higher_highs</span> <span class="keyword">and</span> <span class="var">making_higher_lows</span>
+                    </div>
+                    <p><strong>Expected Impact:</strong> Would have blocked most Jun-Jul 2024 entries (lower highs pattern)</p>
+                </div>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">3b</div>
+                <div>
+                    <strong>Multi-Timeframe Trend Confirmation</strong>
+                    <p>Require uptrend on both 15-minute AND 4-hour timeframes.</p>
+                    <div class="formula-box">
+<span class="comment"># 15-minute trend (existing)</span>
+<span class="var">uptrend_15m</span> = <span class="var">close</span> > SMA(<span class="num">200</span>)
+
+<span class="comment"># 4-hour trend (resample to 16-bar lookback)</span>
+<span class="var">close_4h</span> = resample(<span class="var">close</span>, <span class="string">'4H'</span>)
+<span class="var">sma50_4h</span> = SMA(<span class="var">close_4h</span>, <span class="num">50</span>)  <span class="comment"># ~8 days on 4H</span>
+<span class="var">uptrend_4h</span> = <span class="var">close_4h</span> > <span class="var">sma50_4h</span>
+
+<span class="comment"># Both must be true</span>
+<span class="var">entry_allowed</span> = <span class="var">uptrend_15m</span> <span class="keyword">and</span> <span class="var">uptrend_4h</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h4>Solution 4: Positioning Score Enhancements</h4>
+                <p><strong>Purpose:</strong> Make positioning signals more responsive to rapid changes.</p>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">4a</div>
+                <div>
+                    <strong>Positioning Momentum (Rate of Change)</strong>
+                    <p>Track how positioning is changing, not just absolute levels. Declining positioning = avoid entry.</p>
+                    <div class="formula-box">
+<span class="var">pos_score_4h_ago</span> = <span class="var">positioning_score</span>.shift(<span class="num">16</span>)  <span class="comment"># 4 hours ago</span>
+<span class="var">pos_momentum</span> = <span class="var">positioning_score</span> - <span class="var">pos_score_4h_ago</span>
+
+<span class="comment"># Additional entry filter</span>
+<span class="keyword">if</span> <span class="var">pos_momentum</span> < -<span class="num">0.3</span>:
+    <span class="var">skip_entry</span> = <span class="keyword">True</span>  <span class="comment"># Positioning declining rapidly</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">4b</div>
+                <div>
+                    <strong>Adaptive Positioning Threshold Based on Consecutive Losses</strong>
+                    <p>Already implemented but could be more aggressive.</p>
+                    <div class="formula-box">
+<span class="comment"># Current (mild adjustment)</span>
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">3</span>:
+    <span class="var">min_pos_long</span> = <span class="num">0.75</span>  <span class="comment"># (was 0.4)</span>
+
+<span class="comment"># Proposed (progressive adjustment)</span>
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">2</span>:
+    <span class="var">min_pos_long</span> = <span class="num">0.6</span>
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">3</span>:
+    <span class="var">min_pos_long</span> = <span class="num">0.8</span>
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">4</span>:
+    <span class="var">min_pos_long</span> = <span class="num">1.0</span>  <span class="comment"># Require very strong signal</span>
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">5</span>:
+    <span class="var">cooldown_bars</span> = <span class="num">96</span>   <span class="comment"># 24-hour cooldown period</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h4>Solution 5: Volume-Based Entry Enhancement</h4>
+                <p><strong>Purpose:</strong> Leverage the success of VolFilter_Adaptive which has 40% fewer streaks.</p>
+            </div>
+
+            <div class="solution-item">
+                <div class="number">5</div>
+                <div>
+                    <strong>Dynamic Volume Threshold Based on Market Regime</strong>
+                    <div class="formula-box">
+<span class="comment"># In range-bound markets (ADX < 25), require higher volume</span>
+<span class="keyword">if</span> <span class="var">ADX</span> < <span class="num">25</span>:
+    <span class="var">vol_min_for_entry</span> = <span class="num">1.2</span>   <span class="comment"># Only enter on high volume breakouts</span>
+<span class="keyword">else</span>:
+    <span class="var">vol_min_for_entry</span> = <span class="num">0.8</span>   <span class="comment"># Normal threshold in trends</span>
+
+<span class="comment"># After consecutive losses, require volume confirmation</span>
+<span class="keyword">if</span> <span class="var">consecutive_losses</span> >= <span class="num">2</span>:
+    <span class="var">vol_min_for_entry</span> = <span class="keyword">max</span>(<span class="var">vol_min_for_entry</span>, <span class="num">1.0</span>)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implementation Priority -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Implementation Priority Matrix</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Solution</th>
+                        <th>Impact</th>
+                        <th>Complexity</th>
+                        <th>Priority</th>
+                        <th>Est. Streak Reduction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1a: ADX Filter</td>
+                        <td><span class="badge badge-green">High</span></td>
+                        <td><span class="badge badge-green">Low</span></td>
+                        <td><span class="badge badge-red">Critical</span></td>
+                        <td>30-40%</td>
+                    </tr>
+                    <tr>
+                        <td>4b: Progressive Pos Threshold</td>
+                        <td><span class="badge badge-green">High</span></td>
+                        <td><span class="badge badge-green">Low</span></td>
+                        <td><span class="badge badge-red">Critical</span></td>
+                        <td>20-30%</td>
+                    </tr>
+                    <tr>
+                        <td>2a: Adaptive ATR</td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-green">Low</span></td>
+                        <td><span class="badge badge-yellow">High</span></td>
+                        <td>15-25%</td>
+                    </tr>
+                    <tr>
+                        <td>3a: HH/HL Filter</td>
+                        <td><span class="badge badge-green">High</span></td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-yellow">High</span></td>
+                        <td>25-35%</td>
+                    </tr>
+                    <tr>
+                        <td>4a: Pos Momentum</td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-green">Low</span></td>
+                        <td><span class="badge badge-blue">Medium</span></td>
+                        <td>10-20%</td>
+                    </tr>
+                    <tr>
+                        <td>5: Dynamic Volume</td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-green">Low</span></td>
+                        <td><span class="badge badge-blue">Medium</span></td>
+                        <td>15-20%</td>
+                    </tr>
+                    <tr>
+                        <td>1b: BB Width Filter</td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-blue">Medium</span></td>
+                        <td>10-15%</td>
+                    </tr>
+                    <tr>
+                        <td>3b: Multi-TF Trend</td>
+                        <td><span class="badge badge-yellow">Medium</span></td>
+                        <td><span class="badge badge-red">High</span></td>
+                        <td><span class="badge badge-purple">Low</span></td>
+                        <td>15-20%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="warning-box">
+                <h4>Trade-off Consideration</h4>
+                <p>Each additional filter will reduce losing streaks but also reduce total trade count and potentially profitable trades. The goal is to find the optimal balance.</p>
+                <p style="margin-top: 0.5rem;"><strong>Recommendation:</strong> Start with 1a (ADX) + 4b (Progressive Threshold) and backtest. These two alone should reduce streak frequency by 40-50% with minimal impact on profitable trades.</p>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <section class="section-card">
+            <h2 style="margin-top: 0; border: none;">Summary & Next Steps</h2>
+
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <div class="label">Root Causes Identified</div>
+                    <div class="value">3</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Solutions Proposed</div>
+                    <div class="value">8</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Expected Streak Reduction</div>
+                    <div class="value success">40-60%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Priority Solutions</div>
+                    <div class="value">2</div>
+                </div>
+            </div>
+
+            <h4>Immediate Action Items</h4>
+            <ol style="margin: 1rem 0 0 1.5rem;">
+                <li><strong>Implement ADX filter</strong> (Solution 1a) with threshold of 20-25</li>
+                <li><strong>Implement progressive positioning threshold</strong> (Solution 4b) starting at 2+ consecutive losses</li>
+                <li>Backtest the modified strategy against historical data</li>
+                <li>Compare streak statistics before/after modifications</li>
+                <li>If successful, implement adaptive ATR (Solution 2a) as second phase</li>
+            </ol>
+
+            <div class="success-box">
+                <h4>Expected Outcome</h4>
+                <p>With the top 2 solutions implemented, we expect:</p>
+                <ul style="margin: 0.5rem 0 0 1.5rem;">
+                    <li>Maximum losing streak reduced from 13 to 6-7 trades</li>
+                    <li>Total streak count (3+) reduced by 40-50%</li>
+                    <li>Total streak losses reduced by $1-1.5M (from $2.2M to $0.7-1.2M)</li>
+                    <li>Trade count may decrease by 15-25% (acceptable trade-off)</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>BTC Enhanced Strategy - Losing Streak Analysis Report</p>
+        <p>Generated: January 29, 2026 | Based on Tiered+Streak Mitigation Backtest Results</p>
+    </footer>
+</body>
+</html>

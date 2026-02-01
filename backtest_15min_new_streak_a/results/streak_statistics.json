@@ -1,0 +1,47 @@
+{
+  "Adaptive_Baseline": {
+    "total_streaks_3plus": 4,
+    "total_streaks_6plus": 1,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 4.75,
+    "max_streak_length": 7,
+    "avg_streak_loss": -55332.9375,
+    "total_streak_loss": -221331.75
+  },
+  "Adaptive_Conservative": {
+    "total_streaks_3plus": 4,
+    "total_streaks_6plus": 0,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 4.0,
+    "max_streak_length": 5,
+    "avg_streak_loss": -30482.0,
+    "total_streak_loss": -121928.0
+  },
+  "Adaptive_ADX_Only": {
+    "total_streaks_3plus": 5,
+    "total_streaks_6plus": 3,
+    "total_streaks_9plus": 1,
+    "avg_streak_length": 6.2,
+    "max_streak_length": 9,
+    "avg_streak_loss": -44932.35,
+    "total_streak_loss": -224661.75
+  },
+  "Adaptive_ProgPos_Only": {
+    "total_streaks_3plus": 8,
+    "total_streaks_6plus": 0,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 4.125,
+    "max_streak_length": 5,
+    "avg_streak_loss": -133040.9375,
+    "total_streak_loss": -1064327.5
+  },
+  "Sequential_Regime": {
+    "total_streaks_3plus": 0,
+    "total_streaks_6plus": 0,
+    "total_streaks_9plus": 0,
+    "avg_streak_length": 0,
+    "max_streak_length": 0,
+    "avg_streak_loss": 0,
+    "total_streak_loss": 0
+  }
+}
