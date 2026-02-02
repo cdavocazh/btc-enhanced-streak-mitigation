@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.btc.datarefresh</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/launchd_refresh.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data</string>
+
+    <!-- Run every 5 minutes -->
+    <key>StartInterval</key>
+    <integer>300</integer>
+
+    <!-- Also run at load time -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Standard output log -->
+    <key>StandardOutPath</key>
+    <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd.log</string>
+
+    <!-- Standard error log -->
+    <key>StandardErrorPath</key>
+    <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd_error.log</string>
+
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/anaconda3/bin:/Users/kris.zhang/mambaforge/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/kris.zhang</string>
+    </dict>
+
+    <!-- Keep alive - restart if it crashes -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <!-- Throttle interval (minimum seconds between starts) -->
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+
+    <!-- Nice value (lower priority) -->
+    <key>Nice</key>
+    <integer>10</integer>
+</dict>
+</plist>

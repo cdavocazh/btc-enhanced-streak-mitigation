@@ -272,6 +272,176 @@ def get_last_timestamp(filepath):
 
 
 # ============================================================
+# CSV VALIDATION & AUTO-FIX
+# ============================================================
+
+def validate_and_fix_csv(filepath):
+    """
+    Validate CSV file for data integrity issues and auto-fix them.
+
+    Checks for:
+    1. Empty files (no header or data)
+    2. Malformed timestamps (e.g., "1-03" instead of "2026-01-03")
+    3. Duplicate rows
+    4. Out-of-order timestamps
+
+    Returns:
+        dict: {"valid": bool, "fixed": bool, "issues": list, "rows_removed": int}
+    """
+    result = {"valid": True, "fixed": False, "issues": [], "rows_removed": 0}
+
+    if not os.path.exists(filepath):
+        return result  # File doesn't exist, nothing to validate
+
+    try:
+        # Check if file is empty or has no header
+        with open(filepath, 'r') as f:
+            first_line = f.readline().strip()
+            if not first_line:
+                result["valid"] = False
+                result["issues"].append("Empty file")
+                return result
+            if 'timestamp' not in first_line.lower():
+                result["valid"] = False
+                result["issues"].append("Missing header or 'timestamp' column")
+                return result
+
+        # Read the file
+        df = pd.read_csv(filepath)
+        original_len = len(df)
+
+        if len(df) == 0:
+            result["valid"] = True  # Empty but has header is OK
+            return result
+
+        # Check for malformed timestamps
+        # Valid format: YYYY-MM-DD HH:MM:SS+00:00 or similar
+        # Invalid: 1-03 23:45:00+00:00 (missing year)
+        import re
+        malformed_mask = df['timestamp'].astype(str).str.match(r'^[0-9]{1,2}-[0-9]{1,2}\s')
+        malformed_count = malformed_mask.sum()
+
+        if malformed_count > 0:
+            result["issues"].append(f"Found {malformed_count} malformed timestamps")
+
+            # Try to fix malformed timestamps
+            # Pattern: "1-03 23:45:00+00:00" should become "2026-01-03 23:45:00+00:00"
+            # We'll infer the year from surrounding valid timestamps
+
+            # Get the most common year from valid timestamps
+            valid_timestamps = df[~malformed_mask]['timestamp'].astype(str)
+            if len(valid_timestamps) > 0:
+                years = valid_timestamps.str.extract(r'^(\d{4})-')[0]
+                most_common_year = years.mode().iloc[0] if len(years.mode()) > 0 else "2026"
+
+                # Fix malformed timestamps
+                def fix_timestamp(ts):
+                    ts_str = str(ts)
+                    if pd.isna(ts) or ts_str == 'nan':
+                        return ts
+                    # Check if it matches the malformed pattern
+                    match = re.match(r'^([0-9]{1,2})-([0-9]{1,2})\s(.+)$', ts_str)
+                    if match:
+                        month, day, rest = match.groups()
+                        fixed = f"{most_common_year}-{month.zfill(2)}-{day.zfill(2)} {rest}"
+                        return fixed
+                    return ts_str
+
+                df['timestamp'] = df['timestamp'].apply(fix_timestamp)
+                result["fixed"] = True
+                log(f"  Auto-fixed {malformed_count} malformed timestamps in {os.path.basename(filepath)}")
+
+        # Try to parse all timestamps to validate
+        try:
+            df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True)
+        except Exception as e:
+            # If parsing fails, try to identify and remove bad rows
+            result["issues"].append(f"Timestamp parsing error: {e}")
+
+            # Parse row by row, keeping only valid ones
+            valid_rows = []
+            for idx, row in df.iterrows():
+                try:
+                    pd.to_datetime(row['timestamp'], format='mixed', utc=True)
+                    valid_rows.append(idx)
+                except:
+                    pass
+
+            if len(valid_rows) < len(df):
+                removed = len(df) - len(valid_rows)
+                df = df.loc[valid_rows]
+                result["rows_removed"] += removed
+                result["fixed"] = True
+                result["issues"].append(f"Removed {removed} rows with unparseable timestamps")
+                log(f"  Removed {removed} invalid rows from {os.path.basename(filepath)}")
+
+            # Try parsing again
+            df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True)
+
+        # Remove duplicates
+        before_dedup = len(df)
+        df = df.drop_duplicates(subset=['timestamp'], keep='last')
+        duplicates_removed = before_dedup - len(df)
+        if duplicates_removed > 0:
+            result["issues"].append(f"Removed {duplicates_removed} duplicate rows")
+            result["rows_removed"] += duplicates_removed
+            result["fixed"] = True
+
+        # Sort by timestamp
+        df = df.sort_values('timestamp')
+
+        # Save if any fixes were made
+        if result["fixed"]:
+            # Convert timestamp back to string format for CSV
+            df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S+00:00')
+            df.to_csv(filepath, index=False)
+            log(f"  Saved cleaned data to {os.path.basename(filepath)} ({len(df)} rows)")
+
+        result["valid"] = True
+        result["rows_removed"] = original_len - len(df)
+
+    except pd.errors.EmptyDataError:
+        result["valid"] = False
+        result["issues"].append("File is empty or has no parseable data")
+    except Exception as e:
+        result["valid"] = False
+        result["issues"].append(f"Validation error: {str(e)}")
+
+    return result
+
+
+def validate_all_csv_files():
+    """
+    Validate all CSV files in the data directory.
+
+    Returns:
+        dict: Summary of validation results for each file
+    """
+    log("Validating CSV files...")
+    results = {}
+
+    for metric_name, filepath in FILES.items():
+        if os.path.exists(filepath):
+            result = validate_and_fix_csv(filepath)
+            results[filepath] = result
+
+            if result["issues"]:
+                status = "FIXED" if result["fixed"] else "ISSUES"
+                log(f"  {os.path.basename(filepath)}: {status} - {', '.join(result['issues'])}")
+
+    # Summary
+    fixed_count = sum(1 for r in results.values() if r.get("fixed"))
+    issue_count = sum(1 for r in results.values() if r.get("issues"))
+
+    if fixed_count > 0:
+        log(f"Auto-fixed {fixed_count} files")
+    if issue_count == 0:
+        log("All CSV files validated successfully")
+
+    return results
+
+
+# ============================================================
 # CSV OPERATIONS
 # ============================================================
 
@@ -281,6 +451,11 @@ def append_to_csv(filepath, df):
         return 0
 
     if os.path.exists(filepath):
+        # Validate and fix existing CSV before reading
+        validation = validate_and_fix_csv(filepath)
+        if not validation["valid"]:
+            log(f"  Warning: Could not validate {os.path.basename(filepath)}: {validation['issues']}")
+
         existing = pd.read_csv(filepath)
         existing['timestamp'] = pd.to_datetime(existing['timestamp'], format='mixed', utc=True)
         df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', utc=True)
@@ -487,8 +662,9 @@ def extract_metric_data(metric_name, api_log, start_time_ms=None, end_time_ms=No
     current_start_ts = start_time_ms
     consecutive_errors = 0
     consecutive_empty = 0
+    consecutive_no_new = 0  # Track when no NEW rows are added
     MAX_CONSECUTIVE_ERRORS = 5
-    MAX_CONSECUTIVE_EMPTY = 3
+    MAX_CONSECUTIVE_EMPTY = 2  # Stop after 2 empty/no-new-data responses
 
     # Determine max requests
     if max_requests is None:
@@ -539,11 +715,15 @@ def extract_metric_data(metric_name, api_log, start_time_ms=None, end_time_ms=No
             time.sleep(0.05)
             continue
 
-        consecutive_empty = 0
-
         # Save data
         new_rows = append_to_csv(filepath, df)
         result["rows_added"] += new_rows
+
+        # Check if we're getting duplicate data (no new rows added)
+        if new_rows == 0:
+            consecutive_empty += 1
+        else:
+            consecutive_empty = 0
 
         # Get the newest timestamp from this batch
         newest_ts = int(df['timestamp'].max().timestamp() * 1000)

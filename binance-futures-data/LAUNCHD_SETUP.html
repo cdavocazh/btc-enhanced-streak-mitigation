@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaunchD Setup - BTC Data Refresh</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #e94560;
+            --accent-secondary: #0f4c75;
+            --success: #00d26a;
+            --warning: #ffc107;
+            --code-bg: #0d1117;
+            --border: #30475e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: var(--success);
+            margin-top: 25px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header .step {
+            background: var(--accent);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        pre {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+        }
+
+        code {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--success);
+        }
+
+        .inline-code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .note {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .note-title {
+            color: var(--warning);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .success-box {
+            background: rgba(0, 210, 106, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .error-box {
+            background: rgba(233, 69, 96, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--accent);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .file-tree {
+            font-family: monospace;
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 40px 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LaunchD Setup Guide - BTC Data Refresh</h1>
+
+        <p>This guide explains how to set up automatic data refresh for Binance Futures data using macOS LaunchD. The system will automatically fetch new data every 5 minutes and fix any data corruption errors.</p>
+
+        <h2>Overview</h2>
+
+        <div class="card">
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Automatic Updates:</strong> Runs every 5 minutes via LaunchD</li>
+                <li><strong>Auto-Recovery:</strong> Validates and fixes corrupted CSV files before each run</li>
+                <li><strong>Append-Only:</strong> Never deletes existing data, only appends new data</li>
+                <li><strong>Rate Limit Aware:</strong> Respects Binance API rate limits (900 requests/5min)</li>
+                <li><strong>Detailed Logging:</strong> Separate logs for stdout and stderr</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>File Structure</h3>
+            <div class="file-tree">binance-futures-data/
+├── extract_binance_data.py    # Main extraction logic
+├── refresh_data.py            # Refresh script (quick/full modes)
+├── launchd_refresh.sh         # Shell wrapper for LaunchD
+├── com.btc.datarefresh.plist  # LaunchD configuration
+├── logs/
+│   ├── launchd.log            # Standard output log
+│   └── launchd_error.log      # Error log
+└── data/
+    ├── price.csv
+    ├── top_trader_position_ratio.csv
+    ├── top_trader_account_ratio.csv
+    ├── global_ls_ratio.csv
+    ├── open_interest.csv
+    ├── funding_rate.csv
+    └── last_timestamps.json</div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Installation Steps</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="step">1</span>
+                <h3 style="margin: 0;">Update Python Path</h3>
+            </div>
+            <p>Edit <code class="inline-code">launchd_refresh.sh</code> to update the Python path if needed:</p>
+            <pre><code># Find your Python path
+which python3
+
+# Edit the script
+nano launchd_refresh.sh
+
+# Update this line with your Python path:
+PYTHON_PATH="/Users/kris.zhang/mambaforge/bin/python3"</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="step">2</span>
+                <h3 style="margin: 0;">Make Script Executable</h3>
+            </div>
+            <pre><code>chmod +x launchd_refresh.sh</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="step">3</span>
+                <h3 style="margin: 0;">Create Logs Directory</h3>
+            </div>
+            <pre><code>mkdir -p logs</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="step">4</span>
+                <h3 style="margin: 0;">Update Plist Paths</h3>
+            </div>
+            <p>Edit <code class="inline-code">com.btc.datarefresh.plist</code> to update paths if your username or directory is different:</p>
+            <pre><code># Edit the plist file
+nano com.btc.datarefresh.plist
+
+# Update these paths:
+# - ProgramArguments (path to launchd_refresh.sh)
+# - WorkingDirectory (path to binance-futures-data)
+# - StandardOutPath (path to launchd.log)
+# - StandardErrorPath (path to launchd_error.log)
+# - PATH in EnvironmentVariables</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="step">5</span>
+                <h3 style="margin: 0;">Copy Plist to LaunchAgents</h3>
+            </div>
+            <pre><code>cp com.btc.datarefresh.plist ~/Library/LaunchAgents/</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="step">6</span>
+                <h3 style="margin: 0;">Load the LaunchD Agent</h3>
+            </div>
+            <pre><code>launchctl load ~/Library/LaunchAgents/com.btc.datarefresh.plist</code></pre>
+            <div class="success-box">
+                <strong>Success!</strong> The data refresh will now run automatically every 5 minutes.
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Management Commands</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Command</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Load (start) the agent</td>
+                    <td><code>launchctl load ~/Library/LaunchAgents/com.btc.datarefresh.plist</code></td>
+                </tr>
+                <tr>
+                    <td>Unload (stop) the agent</td>
+                    <td><code>launchctl unload ~/Library/LaunchAgents/com.btc.datarefresh.plist</code></td>
+                </tr>
+                <tr>
+                    <td>Check if running</td>
+                    <td><code>launchctl list | grep btc</code></td>
+                </tr>
+                <tr>
+                    <td>Force run now</td>
+                    <td><code>launchctl start com.btc.datarefresh</code></td>
+                </tr>
+                <tr>
+                    <td>View stdout log</td>
+                    <td><code>tail -f logs/launchd.log</code></td>
+                </tr>
+                <tr>
+                    <td>View error log</td>
+                    <td><code>tail -f logs/launchd_error.log</code></td>
+                </tr>
+                <tr>
+                    <td>Manual refresh</td>
+                    <td><code>python refresh_data.py</code></td>
+                </tr>
+                <tr>
+                    <td>Full refresh with gaps</td>
+                    <td><code>python refresh_data.py --full</code></td>
+                </tr>
+                <tr>
+                    <td>Show data status</td>
+                    <td><code>python refresh_data.py --status</code></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr class="section-divider">
+
+        <h2>Auto-Recovery Features</h2>
+
+        <div class="card">
+            <h3>CSV Validation & Auto-Fix</h3>
+            <p>The system automatically detects and fixes common data issues:</p>
+            <ul>
+                <li><strong>Empty Files:</strong> Detected and skipped to prevent crashes</li>
+                <li><strong>Malformed Timestamps:</strong> Patterns like "1-03 23:45:00+00:00" are fixed to "2026-01-03 23:45:00+00:00"</li>
+                <li><strong>Duplicate Rows:</strong> Automatically removed, keeping the latest version</li>
+                <li><strong>Unparseable Rows:</strong> Invalid rows are removed to maintain data integrity</li>
+                <li><strong>Out-of-Order Data:</strong> Data is sorted by timestamp after each operation</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Error Recovery Flow</h3>
+            <ol>
+                <li>LaunchD triggers <code class="inline-code">launchd_refresh.sh</code> every 5 minutes</li>
+                <li>Shell script calls <code class="inline-code">refresh_data.py</code></li>
+                <li><code class="inline-code">validate_all_csv_files()</code> is called before any data extraction</li>
+                <li>Any corrupted files are automatically fixed</li>
+                <li>Data extraction proceeds normally</li>
+                <li>Next run will work even if previous run crashed</li>
+            </ol>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Log File Examples</h2>
+
+        <div class="card">
+            <h3>Normal Operation (launchd.log)</h3>
+            <pre><code>==========================================
+Data Refresh Started: 2026-02-02 00:30:00
+==========================================
+Using Python: /Users/kris.zhang/mambaforge/bin/python3
+[2026-02-01 16:30:00 UTC] ============================================================
+[2026-02-01 16:30:00 UTC] QUICK DATA REFRESH
+[2026-02-01 16:30:00 UTC] Time: 2026-02-01 16:30:00 UTC
+[2026-02-01 16:30:00 UTC] ============================================================
+[2026-02-01 16:30:00 UTC] Validating CSV files...
+[2026-02-01 16:30:00 UTC] All CSV files validated successfully
+[2026-02-01 16:30:00 UTC] API calls available: 850/900
+[2026-02-01 16:30:00 UTC] price: Last update 4.8 min ago
+[2026-02-01 16:30:01 UTC]   Added 1 rows (2 API calls) | Updated to: 2026-02-02 00:30:00 GMT+8
+...
+[2026-02-01 16:30:15 UTC] Total: 6 rows added, 24 API calls
+[2026-02-01 16:30:15 UTC] API usage: 876/900
+[2026-02-01 16:30:15 UTC] ============================================================
+Data refresh completed successfully
+Data Refresh Ended: 2026-02-02 00:30:15
+==========================================</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Auto-Fix Example (launchd.log)</h3>
+            <pre><code>[2026-02-01 16:30:00 UTC] Validating CSV files...
+[2026-02-01 16:30:00 UTC]   Auto-fixed 5 malformed timestamps in global_ls_ratio.csv
+[2026-02-01 16:30:00 UTC]   Saved cleaned data to global_ls_ratio.csv (12500 rows)
+[2026-02-01 16:30:00 UTC]   top_trader_position_ratio.csv: FIXED - Found 3 malformed timestamps
+[2026-02-01 16:30:00 UTC] Auto-fixed 2 files</code></pre>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Troubleshooting</h2>
+
+        <div class="error-box">
+            <h3>LaunchD Not Running</h3>
+            <pre><code># Check status
+launchctl list | grep btc
+
+# If not listed, reload:
+launchctl unload ~/Library/LaunchAgents/com.btc.datarefresh.plist
+launchctl load ~/Library/LaunchAgents/com.btc.datarefresh.plist</code></pre>
+        </div>
+
+        <div class="error-box">
+            <h3>Python Not Found</h3>
+            <pre><code># Find your Python path
+which python3
+
+# Update launchd_refresh.sh with the correct path
+# Also update PATH in com.btc.datarefresh.plist</code></pre>
+        </div>
+
+        <div class="error-box">
+            <h3>Permission Denied</h3>
+            <pre><code># Make script executable
+chmod +x launchd_refresh.sh
+
+# Check file permissions
+ls -la launchd_refresh.sh</code></pre>
+        </div>
+
+        <div class="error-box">
+            <h3>No Log Output</h3>
+            <pre><code># Check if logs directory exists
+mkdir -p logs
+
+# Check log file permissions
+ls -la logs/
+
+# Run manually to test
+./launchd_refresh.sh</code></pre>
+        </div>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            <p>LaunchD agents only run when the user is logged in. For running 24/7 (even when logged out), use a LaunchDaemon instead (requires root privileges and different plist location).</p>
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Data Metrics Collected</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Update Frequency</th>
+                    <th>API Limit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Price (OHLC)</td>
+                    <td>5 minutes</td>
+                    <td>2+ years history</td>
+                </tr>
+                <tr>
+                    <td>Top Trader Position Ratio</td>
+                    <td>5 minutes</td>
+                    <td>30 days</td>
+                </tr>
+                <tr>
+                    <td>Top Trader Account Ratio</td>
+                    <td>5 minutes</td>
+                    <td>30 days</td>
+                </tr>
+                <tr>
+                    <td>Global Long/Short Ratio</td>
+                    <td>5 minutes</td>
+                    <td>30 days</td>
+                </tr>
+                <tr>
+                    <td>Open Interest</td>
+                    <td>5 minutes</td>
+                    <td>30 days</td>
+                </tr>
+                <tr>
+                    <td>Funding Rate</td>
+                    <td>8 hours</td>
+                    <td>Unlimited</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <footer>
+            <p>BTC Enhanced Strategy - Data Refresh System</p>
+            <p>Generated: <script>document.write(new Date().toISOString().split('T')[0])</script></p>
+        </footer>
+    </div>
+</body>
+</html>

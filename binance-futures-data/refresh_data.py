@@ -33,7 +33,8 @@ from extract_binance_data import (
     log, ensure_data_dir, load_api_log, save_api_log,
     get_api_call_counts, can_make_api_call,
     get_data_coverage, extract_metric_data, FILES,
-    EFFECTIVE_RATE_LIMIT, DATA_DIR
+    EFFECTIVE_RATE_LIMIT, DATA_DIR,
+    validate_all_csv_files, validate_and_fix_csv
 )
 
 # Timezone for display (GMT+8)
@@ -86,6 +87,10 @@ def quick_refresh():
     log("=" * 60)
 
     ensure_data_dir()
+
+    # Validate and auto-fix any corrupted CSV files before processing
+    validate_all_csv_files()
+
     api_log = load_api_log()
 
     # Check current API usage
@@ -180,6 +185,11 @@ def full_refresh(max_duration_minutes=20):
     log("FULL DATA REFRESH (with gap filling)")
     log(f"Max duration: {max_duration_minutes} minutes")
     log("=" * 60)
+
+    ensure_data_dir()
+
+    # Validate and auto-fix any corrupted CSV files before processing
+    validate_all_csv_files()
 
     # Use the incremental fetch from extract_binance_data
     from extract_binance_data import fetch_incremental
