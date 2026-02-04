@@ -150,3 +150,11 @@ The data extraction includes auto-fix for:
 - Binance: 900 requests per 5 minutes
 - Script uses 10% safety margin (810 effective limit)
 - Normal refresh: 10-16 API calls per cycle (~15-20 seconds)
+
+## Coding Standards
+
+### Streamlit
+- **IMPORTANT**: `use_container_width` is deprecated and will be removed after 2025-12-31
+- Use `width='stretch'` instead of `use_container_width=True`
+- Use `width='content'` instead of `use_container_width=False`
+- Example: `st.plotly_chart(fig, width='stretch')`
