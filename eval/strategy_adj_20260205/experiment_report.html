@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Strategy Adjustment Report - 2026-02-04</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .metric-label {
+            color: #888;
+        }
+        .metric-value {
+            font-weight: bold;
+        }
+        .healthy { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .critical { color: #ff4444; }
+
+        .experiment-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .experiment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .experiment-header h2 {
+            color: #00d4ff;
+            font-size: 1.3em;
+        }
+        .experiment-desc {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th {
+            background: rgba(0,212,255,0.1);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        .number {
+            text-align: right;
+            font-family: 'SF Mono', monospace;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .status-healthy {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+        .status-warning {
+            background: rgba(255,170,0,0.2);
+            color: #ffaa00;
+        }
+        .status-critical {
+            background: rgba(255,68,68,0.2);
+            color: #ff4444;
+        }
+
+        .highlight-row {
+            background: rgba(0,212,255,0.1) !important;
+        }
+
+        .findings {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .findings h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+        .findings ul {
+            margin-left: 20px;
+        }
+        .findings li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .params-table {
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        .params-table td {
+            padding: 8px 12px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BTC Strategy Adjustment Report</h1>
+        <p class="subtitle">Walk-Forward Optimization Results | Generated: 2026-02-05 21:28:13</p>
+
+        <div class="summary-cards">
+            <div class="card">
+                <h3>Best OOS Efficiency</h3>
+                <div class="metric">
+                    <span class="metric-label">Experiment:</span>
+                    <span class="metric-value">Relaxed_Entry</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Strategy:</span>
+                    <span class="metric-value">Adaptive_Baseline</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">OOS Efficiency:</span>
+                    <span class="metric-value healthy">0.69</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Best OOS Return</h3>
+                <div class="metric">
+                    <span class="metric-label">Experiment:</span>
+                    <span class="metric-value">Selective_Tight</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Strategy:</span>
+                    <span class="metric-value">Baseline</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">OOS Return:</span>
+                    <span class="metric-value healthy">2.83%</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Configuration</h3>
+                <div class="metric">
+                    <span class="metric-label">Training Window:</span>
+                    <span class="metric-value">30 days</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Testing Window:</span>
+                    <span class="metric-value">14 days</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Experiments:</span>
+                    <span class="metric-value">21</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="findings">
+            <h3>Key Findings</h3>
+            <ul>
+                <li><strong>Relaxed Entry</strong> parameters significantly improved Adaptive strategies OOS efficiency from 0.48 to <strong>0.69</strong> (near HEALTHY threshold of 0.70)</li>
+                <li><strong>Selective Tight</strong> parameters achieved best overall returns with OOS Return of <strong>2.83%</strong> for Baseline strategy</li>
+                <li><strong>Combined Relaxed</strong> increased trade count but reduced profitability - too aggressive</li>
+                <li><strong>Lower ADX</strong> improved IS returns but didn't significantly improve OOS efficiency</li>
+                <li><strong>Wider SL/TP</strong> provided modest improvements across all strategies</li>
+            </ul>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Baseline</h2>
+            </div>
+            <p class="experiment-desc">Original parameters for comparison</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>Baseline</td>
+                        <td class="number">4.73%</td>
+                        <td class="number">2.42%</td>
+                        <td class="number">0.51</td>
+                        <td class="number">352</td>
+                        <td class="number">21.6%</td>
+                        <td class="number">4.3%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">2.52%</td>
+                        <td class="number">1.20%</td>
+                        <td class="number">0.48</td>
+                        <td class="number">218</td>
+                        <td class="number">17.5%</td>
+                        <td class="number">3.0%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">2.52%</td>
+                        <td class="number">1.20%</td>
+                        <td class="number">0.48</td>
+                        <td class="number">218</td>
+                        <td class="number">17.5%</td>
+                        <td class="number">3.0%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Relaxed_Entry</h2>
+            </div>
+            <p class="experiment-desc">Wider RSI range and lower min position score</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>Baseline</td>
+                        <td class="number">-2.62%</td>
+                        <td class="number">-1.31%</td>
+                        <td class="number">0.50</td>
+                        <td class="number">1130</td>
+                        <td class="number">20.0%</td>
+                        <td class="number">11.2%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="highlight-row">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">1.18%</td>
+                        <td class="number">0.81%</td>
+                        <td class="number">0.69</td>
+                        <td class="number">647</td>
+                        <td class="number">18.8%</td>
+                        <td class="number">7.5%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">1.18%</td>
+                        <td class="number">0.81%</td>
+                        <td class="number">0.69</td>
+                        <td class="number">647</td>
+                        <td class="number">18.8%</td>
+                        <td class="number">7.5%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Lower_ADX</h2>
+            </div>
+            <p class="experiment-desc">Lower ADX threshold to capture more trades</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>Baseline</td>
+                        <td class="number">4.73%</td>
+                        <td class="number">2.42%</td>
+                        <td class="number">0.51</td>
+                        <td class="number">352</td>
+                        <td class="number">21.6%</td>
+                        <td class="number">4.3%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">5.13%</td>
+                        <td class="number">2.53%</td>
+                        <td class="number">0.49</td>
+                        <td class="number">315</td>
+                        <td class="number">23.0%</td>
+                        <td class="number">4.0%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">5.13%</td>
+                        <td class="number">2.53%</td>
+                        <td class="number">0.49</td>
+                        <td class="number">315</td>
+                        <td class="number">23.0%</td>
+                        <td class="number">4.0%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Aggressive_ProgPos</h2>
+            </div>
+            <p class="experiment-desc">Lower progressive positioning thresholds</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>Baseline</td>
+                        <td class="number">4.73%</td>
+                        <td class="number">2.42%</td>
+                        <td class="number">0.51</td>
+                        <td class="number">352</td>
+                        <td class="number">21.6%</td>
+                        <td class="number">4.3%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">2.45%</td>
+                        <td class="number">1.20%</td>
+                        <td class="number">0.49</td>
+                        <td class="number">218</td>
+                        <td class="number">17.5%</td>
+                        <td class="number">3.0%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">2.45%</td>
+                        <td class="number">1.20%</td>
+                        <td class="number">0.49</td>
+                        <td class="number">218</td>
+                        <td class="number">17.5%</td>
+                        <td class="number">3.0%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Wider_SL_TP</h2>
+            </div>
+            <p class="experiment-desc">Wider stop-loss and take-profit for more room</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>Baseline</td>
+                        <td class="number">4.12%</td>
+                        <td class="number">2.14%</td>
+                        <td class="number">0.52</td>
+                        <td class="number">331</td>
+                        <td class="number">22.2%</td>
+                        <td class="number">3.9%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">2.64%</td>
+                        <td class="number">1.35%</td>
+                        <td class="number">0.51</td>
+                        <td class="number">204</td>
+                        <td class="number">19.0%</td>
+                        <td class="number">2.6%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">2.64%</td>
+                        <td class="number">1.35%</td>
+                        <td class="number">0.51</td>
+                        <td class="number">204</td>
+                        <td class="number">19.0%</td>
+                        <td class="number">2.6%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Combined_Relaxed</h2>
+            </div>
+            <p class="experiment-desc">Combine multiple relaxation adjustments</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>Baseline</td>
+                        <td class="number">-2.62%</td>
+                        <td class="number">-1.31%</td>
+                        <td class="number">0.50</td>
+                        <td class="number">1130</td>
+                        <td class="number">20.0%</td>
+                        <td class="number">11.2%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">-0.19%</td>
+                        <td class="number">0.05%</td>
+                        <td class="number">-0.23</td>
+                        <td class="number">924</td>
+                        <td class="number">20.1%</td>
+                        <td class="number">9.6%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">-0.19%</td>
+                        <td class="number">0.05%</td>
+                        <td class="number">-0.23</td>
+                        <td class="number">924</td>
+                        <td class="number">20.1%</td>
+                        <td class="number">9.6%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <div class="experiment-header">
+                <h2>Selective_Tight</h2>
+            </div>
+            <p class="experiment-desc">Tighter entry with better exit management</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th class="number">IS Return</th>
+                        <th class="number">OOS Return</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Trades</th>
+                        <th class="number">Win Rate</th>
+                        <th class="number">Max DD</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="highlight-row">
+                        <td>Baseline</td>
+                        <td class="number">5.36%</td>
+                        <td class="number">2.83%</td>
+                        <td class="number">0.53</td>
+                        <td class="number">388</td>
+                        <td class="number">23.0%</td>
+                        <td class="number">4.4%</td>
+                        <td><span class="status-badge status-warning">WARNING</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_Baseline</td>
+                        <td class="number">5.12%</td>
+                        <td class="number">2.54%</td>
+                        <td class="number">0.50</td>
+                        <td class="number">234</td>
+                        <td class="number">21.6%</td>
+                        <td class="number">2.8%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                    <tr class="">
+                        <td>Adaptive_ProgPos_Only</td>
+                        <td class="number">5.12%</td>
+                        <td class="number">2.54%</td>
+                        <td class="number">0.50</td>
+                        <td class="number">234</td>
+                        <td class="number">21.6%</td>
+                        <td class="number">2.8%</td>
+                        <td><span class="status-badge status-critical">CRITICAL</span></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="experiment-section">
+            <h2>Improvement vs Baseline</h2>
+            <p class="experiment-desc">Comparison of all experiments against baseline parameters</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Experiment</th>
+                        <th class="number">Avg OOS Eff</th>
+                        <th class="number">Baseline OOS Eff</th>
+                        <th class="number">Improvement</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td>Relaxed_Entry</td>
+                        <td class="number">0.63</td>
+                        <td class="number">0.49</td>
+                        <td class="number healthy">+28.1%</td>
+                        <td class="healthy">Strongly Recommended</td>
+                    </tr>
+
+                    <tr>
+                        <td>Lower_ADX</td>
+                        <td class="number">0.50</td>
+                        <td class="number">0.49</td>
+                        <td class="number ">+2.2%</td>
+                        <td class="">Neutral</td>
+                    </tr>
+
+                    <tr>
+                        <td>Aggressive_ProgPos</td>
+                        <td class="number">0.50</td>
+                        <td class="number">0.49</td>
+                        <td class="number ">+1.8%</td>
+                        <td class="">Neutral</td>
+                    </tr>
+
+                    <tr>
+                        <td>Wider_SL_TP</td>
+                        <td class="number">0.51</td>
+                        <td class="number">0.49</td>
+                        <td class="number warning">+5.1%</td>
+                        <td class="warning">Recommended</td>
+                    </tr>
+
+                    <tr>
+                        <td>Combined_Relaxed</td>
+                        <td class="number">0.01</td>
+                        <td class="number">0.49</td>
+                        <td class="number critical">-97.6%</td>
+                        <td class="critical">Not Recommended</td>
+                    </tr>
+
+                    <tr>
+                        <td>Selective_Tight</td>
+                        <td class="number">0.51</td>
+                        <td class="number">0.49</td>
+                        <td class="number ">+3.8%</td>
+                        <td class="">Neutral</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>BTC Enhanced Streak Mitigation Strategy Evaluation Framework</p>
+            <p>Walk-Forward Configuration: 30-day training, 14-day testing, 7-day step</p>
+        </footer>
+    </div>
+</body>
+</html>

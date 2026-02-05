@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Lightsail Deployment Guide - BTC Adaptive Strategy Dashboard</title>
+    <style>
+        :root {
+            --primary: #ff9900;
+            --primary-dark: #cc7a00;
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --text: #e0e0e0;
+            --text-muted: #888;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+            --code-bg: #0d1117;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-card) 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px;
+            background: rgba(255, 153, 0, 0.1);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 153, 0, 0.3);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.2em;
+        }
+
+        .aws-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .toc {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toc h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .toc ol {
+            margin-left: 25px;
+        }
+
+        .toc li {
+            margin: 10px 0;
+        }
+
+        .toc a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: var(--primary);
+        }
+
+        section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 153, 0, 0.3);
+        }
+
+        h3 {
+            color: var(--success);
+            margin: 25px 0 15px 0;
+        }
+
+        h4 {
+            color: var(--text);
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-block pre {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #e6e6e6;
+        }
+
+        .code-block .comment {
+            color: #6a9955;
+        }
+
+        .code-block .command {
+            color: #dcdcaa;
+        }
+
+        .code-block .string {
+            color: #ce9178;
+        }
+
+        .code-block .keyword {
+            color: #569cd6;
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .step-number {
+            background: var(--primary);
+            color: #000;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .warning-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+
+        .warning-box::before {
+            content: "⚠️ ";
+        }
+
+        .info-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+
+        .info-box::before {
+            content: "ℹ️ ";
+        }
+
+        .success-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 15px 0;
+        }
+
+        .success-box::before {
+            content: "✅ ";
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(255, 153, 0, 0.2);
+            color: var(--primary);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .pricing-card {
+            background: rgba(255, 153, 0, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .pricing-card .price {
+            font-size: 2.5em;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .pricing-card .period {
+            color: var(--text-muted);
+        }
+
+        .architecture-diagram {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            font-family: 'SF Mono', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        .file-tree {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'SF Mono', monospace;
+            font-size: 13px;
+        }
+
+        .checklist {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab:hover, .tab.active {
+            background: rgba(255, 153, 0, 0.2);
+            border-color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .step {
+                flex-direction: column;
+            }
+
+            .step-number {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☁️ AWS Lightsail Deployment Guide</h1>
+            <p class="subtitle">BTC Adaptive Strategy Dashboard & Data Pipeline</p>
+            <span class="aws-badge">Amazon Lightsail</span>
+        </header>
+
+        <!-- Table of Contents -->
+        <nav class="toc">
+            <h2>📑 Table of Contents</h2>
+            <ol>
+                <li><a href="#overview">Overview & Architecture</a></li>
+                <li><a href="#prerequisites">Prerequisites</a></li>
+                <li><a href="#lightsail-setup">Lightsail Instance Setup</a></li>
+                <li><a href="#server-config">Server Configuration</a></li>
+                <li><a href="#code-deployment">Code Deployment</a></li>
+                <li><a href="#data-pipeline">Data Pipeline Setup</a></li>
+                <li><a href="#streamlit-deploy">Streamlit Dashboard Deployment</a></li>
+                <li><a href="#nginx-ssl">Nginx & SSL Configuration</a></li>
+                <li><a href="#monitoring">Monitoring & Maintenance</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#cost">Cost Estimation</a></li>
+            </ol>
+        </nav>
+
+        <!-- Section 1: Overview -->
+        <section id="overview">
+            <h2>1. Overview & Architecture</h2>
+
+            <p>This guide covers deploying the BTC Adaptive Strategy Dashboard and its data pipeline on AWS Lightsail. The system consists of:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Description</th>
+                        <th>Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Streamlit Dashboard</td>
+                        <td>Real-time strategy monitoring UI</td>
+                        <td>8501</td>
+                    </tr>
+                    <tr>
+                        <td>Data Refresh Service</td>
+                        <td>Binance API data fetcher (cron)</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>Nginx Reverse Proxy</td>
+                        <td>HTTPS termination & routing</td>
+                        <td>80, 443</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Architecture Diagram</h3>
+            <div class="architecture-visual">
+                <style>
+                    .architecture-visual {
+                        padding: 30px;
+                        background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+                        border-radius: 12px;
+                        margin: 20px 0;
+                    }
+                    .arch-container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 20px;
+                    }
+                    .arch-row {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 30px;
+                        flex-wrap: wrap;
+                    }
+                    .arch-box {
+                        background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 100%);
+                        border: 2px solid #3b82f6;
+                        border-radius: 12px;
+                        padding: 20px;
+                        text-align: center;
+                        min-width: 150px;
+                        position: relative;
+                    }
+                    .arch-box.primary {
+                        border-color: #ff9900;
+                        background: linear-gradient(135deg, #3d2800 0%, #1a1100 100%);
+                    }
+                    .arch-box.success {
+                        border-color: #00ff88;
+                        background: linear-gradient(135deg, #003322 0%, #001a11 100%);
+                    }
+                    .arch-box.external {
+                        border-color: #9333ea;
+                        background: linear-gradient(135deg, #2d1f3d 0%, #1a1025 100%);
+                    }
+                    .arch-box-icon {
+                        font-size: 2em;
+                        margin-bottom: 10px;
+                    }
+                    .arch-box-title {
+                        font-weight: bold;
+                        color: #fff;
+                        margin-bottom: 5px;
+                    }
+                    .arch-box-subtitle {
+                        font-size: 0.85em;
+                        color: #888;
+                    }
+                    .arch-box-port {
+                        position: absolute;
+                        top: -10px;
+                        right: -10px;
+                        background: #ff9900;
+                        color: #000;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-size: 0.75em;
+                        font-weight: bold;
+                    }
+                    .arch-arrow {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        color: #666;
+                    }
+                    .arch-arrow-line {
+                        width: 2px;
+                        height: 40px;
+                        background: linear-gradient(180deg, #3b82f6, #00ff88);
+                    }
+                    .arch-arrow-head {
+                        width: 0;
+                        height: 0;
+                        border-left: 8px solid transparent;
+                        border-right: 8px solid transparent;
+                        border-top: 10px solid #00ff88;
+                    }
+                    .arch-arrow-label {
+                        font-size: 0.75em;
+                        color: #888;
+                        margin-top: 5px;
+                    }
+                    .arch-arrow-horizontal {
+                        display: flex;
+                        align-items: center;
+                        color: #666;
+                    }
+                    .arch-arrow-h-line {
+                        width: 40px;
+                        height: 2px;
+                        background: linear-gradient(90deg, #3b82f6, #00ff88);
+                    }
+                    .arch-arrow-h-head {
+                        width: 0;
+                        height: 0;
+                        border-top: 8px solid transparent;
+                        border-bottom: 8px solid transparent;
+                        border-left: 10px solid #00ff88;
+                    }
+                    .arch-server-box {
+                        border: 3px solid #ff9900;
+                        border-radius: 16px;
+                        padding: 30px;
+                        background: rgba(255, 153, 0, 0.05);
+                        margin: 20px 0;
+                    }
+                    .arch-server-title {
+                        text-align: center;
+                        color: #ff9900;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                        border-bottom: 1px solid rgba(255, 153, 0, 0.3);
+                    }
+                    .arch-data-flow {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 15px;
+                        margin: 15px 0;
+                        flex-wrap: wrap;
+                    }
+                    .arch-data-box {
+                        background: #1a1a2e;
+                        border: 1px solid #444;
+                        border-radius: 8px;
+                        padding: 12px 20px;
+                        text-align: center;
+                    }
+                    .arch-legend {
+                        display: flex;
+                        justify-content: center;
+                        gap: 30px;
+                        margin-top: 20px;
+                        flex-wrap: wrap;
+                    }
+                    .arch-legend-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 0.85em;
+                        color: #888;
+                    }
+                    .arch-legend-color {
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 4px;
+                    }
+                </style>
+
+                <div class="arch-container">
+                    <!-- Internet / Users -->
+                    <div class="arch-box external">
+                        <div class="arch-box-icon">🌐</div>
+                        <div class="arch-box-title">Internet</div>
+                        <div class="arch-box-subtitle">Your Users / Browsers</div>
+                    </div>
+
+                    <div class="arch-arrow">
+                        <div class="arch-arrow-line"></div>
+                        <div class="arch-arrow-head"></div>
+                        <div class="arch-arrow-label">HTTPS (443)</div>
+                    </div>
+
+                    <!-- AWS Lightsail Server Box -->
+                    <div class="arch-server-box">
+                        <div class="arch-server-title">☁️ AWS Lightsail Instance (Ubuntu 22.04)</div>
+
+                        <!-- Nginx -->
+                        <div class="arch-row">
+                            <div class="arch-box primary">
+                                <div class="arch-box-port">:443</div>
+                                <div class="arch-box-icon">🔒</div>
+                                <div class="arch-box-title">Nginx</div>
+                                <div class="arch-box-subtitle">Reverse Proxy + SSL</div>
+                            </div>
+                        </div>
+
+                        <div class="arch-arrow">
+                            <div class="arch-arrow-line"></div>
+                            <div class="arch-arrow-head"></div>
+                            <div class="arch-arrow-label">Proxy Pass</div>
+                        </div>
+
+                        <!-- Main Services Row -->
+                        <div class="arch-row">
+                            <div class="arch-box success">
+                                <div class="arch-box-port">:8501</div>
+                                <div class="arch-box-icon">📊</div>
+                                <div class="arch-box-title">Streamlit</div>
+                                <div class="arch-box-subtitle">Dashboard UI</div>
+                            </div>
+
+                            <div class="arch-box">
+                                <div class="arch-box-icon">⏰</div>
+                                <div class="arch-box-title">Cron Job</div>
+                                <div class="arch-box-subtitle">Every 5 minutes</div>
+                            </div>
+                        </div>
+
+                        <div class="arch-arrow">
+                            <div class="arch-arrow-line"></div>
+                            <div class="arch-arrow-head"></div>
+                            <div class="arch-arrow-label">Read / Write</div>
+                        </div>
+
+                        <!-- Data Storage -->
+                        <div class="arch-data-flow">
+                            <div class="arch-data-box">
+                                <strong>📁 CSV Data Files</strong><br>
+                                <small>price.csv, positions.csv, etc.</small>
+                            </div>
+                            <div class="arch-data-box">
+                                <strong>📈 Trade Results</strong><br>
+                                <small>trades_*.csv, stats.json</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- External API -->
+                    <div class="arch-arrow">
+                        <div class="arch-arrow-head" style="transform: rotate(180deg); margin-bottom: 0;"></div>
+                        <div class="arch-arrow-line"></div>
+                        <div class="arch-arrow-label">API Calls (Cron)</div>
+                    </div>
+
+                    <div class="arch-box external">
+                        <div class="arch-box-icon">🔗</div>
+                        <div class="arch-box-title">Binance API</div>
+                        <div class="arch-box-subtitle">Futures Data (External)</div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="arch-legend">
+                        <div class="arch-legend-item">
+                            <div class="arch-legend-color" style="background: #ff9900;"></div>
+                            <span>Entry Point / Config</span>
+                        </div>
+                        <div class="arch-legend-item">
+                            <div class="arch-legend-color" style="background: #00ff88;"></div>
+                            <span>Application</span>
+                        </div>
+                        <div class="arch-legend-item">
+                            <div class="arch-legend-color" style="background: #3b82f6;"></div>
+                            <span>Internal Service</span>
+                        </div>
+                        <div class="arch-legend-item">
+                            <div class="arch-legend-color" style="background: #9333ea;"></div>
+                            <span>External</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>File Structure on Server</h3>
+            <div class="file-tree">
+/home/ubuntu/
+└── btc-enhanced-streak-mitigation/
+    ├── backtest_15min_new_streak_a/
+    │   ├── dashboard_adaptive.py      # Main dashboard
+    │   └── results/                   # Trade data
+    ├── binance-futures-data/
+    │   ├── refresh_data.py            # Data fetcher
+    │   ├── data/                      # CSV files
+    │   └── logs/                      # Refresh logs
+    ├── backtest_15min/
+    │   └── load_15min_data.py         # Data loader
+    └── eval/
+        └── ...                        # Evaluation framework
+            </div>
+        </section>
+
+        <!-- Section 2: Prerequisites -->
+        <section id="prerequisites">
+            <h2>2. Prerequisites</h2>
+
+            <h3>Before You Start</h3>
+            <ul class="checklist">
+                <li>AWS Account with Lightsail access</li>
+                <li>Domain name (optional, for custom domain)</li>
+                <li>SSH key pair for server access</li>
+                <li>Git repository access (GitHub)</li>
+                <li>Basic Linux command line knowledge</li>
+            </ul>
+
+            <h3>Recommended Instance Specifications</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Spec</th>
+                        <th>Minimum</th>
+                        <th>Recommended</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>RAM</td>
+                        <td>1 GB</td>
+                        <td>2 GB</td>
+                    </tr>
+                    <tr>
+                        <td>vCPUs</td>
+                        <td>1</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>Storage</td>
+                        <td>20 GB SSD</td>
+                        <td>40 GB SSD</td>
+                    </tr>
+                    <tr>
+                        <td>Transfer</td>
+                        <td>1 TB</td>
+                        <td>2 TB</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pricing-card">
+                <div class="price">$5 - $10</div>
+                <div class="period">per month</div>
+                <p style="margin-top: 15px;">Lightsail pricing for recommended instance</p>
+            </div>
+        </section>
+
+        <!-- Section 3: Lightsail Setup -->
+        <section id="lightsail-setup">
+            <h2>3. Lightsail Instance Setup</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Create Lightsail Instance</h4>
+                    <p>Go to <a href="https://lightsail.aws.amazon.com" target="_blank" style="color: var(--primary);">AWS Lightsail Console</a></p>
+                    <ul>
+                        <li>Click "Create instance"</li>
+                        <li>Select region closest to you (or your users)</li>
+                        <li>Platform: <strong>Linux/Unix</strong></li>
+                        <li>Blueprint: <strong>OS Only → Ubuntu 22.04 LTS</strong></li>
+                        <li>Instance plan: <strong>$10/month (2GB RAM, 2 vCPU)</strong></li>
+                        <li>Name your instance: <code>btc-dashboard</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Configure Networking</h4>
+                    <p>After instance is created, go to Networking tab:</p>
+                    <ul>
+                        <li>Create Static IP (free while attached)</li>
+                        <li>Attach static IP to your instance</li>
+                    </ul>
+                    <p>Add firewall rules:</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Application</th>
+                                <th>Protocol</th>
+                                <th>Port</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SSH</td>
+                                <td>TCP</td>
+                                <td>22</td>
+                            </tr>
+                            <tr>
+                                <td>HTTP</td>
+                                <td>TCP</td>
+                                <td>80</td>
+                            </tr>
+                            <tr>
+                                <td>HTTPS</td>
+                                <td>TCP</td>
+                                <td>443</td>
+                            </tr>
+                            <tr>
+                                <td>Custom (Streamlit)</td>
+                                <td>TCP</td>
+                                <td>8501</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Connect via SSH</h4>
+                    <p>Option 1: Use Lightsail browser-based SSH (click "Connect using SSH" button)</p>
+                    <p>Option 2: Download SSH key and connect from terminal:</p>
+                    <div class="code-block">
+<pre><span class="comment"># Download your SSH key from Lightsail console</span>
+<span class="comment"># Then connect:</span>
+chmod 400 ~/Downloads/LightsailDefaultKey-*.pem
+ssh -i ~/Downloads/LightsailDefaultKey-*.pem ubuntu@YOUR_STATIC_IP</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Server Configuration -->
+        <section id="server-config">
+            <h2>4. Server Configuration</h2>
+
+            <h3>4.1 Update System</h3>
+            <div class="code-block">
+<pre><span class="comment"># Update package lists and upgrade</span>
+sudo apt update && sudo apt upgrade -y
+
+<span class="comment"># Install essential packages</span>
+sudo apt install -y python3-pip python3-venv git nginx certbot python3-certbot-nginx
+
+<span class="comment"># Install build dependencies for Python packages</span>
+sudo apt install -y build-essential python3-dev</pre>
+            </div>
+
+            <h3>4.2 Create Application User (Optional but Recommended)</h3>
+            <div class="code-block">
+<pre><span class="comment"># You can use the default ubuntu user, or create a dedicated user:</span>
+<span class="comment"># sudo adduser btcapp</span>
+<span class="comment"># sudo usermod -aG sudo btcapp</span>
+
+<span class="comment"># For this guide, we'll use ubuntu user</span>
+cd /home/ubuntu</pre>
+            </div>
+
+            <h3>4.3 Set Up Python Virtual Environment</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create virtual environment</span>
+python3 -m venv ~/btc-venv
+
+<span class="comment"># Activate it</span>
+source ~/btc-venv/bin/activate
+
+<span class="comment"># Upgrade pip</span>
+pip install --upgrade pip
+
+<span class="comment"># Add to bashrc for auto-activation</span>
+echo 'source ~/btc-venv/bin/activate' >> ~/.bashrc</pre>
+            </div>
+
+            <h3>4.4 Configure Swap (Recommended for 1-2GB instances)</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create 2GB swap file</span>
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+<span class="comment"># Make permanent</span>
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+<span class="comment"># Verify</span>
+free -h</pre>
+            </div>
+        </section>
+
+        <!-- Section 5: Code Deployment -->
+        <section id="code-deployment">
+            <h2>5. Code Deployment</h2>
+
+            <h3>5.1 Clone Repository</h3>
+            <div class="code-block">
+<pre><span class="comment"># Navigate to home directory</span>
+cd /home/ubuntu
+
+<span class="comment"># Clone the repository</span>
+git clone https://github.com/YOUR_USERNAME/btc-enhanced-streak-mitigation.git
+
+<span class="comment"># Enter directory</span>
+cd btc-enhanced-streak-mitigation</pre>
+            </div>
+
+            <h3>5.2 Install Python Dependencies</h3>
+            <div class="code-block">
+<pre><span class="comment"># Make sure venv is activated</span>
+source ~/btc-venv/bin/activate
+
+<span class="comment"># Install requirements</span>
+pip install streamlit pandas numpy plotly scipy requests
+
+<span class="comment"># If you have a requirements.txt:</span>
+<span class="comment"># pip install -r requirements.txt</span>
+
+<span class="comment"># Verify installation</span>
+python -c "import streamlit; print(f'Streamlit {streamlit.__version__}')"</pre>
+            </div>
+
+            <h3>5.3 Create Directory Structure</h3>
+            <div class="code-block">
+<pre><span class="comment"># Ensure all necessary directories exist</span>
+mkdir -p binance-futures-data/data
+mkdir -p binance-futures-data/logs
+mkdir -p backtest_15min_new_streak_a/results
+mkdir -p eval/logs
+mkdir -p eval/results
+
+<span class="comment"># Set permissions</span>
+chmod -R 755 .</pre>
+            </div>
+
+            <h3>5.4 Initial Data Fetch</h3>
+            <div class="code-block">
+<pre><span class="comment"># Run initial data fetch to populate CSV files</span>
+cd binance-futures-data
+python refresh_data.py --full
+
+<span class="comment"># Verify data was fetched</span>
+ls -la data/
+<span class="comment"># Should see: price.csv, top_trader_position.csv, etc.</span></pre>
+            </div>
+
+            <div class="warning-box">
+                If the data fetch fails, check your internet connection and ensure the Binance API is accessible from your region.
+            </div>
+        </section>
+
+        <!-- Section 6: Data Pipeline Setup -->
+        <section id="data-pipeline">
+            <h2>6. Data Pipeline Setup (Cron)</h2>
+
+            <h3>6.1 Create Refresh Script</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create the refresh script</span>
+cat &gt; ~/btc-enhanced-streak-mitigation/binance-futures-data/cron_refresh.sh &lt;&lt; 'EOF'
+#!/bin/bash
+# BTC Data Refresh Script for Cron
+
+LOG_DIR="/home/ubuntu/btc-enhanced-streak-mitigation/binance-futures-data/logs"
+SCRIPT_DIR="/home/ubuntu/btc-enhanced-streak-mitigation/binance-futures-data"
+VENV="/home/ubuntu/btc-venv/bin/python3"
+
+# Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
+# Log start
+echo "=========================================="  >> "$LOG_DIR/cron.log"
+echo "Data Refresh Started: $(date)"             >> "$LOG_DIR/cron.log"
+echo "=========================================="  >> "$LOG_DIR/cron.log"
+
+# Run refresh
+cd "$SCRIPT_DIR"
+$VENV refresh_data.py >> "$LOG_DIR/cron.log" 2>&1
+
+# Log end
+echo "Data Refresh Ended: $(date)"               >> "$LOG_DIR/cron.log"
+echo ""                                           >> "$LOG_DIR/cron.log"
+EOF
+
+<span class="comment"># Make executable</span>
+chmod +x ~/btc-enhanced-streak-mitigation/binance-futures-data/cron_refresh.sh</pre>
+            </div>
+
+            <h3>6.2 Set Up Cron Job</h3>
+            <div class="code-block">
+<pre><span class="comment"># Edit crontab</span>
+crontab -e
+
+<span class="comment"># Add these lines (runs every 5 minutes):</span>
+*/5 * * * * /home/ubuntu/btc-enhanced-streak-mitigation/binance-futures-data/cron_refresh.sh
+
+<span class="comment"># Optional: Add weekly evaluation (Sundays at 2am)</span>
+0 2 * * 0 /home/ubuntu/btc-enhanced-streak-mitigation/eval/eval_regular_exec.sh >> /home/ubuntu/btc-enhanced-streak-mitigation/eval/logs/weekly.log 2>&1</pre>
+            </div>
+
+            <h3>6.3 Verify Cron is Running</h3>
+            <div class="code-block">
+<pre><span class="comment"># Check cron service</span>
+sudo systemctl status cron
+
+<span class="comment"># View cron logs</span>
+grep CRON /var/log/syslog | tail -20
+
+<span class="comment"># Check our refresh logs</span>
+tail -50 ~/btc-enhanced-streak-mitigation/binance-futures-data/logs/cron.log</pre>
+            </div>
+
+            <div class="success-box">
+                The data pipeline will now automatically refresh every 5 minutes, keeping your dashboard data up-to-date.
+            </div>
+        </section>
+
+        <!-- Section 7: Streamlit Deployment -->
+        <section id="streamlit-deploy">
+            <h2>7. Streamlit Dashboard Deployment</h2>
+
+            <h3>7.1 Create Streamlit Configuration</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create Streamlit config directory</span>
+mkdir -p ~/.streamlit
+
+<span class="comment"># Create config file</span>
+cat &gt; ~/.streamlit/config.toml &lt;&lt; 'EOF'
+[server]
+headless = true
+address = "0.0.0.0"
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+primaryColor = "#ff9900"
+backgroundColor = "#1a1a2e"
+secondaryBackgroundColor = "#16213e"
+textColor = "#e0e0e0"
+EOF</pre>
+            </div>
+
+            <h3>7.2 Create Systemd Service</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create service file</span>
+sudo cat &gt; /etc/systemd/system/streamlit-dashboard.service &lt;&lt; 'EOF'
+[Unit]
+Description=BTC Adaptive Strategy Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/btc-enhanced-streak-mitigation
+Environment="PATH=/home/ubuntu/btc-venv/bin"
+ExecStart=/home/ubuntu/btc-venv/bin/streamlit run backtest_15min_new_streak_a/dashboard_adaptive.py --server.port 8501
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+<span class="comment"># Reload systemd and enable service</span>
+sudo systemctl daemon-reload
+sudo systemctl enable streamlit-dashboard
+sudo systemctl start streamlit-dashboard
+
+<span class="comment"># Check status</span>
+sudo systemctl status streamlit-dashboard</pre>
+            </div>
+
+            <h3>7.3 Test Dashboard Access</h3>
+            <div class="code-block">
+<pre><span class="comment"># Test locally</span>
+curl -I http://localhost:8501
+
+<span class="comment"># Test from browser (if port 8501 is open in firewall)</span>
+<span class="comment"># http://YOUR_STATIC_IP:8501</span></pre>
+            </div>
+
+            <h3>7.4 Useful Service Commands</h3>
+            <div class="code-block">
+<pre><span class="comment"># View logs</span>
+sudo journalctl -u streamlit-dashboard -f
+
+<span class="comment"># Restart service</span>
+sudo systemctl restart streamlit-dashboard
+
+<span class="comment"># Stop service</span>
+sudo systemctl stop streamlit-dashboard
+
+<span class="comment"># Check status</span>
+sudo systemctl status streamlit-dashboard</pre>
+            </div>
+        </section>
+
+        <!-- Section 8: Nginx & SSL -->
+        <section id="nginx-ssl">
+            <h2>8. Nginx & SSL Configuration</h2>
+
+            <h3>8.1 Configure Nginx Reverse Proxy</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create Nginx config</span>
+sudo cat &gt; /etc/nginx/sites-available/btc-dashboard &lt;&lt; 'EOF'
+server {
+    listen 80;
+    server_name YOUR_DOMAIN.com;  # Or use _ for IP-only access
+
+    location / {
+        proxy_pass http://localhost:8501;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;
+    }
+
+    # WebSocket support for Streamlit
+    location /_stcore/stream {
+        proxy_pass http://localhost:8501/_stcore/stream;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 86400;
+    }
+}
+EOF
+
+<span class="comment"># Enable the site</span>
+sudo ln -s /etc/nginx/sites-available/btc-dashboard /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+
+<span class="comment"># Test config</span>
+sudo nginx -t
+
+<span class="comment"># Reload Nginx</span>
+sudo systemctl reload nginx</pre>
+            </div>
+
+            <h3>8.2 Set Up SSL with Let's Encrypt (If Using Domain)</h3>
+            <div class="code-block">
+<pre><span class="comment"># Replace YOUR_DOMAIN.com with your actual domain</span>
+<span class="comment"># Make sure DNS is pointing to your Lightsail IP first!</span>
+
+sudo certbot --nginx -d YOUR_DOMAIN.com
+
+<span class="comment"># Follow the prompts:</span>
+<span class="comment"># - Enter email for renewal notices</span>
+<span class="comment"># - Agree to terms</span>
+<span class="comment"># - Choose to redirect HTTP to HTTPS (recommended)</span>
+
+<span class="comment"># Verify auto-renewal</span>
+sudo certbot renew --dry-run</pre>
+            </div>
+
+            <h3>8.3 For IP-Only Access (No Domain)</h3>
+            <div class="code-block">
+<pre><span class="comment"># If not using a domain, access via:</span>
+<span class="comment"># http://YOUR_STATIC_IP</span>
+
+<span class="comment"># For self-signed SSL (not recommended for production):</span>
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/nginx-selfsigned.key \
+    -out /etc/ssl/certs/nginx-selfsigned.crt
+
+<span class="comment"># Then update Nginx config to use these certificates</span></pre>
+            </div>
+
+            <div class="info-box">
+                SSL is strongly recommended for any production deployment. Let's Encrypt provides free SSL certificates.
+            </div>
+        </section>
+
+        <!-- Section 9: Monitoring -->
+        <section id="monitoring">
+            <h2>9. Monitoring & Maintenance</h2>
+
+            <h3>9.1 Health Check Script</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create health check script</span>
+cat &gt; ~/health_check.sh &lt;&lt; 'EOF'
+#!/bin/bash
+
+echo "=== System Health Check ==="
+echo "Date: $(date)"
+echo ""
+
+echo "=== Memory Usage ==="
+free -h
+echo ""
+
+echo "=== Disk Usage ==="
+df -h /
+echo ""
+
+echo "=== Streamlit Service ==="
+systemctl is-active streamlit-dashboard
+echo ""
+
+echo "=== Nginx Service ==="
+systemctl is-active nginx
+echo ""
+
+echo "=== Recent Data Refresh ==="
+tail -5 ~/btc-enhanced-streak-mitigation/binance-futures-data/logs/cron.log
+echo ""
+
+echo "=== Data Freshness ==="
+ls -la ~/btc-enhanced-streak-mitigation/binance-futures-data/data/*.csv | head -5
+echo ""
+EOF
+
+chmod +x ~/health_check.sh</pre>
+            </div>
+
+            <h3>9.2 Log Rotation</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create logrotate config</span>
+sudo cat &gt; /etc/logrotate.d/btc-dashboard &lt;&lt; 'EOF'
+/home/ubuntu/btc-enhanced-streak-mitigation/binance-futures-data/logs/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+}
+
+/home/ubuntu/btc-enhanced-streak-mitigation/eval/logs/*.log {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    missingok
+    notifempty
+}
+EOF</pre>
+            </div>
+
+            <h3>9.3 Set Up Basic Monitoring (Optional)</h3>
+            <div class="code-block">
+<pre><span class="comment"># Install monitoring tools</span>
+sudo apt install -y htop iotop
+
+<span class="comment"># For more advanced monitoring, consider:</span>
+<span class="comment"># - AWS CloudWatch Agent</span>
+<span class="comment"># - Prometheus + Grafana</span>
+<span class="comment"># - UptimeRobot (external)</span></pre>
+            </div>
+
+            <h3>9.4 Backup Strategy</h3>
+            <div class="code-block">
+<pre><span class="comment"># Create backup script</span>
+cat &gt; ~/backup.sh &lt;&lt; 'EOF'
+#!/bin/bash
+BACKUP_DIR="/home/ubuntu/backups"
+DATE=$(date +%Y%m%d)
+mkdir -p $BACKUP_DIR
+
+# Backup data files
+tar -czf $BACKUP_DIR/data_$DATE.tar.gz \
+    ~/btc-enhanced-streak-mitigation/binance-futures-data/data/
+
+# Backup results
+tar -czf $BACKUP_DIR/results_$DATE.tar.gz \
+    ~/btc-enhanced-streak-mitigation/backtest_15min_new_streak_a/results/ \
+    ~/btc-enhanced-streak-mitigation/eval/
+
+# Keep only last 7 days
+find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
+
+echo "Backup complete: $DATE"
+EOF
+
+chmod +x ~/backup.sh
+
+<span class="comment"># Add to cron for daily backups</span>
+<span class="comment"># 0 3 * * * /home/ubuntu/backup.sh</span></pre>
+            </div>
+        </section>
+
+        <!-- Section 10: Troubleshooting -->
+        <section id="troubleshooting">
+            <h2>10. Troubleshooting</h2>
+
+            <h3>Common Issues & Solutions</h3>
+
+            <h4>❌ Dashboard Not Loading</h4>
+            <div class="code-block">
+<pre><span class="comment"># Check if Streamlit is running</span>
+sudo systemctl status streamlit-dashboard
+
+<span class="comment"># Check logs</span>
+sudo journalctl -u streamlit-dashboard -n 50
+
+<span class="comment"># Restart service</span>
+sudo systemctl restart streamlit-dashboard
+
+<span class="comment"># Check if port is in use</span>
+sudo lsof -i :8501</pre>
+            </div>
+
+            <h4>❌ Data Not Updating</h4>
+            <div class="code-block">
+<pre><span class="comment"># Check cron logs</span>
+tail -100 ~/btc-enhanced-streak-mitigation/binance-futures-data/logs/cron.log
+
+<span class="comment"># Run refresh manually</span>
+cd ~/btc-enhanced-streak-mitigation/binance-futures-data
+~/btc-venv/bin/python refresh_data.py
+
+<span class="comment"># Check file timestamps</span>
+ls -la ~/btc-enhanced-streak-mitigation/binance-futures-data/data/
+
+<span class="comment"># Check cron is running</span>
+sudo systemctl status cron
+crontab -l</pre>
+            </div>
+
+            <h4>❌ 502 Bad Gateway (Nginx)</h4>
+            <div class="code-block">
+<pre><span class="comment"># Check Nginx error log</span>
+sudo tail -50 /var/log/nginx/error.log
+
+<span class="comment"># Verify Streamlit is running on port 8501</span>
+curl -I http://localhost:8501
+
+<span class="comment"># Check Nginx config</span>
+sudo nginx -t
+
+<span class="comment"># Restart both services</span>
+sudo systemctl restart streamlit-dashboard
+sudo systemctl restart nginx</pre>
+            </div>
+
+            <h4>❌ Out of Memory</h4>
+            <div class="code-block">
+<pre><span class="comment"># Check memory usage</span>
+free -h
+
+<span class="comment"># Check what's using memory</span>
+ps aux --sort=-%mem | head -10
+
+<span class="comment"># Add more swap if needed</span>
+sudo fallocate -l 4G /swapfile2
+sudo chmod 600 /swapfile2
+sudo mkswap /swapfile2
+sudo swapon /swapfile2</pre>
+            </div>
+
+            <h4>❌ SSL Certificate Issues</h4>
+            <div class="code-block">
+<pre><span class="comment"># Check certificate status</span>
+sudo certbot certificates
+
+<span class="comment"># Renew certificate</span>
+sudo certbot renew
+
+<span class="comment"># Force renewal</span>
+sudo certbot renew --force-renewal</pre>
+            </div>
+        </section>
+
+        <!-- Section 11: Cost -->
+        <section id="cost">
+            <h2>11. Cost Estimation</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Specification</th>
+                        <th>Monthly Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lightsail Instance</td>
+                        <td>2 GB RAM, 2 vCPU, 60 GB SSD</td>
+                        <td>$10</td>
+                    </tr>
+                    <tr>
+                        <td>Static IP</td>
+                        <td>1 IP (free while attached)</td>
+                        <td>$0</td>
+                    </tr>
+                    <tr>
+                        <td>Data Transfer</td>
+                        <td>2 TB included</td>
+                        <td>$0*</td>
+                    </tr>
+                    <tr>
+                        <td>SSL Certificate</td>
+                        <td>Let's Encrypt</td>
+                        <td>$0</td>
+                    </tr>
+                    <tr>
+                        <td>Domain (Optional)</td>
+                        <td>.com domain</td>
+                        <td>~$1</td>
+                    </tr>
+                    <tr style="font-weight: bold; background: rgba(255, 153, 0, 0.1);">
+                        <td colspan="2">Total (without domain)</td>
+                        <td>$10/month</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                *Data transfer overages are charged at $0.09/GB. The dashboard uses minimal bandwidth, so you're unlikely to exceed the included allowance.
+            </div>
+
+            <h3>Cost Optimization Tips</h3>
+            <ul>
+                <li>Use the $5/month instance (1 GB RAM) if dashboard usage is light</li>
+                <li>Delete snapshots you don't need</li>
+                <li>Stop instances when not in use (data pipeline won't run)</li>
+                <li>Use Lightsail's automatic snapshots (7 snapshots for $2.50/month)</li>
+            </ul>
+        </section>
+
+        <!-- Quick Reference -->
+        <section>
+            <h2>📋 Quick Reference Commands</h2>
+
+            <div class="code-block">
+<pre><span class="comment"># === Service Management ===</span>
+sudo systemctl status streamlit-dashboard    <span class="comment"># Check dashboard status</span>
+sudo systemctl restart streamlit-dashboard   <span class="comment"># Restart dashboard</span>
+sudo systemctl status nginx                  <span class="comment"># Check Nginx status</span>
+sudo systemctl restart nginx                 <span class="comment"># Restart Nginx</span>
+
+<span class="comment"># === Logs ===</span>
+sudo journalctl -u streamlit-dashboard -f    <span class="comment"># Dashboard logs (live)</span>
+tail -f ~/btc-*/binance-futures-data/logs/cron.log  <span class="comment"># Data refresh logs</span>
+sudo tail -f /var/log/nginx/error.log        <span class="comment"># Nginx error log</span>
+
+<span class="comment"># === Data ===</span>
+ls -la ~/btc-*/binance-futures-data/data/    <span class="comment"># Check data files</span>
+~/btc-venv/bin/python ~/btc-*/binance-futures-data/refresh_data.py  <span class="comment"># Manual refresh</span>
+
+<span class="comment"># === System ===</span>
+free -h                                      <span class="comment"># Memory usage</span>
+df -h                                        <span class="comment"># Disk usage</span>
+htop                                         <span class="comment"># Interactive process viewer</span>
+
+<span class="comment"># === Updates ===</span>
+cd ~/btc-enhanced-streak-mitigation && git pull  <span class="comment"># Update code</span>
+sudo systemctl restart streamlit-dashboard       <span class="comment"># Apply changes</span></pre>
+            </div>
+        </section>
+
+        <footer>
+            <p>BTC Adaptive Strategy Dashboard - AWS Lightsail Deployment Guide</p>
+            <p>Generated: <script>document.write(new Date().toISOString().split('T')[0])</script></p>
+            <p style="margin-top: 20px; color: var(--text-muted);">
+                For issues, check the <a href="https://github.com/YOUR_USERNAME/btc-enhanced-streak-mitigation" style="color: var(--primary);">GitHub repository</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

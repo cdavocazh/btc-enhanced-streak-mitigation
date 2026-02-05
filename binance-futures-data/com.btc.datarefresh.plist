@@ -7,11 +7,11 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/launchd_refresh.sh</string>
+        <string>/Users/kriszhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/launchd_refresh.sh</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data</string>
+    <string>/Users/kriszhang/Github/btc-enhanced-streak-mitigation/binance-futures-data</string>
 
     <!-- Run every 5 minutes -->
     <key>StartInterval</key>
@@ -23,19 +23,19 @@
 
     <!-- Standard output log -->
     <key>StandardOutPath</key>
-    <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd.log</string>
+    <string>/Users/kriszhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd.log</string>
 
     <!-- Standard error log -->
     <key>StandardErrorPath</key>
-    <string>/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd_error.log</string>
+    <string>/Users/kriszhang/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd_error.log</string>
 
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/opt/anaconda3/bin:/Users/kris.zhang/mambaforge/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <string>/opt/anaconda3/bin:/Users/kriszhang/mambaforge/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
         <key>HOME</key>
-        <string>/Users/kris.zhang</string>
+        <string>/Users/kriszhang</string>
     </dict>
 
     <!-- Keep alive - restart if it crashes -->

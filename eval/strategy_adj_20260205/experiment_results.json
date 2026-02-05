@@ -1,0 +1,696 @@
+{
+  "timestamp": "2026-02-05T13:28:13.188752+00:00",
+  "wf_config": {
+    "training_window_days": 30,
+    "testing_window_days": 14,
+    "step_size_days": 7
+  },
+  "experiments": [
+    {
+      "experiment_name": "Baseline",
+      "strategy_name": "Baseline",
+      "is_return_pct": 4.730825471698098,
+      "oos_return_pct": 2.4193396226415023,
+      "oos_efficiency": 0.5113990438064283,
+      "total_trades": 352,
+      "win_rate_pct": 21.62848158131177,
+      "max_drawdown_pct": 4.319241215183111,
+      "sharpe_ratio": 980378306303432.5,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "stop_atr_mult": 1.8,
+        "tp_atr_mult": 4.5
+      }
+    },
+    {
+      "experiment_name": "Baseline",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": 2.5153301886792585,
+      "oos_return_pct": 1.1981132075471757,
+      "oos_efficiency": 0.4763244256915141,
+      "total_trades": 218,
+      "win_rate_pct": 17.547169811320753,
+      "max_drawdown_pct": 3.0230607966457024,
+      "sharpe_ratio": -812596098822875.6,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "adx_threshold": 20,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96
+      }
+    },
+    {
+      "experiment_name": "Baseline",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": 2.5153301886792585,
+      "oos_return_pct": 1.1981132075471757,
+      "oos_efficiency": 0.4763244256915141,
+      "total_trades": 218,
+      "win_rate_pct": 17.547169811320753,
+      "max_drawdown_pct": 3.0230607966457024,
+      "sharpe_ratio": -812596098822875.6,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96
+      }
+    },
+    {
+      "experiment_name": "Relaxed_Entry",
+      "strategy_name": "Baseline",
+      "is_return_pct": -2.62031561601511,
+      "oos_return_pct": -1.3115656160150926,
+      "oos_efficiency": 0.5005372665792369,
+      "total_trades": 1130,
+      "win_rate_pct": 19.96275998634489,
+      "max_drawdown_pct": 11.158258608056238,
+      "sharpe_ratio": 1782521908644202.8,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          15,
+          50
+        ],
+        "pullback_range": [
+          0.3,
+          3.5
+        ],
+        "min_pos_score": 0.1,
+        "stop_atr_mult": 1.8,
+        "tp_atr_mult": 4.5
+      }
+    },
+    {
+      "experiment_name": "Relaxed_Entry",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": 1.1797778828241665,
+      "oos_return_pct": 0.8110986375411304,
+      "oos_efficiency": 0.6875011384342218,
+      "total_trades": 647,
+      "win_rate_pct": 18.839813226605674,
+      "max_drawdown_pct": 7.454371781537794,
+      "sharpe_ratio": -4012659654553198.0,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          15,
+          50
+        ],
+        "pullback_range": [
+          0.3,
+          3.5
+        ],
+        "min_pos_score": 0.1,
+        "adx_threshold": 20,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96
+      }
+    },
+    {
+      "experiment_name": "Relaxed_Entry",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": 1.1797778828241665,
+      "oos_return_pct": 0.8110986375411304,
+      "oos_efficiency": 0.6875011384342218,
+      "total_trades": 647,
+      "win_rate_pct": 18.839813226605674,
+      "max_drawdown_pct": 7.454371781537794,
+      "sharpe_ratio": -4012659654553198.0,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          15,
+          50
+        ],
+        "pullback_range": [
+          0.3,
+          3.5
+        ],
+        "min_pos_score": 0.1,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96
+      }
+    },
+    {
+      "experiment_name": "Lower_ADX",
+      "strategy_name": "Baseline",
+      "is_return_pct": 4.730825471698098,
+      "oos_return_pct": 2.4193396226415023,
+      "oos_efficiency": 0.5113990438064283,
+      "total_trades": 352,
+      "win_rate_pct": 21.62848158131177,
+      "max_drawdown_pct": 4.319241215183111,
+      "sharpe_ratio": 980378306303432.5,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.12,
+        "stop_atr_mult": 1.8,
+        "tp_atr_mult": 4.5,
+        "adx_threshold": 15
+      }
+    },
+    {
+      "experiment_name": "Lower_ADX",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": 5.131367924528304,
+      "oos_return_pct": 2.5259433962264173,
+      "oos_efficiency": 0.49225536608907505,
+      "total_trades": 315,
+      "win_rate_pct": 22.989667565139264,
+      "max_drawdown_pct": 3.955741139960954,
+      "sharpe_ratio": 1273769028237838.0,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.12,
+        "adx_threshold": 15,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96
+      }
+    },
+    {
+      "experiment_name": "Lower_ADX",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": 5.131367924528304,
+      "oos_return_pct": 2.5259433962264173,
+      "oos_efficiency": 0.49225536608907505,
+      "total_trades": 315,
+      "win_rate_pct": 22.989667565139264,
+      "max_drawdown_pct": 3.955741139960954,
+      "sharpe_ratio": 1273769028237838.0,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.12,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96,
+        "adx_threshold": 15
+      }
+    },
+    {
+      "experiment_name": "Aggressive_ProgPos",
+      "strategy_name": "Baseline",
+      "is_return_pct": 4.730825471698098,
+      "oos_return_pct": 2.4193396226415023,
+      "oos_efficiency": 0.5113990438064283,
+      "total_trades": 352,
+      "win_rate_pct": 21.62848158131177,
+      "max_drawdown_pct": 4.319241215183111,
+      "sharpe_ratio": 980378306303432.5,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "stop_atr_mult": 1.8,
+        "tp_atr_mult": 4.5,
+        "progressive_pos": {
+          "0": 0.3,
+          "1": 0.4,
+          "2": 0.5,
+          "3": 0.6,
+          "4": 0.8
+        },
+        "cooldown_bars": 72
+      }
+    },
+    {
+      "experiment_name": "Aggressive_ProgPos",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": 2.446933962264164,
+      "oos_return_pct": 1.1981132075471757,
+      "oos_efficiency": 0.48963855421686725,
+      "total_trades": 218,
+      "win_rate_pct": 17.547169811320753,
+      "max_drawdown_pct": 3.0230607966457024,
+      "sharpe_ratio": -812596098822875.6,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "adx_threshold": 20,
+        "progressive_pos": {
+          "0": 0.3,
+          "1": 0.4,
+          "2": 0.5,
+          "3": 0.6,
+          "4": 0.8
+        },
+        "cooldown_bars": 72
+      }
+    },
+    {
+      "experiment_name": "Aggressive_ProgPos",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": 2.446933962264164,
+      "oos_return_pct": 1.1981132075471757,
+      "oos_efficiency": 0.48963855421686725,
+      "total_trades": 218,
+      "win_rate_pct": 17.547169811320753,
+      "max_drawdown_pct": 3.0230607966457024,
+      "sharpe_ratio": -812596098822875.6,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "progressive_pos": {
+          "0": 0.3,
+          "1": 0.4,
+          "2": 0.5,
+          "3": 0.6,
+          "4": 0.8
+        },
+        "cooldown_bars": 72
+      }
+    },
+    {
+      "experiment_name": "Wider_SL_TP",
+      "strategy_name": "Baseline",
+      "is_return_pct": 4.12047431927954,
+      "oos_return_pct": 2.1399854685076525,
+      "oos_efficiency": 0.5193541574800608,
+      "total_trades": 331,
+      "win_rate_pct": 22.211365678346812,
+      "max_drawdown_pct": 3.924979697146961,
+      "sharpe_ratio": -1277874563882631.2,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "stop_atr_mult": 2.2,
+        "tp_atr_mult": 5.0
+      }
+    },
+    {
+      "experiment_name": "Wider_SL_TP",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": 2.64041428497421,
+      "oos_return_pct": 1.345388555986206,
+      "oos_efficiency": 0.5095369176126644,
+      "total_trades": 204,
+      "win_rate_pct": 19.0251572327044,
+      "max_drawdown_pct": 2.645242373679031,
+      "sharpe_ratio": 3960524448936577.0,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "adx_threshold": 20,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96,
+        "stop_atr_mult": 2.2,
+        "tp_atr_mult": 5.0
+      }
+    },
+    {
+      "experiment_name": "Wider_SL_TP",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": 2.64041428497421,
+      "oos_return_pct": 1.345388555986206,
+      "oos_efficiency": 0.5095369176126644,
+      "total_trades": 204,
+      "win_rate_pct": 19.0251572327044,
+      "max_drawdown_pct": 2.645242373679031,
+      "sharpe_ratio": 3960524448936577.0,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.15,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96,
+        "stop_atr_mult": 2.2,
+        "tp_atr_mult": 5.0
+      }
+    },
+    {
+      "experiment_name": "Combined_Relaxed",
+      "strategy_name": "Baseline",
+      "is_return_pct": -2.62031561601511,
+      "oos_return_pct": -1.3115656160150926,
+      "oos_efficiency": 0.5005372665792369,
+      "total_trades": 1130,
+      "win_rate_pct": 19.96275998634489,
+      "max_drawdown_pct": 11.158258608056238,
+      "sharpe_ratio": 1782521908644202.8,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          15,
+          50
+        ],
+        "pullback_range": [
+          0.3,
+          3.5
+        ],
+        "min_pos_score": 0.1,
+        "stop_atr_mult": 1.8,
+        "tp_atr_mult": 4.5,
+        "adx_threshold": 15,
+        "progressive_pos": {
+          "0": 0.3,
+          "1": 0.4,
+          "2": 0.5,
+          "3": 0.6,
+          "4": 0.8
+        },
+        "cooldown_bars": 72
+      }
+    },
+    {
+      "experiment_name": "Combined_Relaxed",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": -0.1948869681489585,
+      "oos_return_pct": 0.045396050718957165,
+      "oos_efficiency": -0.23293528115363504,
+      "total_trades": 924,
+      "win_rate_pct": 20.07191053181619,
+      "max_drawdown_pct": 9.588558089932805,
+      "sharpe_ratio": 1808127332506993.0,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          15,
+          50
+        ],
+        "pullback_range": [
+          0.3,
+          3.5
+        ],
+        "min_pos_score": 0.1,
+        "adx_threshold": 15,
+        "progressive_pos": {
+          "0": 0.3,
+          "1": 0.4,
+          "2": 0.5,
+          "3": 0.6,
+          "4": 0.8
+        },
+        "cooldown_bars": 72
+      }
+    },
+    {
+      "experiment_name": "Combined_Relaxed",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": -0.1948869681489585,
+      "oos_return_pct": 0.045396050718957165,
+      "oos_efficiency": -0.23293528115363504,
+      "total_trades": 924,
+      "win_rate_pct": 20.07191053181619,
+      "max_drawdown_pct": 9.588558089932805,
+      "sharpe_ratio": 1808127332506993.0,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.4,
+        "rsi_long_range": [
+          15,
+          50
+        ],
+        "pullback_range": [
+          0.3,
+          3.5
+        ],
+        "min_pos_score": 0.1,
+        "progressive_pos": {
+          "0": 0.3,
+          "1": 0.4,
+          "2": 0.5,
+          "3": 0.6,
+          "4": 0.8
+        },
+        "cooldown_bars": 72,
+        "adx_threshold": 15
+      }
+    },
+    {
+      "experiment_name": "Selective_Tight",
+      "strategy_name": "Baseline",
+      "is_return_pct": 5.361163522012567,
+      "oos_return_pct": 2.8344339622641455,
+      "oos_efficiency": 0.5286975393729655,
+      "total_trades": 388,
+      "win_rate_pct": 23.03290655884995,
+      "max_drawdown_pct": 4.354318345550565,
+      "sharpe_ratio": 427869852639857.1,
+      "windows_evaluated": 212,
+      "status": "WARNING",
+      "parameters": {
+        "min_pos_long": 0.5,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.2,
+        "stop_atr_mult": 1.5,
+        "tp_atr_mult": 3.5
+      }
+    },
+    {
+      "experiment_name": "Selective_Tight",
+      "strategy_name": "Adaptive_Baseline",
+      "is_return_pct": 5.1213836477987105,
+      "oos_return_pct": 2.53773584905659,
+      "oos_efficiency": 0.4955176224978513,
+      "total_trades": 234,
+      "win_rate_pct": 21.62735849056604,
+      "max_drawdown_pct": 2.7512384809036887,
+      "sharpe_ratio": -4301457413693769.5,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.5,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.2,
+        "adx_threshold": 20,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96,
+        "stop_atr_mult": 1.5,
+        "tp_atr_mult": 3.5
+      }
+    },
+    {
+      "experiment_name": "Selective_Tight",
+      "strategy_name": "Adaptive_ProgPos_Only",
+      "is_return_pct": 5.1213836477987105,
+      "oos_return_pct": 2.53773584905659,
+      "oos_efficiency": 0.4955176224978513,
+      "total_trades": 234,
+      "win_rate_pct": 21.62735849056604,
+      "max_drawdown_pct": 2.7512384809036887,
+      "sharpe_ratio": -4301457413693769.5,
+      "windows_evaluated": 212,
+      "status": "CRITICAL",
+      "parameters": {
+        "min_pos_long": 0.5,
+        "rsi_long_range": [
+          20,
+          45
+        ],
+        "pullback_range": [
+          0.5,
+          3.0
+        ],
+        "min_pos_score": 0.2,
+        "progressive_pos": {
+          "0": 0.4,
+          "1": 0.5,
+          "2": 0.6,
+          "3": 0.8,
+          "4": 1.0
+        },
+        "cooldown_bars": 96,
+        "stop_atr_mult": 1.5,
+        "tp_atr_mult": 3.5
+      }
+    }
+  ]
+}

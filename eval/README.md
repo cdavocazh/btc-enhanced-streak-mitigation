@@ -12,6 +12,24 @@ This framework provides automated:
 
 ## Quick Start
 
+### Automated Full Pipeline (Recommended)
+
+```bash
+# Run complete evaluation + adjustment pipeline
+./eval/eval_regular_exec.sh
+
+# Quick check only
+./eval/eval_regular_exec.sh --quick
+
+# Evaluation without adjustments
+./eval/eval_regular_exec.sh --eval-only
+
+# Adjustments only (uses existing evaluation)
+./eval/eval_regular_exec.sh --adj-only
+```
+
+### Individual Commands
+
 ```bash
 # Quick performance check (run every 6 hours)
 python eval/run_evaluation.py --quick
@@ -36,17 +54,26 @@ python eval/run_evaluation.py --summary
 
 ```
 eval/
-├── config.py              # Central configuration & strategy parameters
-├── walk_forward_engine.py # Rolling-window WFO implementation
-├── performance_tracker.py # SQLite tracking & alerts
-├── strategy_learner.py    # Trend analysis & parameter adaptation
-├── run_evaluation.py      # Main scheduler & runner
-├── __init__.py           # Package exports
-├── README.md             # This file
-├── STATUS.md             # Current status & iteration log
-├── results/              # Evaluation results (JSON)
-├── learnings/            # Learning cycle reports (JSON)
-└── performance_history.db # SQLite database
+├── config.py                # Central configuration & strategy parameters
+├── walk_forward_engine.py   # Rolling-window WFO implementation
+├── performance_tracker.py   # SQLite tracking & alerts
+├── strategy_learner.py      # Trend analysis & parameter adaptation
+├── run_evaluation.py        # Main scheduler & runner
+├── eval_regular_exec.sh     # ★ Automated pipeline script
+├── __init__.py              # Package exports
+├── README.md                # This file
+├── STATUS.md                # Current status & iteration log
+├── results/                 # Evaluation results (JSON)
+├── learnings/               # Learning cycle reports (JSON)
+├── logs/                    # Execution logs
+├── performance_history.db   # SQLite database
+└── strategy_adj_YYYYMMDD/   # ★ Auto-generated adjustment folders
+    ├── adjusted_config.py   # Parameter configurations
+    ├── run_adjusted_backtest.py
+    ├── generate_report.py
+    ├── experiment_results.json
+    ├── experiment_report.html
+    └── README.md
 ```
 
 ## Strategies Covered
@@ -167,13 +194,54 @@ min_confidence: 50%               # Required for adjustment
 | `EVALUATION_REPORT_*.md` | Human-readable reports |
 | `performance_history.db` | SQLite database |
 
+## Automated Pipeline: eval_regular_exec.sh
+
+The `eval_regular_exec.sh` script automates the entire evaluation and adjustment workflow:
+
+### What It Does
+
+1. **Runs full walk-forward evaluation** for all strategies
+2. **Runs strategy learner** to analyze performance trends
+3. **Creates adjustment folder** (`strategy_adj_YYYYMMDD/`)
+4. **Generates parameter experiments** (6 different adjustments)
+5. **Runs backtests** with adjusted parameters
+6. **Generates HTML report** with visual results
+7. **Updates STATUS.md** with findings
+
+### Usage Modes
+
+| Mode | Command | Description |
+|------|---------|-------------|
+| Full | `./eval_regular_exec.sh` | Complete pipeline |
+| Quick | `./eval_regular_exec.sh --quick` | Quick performance check only |
+| Eval Only | `./eval_regular_exec.sh --eval-only` | Evaluation without adjustments |
+| Adj Only | `./eval_regular_exec.sh --adj-only` | Adjustments only |
+
+### Output
+
+- **Adjustment folder**: `eval/strategy_adj_YYYYMMDD/`
+- **HTML Report**: `eval/strategy_adj_YYYYMMDD/experiment_report.html`
+- **Log file**: `eval/logs/eval_exec_YYYYMMDD.log`
+
 ## Integration with Launchd
 
-Add to crontab or create launchd plist for scheduled runs:
-
+### Data Refresh (Every 5 minutes)
+The Binance data refresh is handled by a separate launchd job:
 ```bash
-# Crontab example (every 6 hours)
-0 */6 * * * cd /path/to/repo && python eval/run_evaluation.py --scheduled >> eval/logs/eval.log 2>&1
+# Check status
+launchctl list | grep btc
+
+# View logs
+tail -f ~/Github/btc-enhanced-streak-mitigation/binance-futures-data/logs/launchd.log
+```
+
+### Scheduled Evaluation (Crontab)
+```bash
+# Weekly full evaluation (Sundays at 2am)
+0 2 * * 0 cd /path/to/repo && ./eval/eval_regular_exec.sh >> eval/logs/weekly.log 2>&1
+
+# Quick check every 6 hours
+0 */6 * * * cd /path/to/repo && python eval/run_evaluation.py --quick >> eval/logs/quick.log 2>&1
 ```
 
 ## Key Metrics

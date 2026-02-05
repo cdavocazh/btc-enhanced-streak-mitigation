@@ -456,6 +456,225 @@ def load_streak_stats():
     return {}
 
 
+def load_trades_for_strategy(strategy_name: str, limit: int = 50) -> pd.DataFrame:
+    """Load trade log for a specific strategy.
+
+    Args:
+        strategy_name: Name of the strategy (e.g., 'Adaptive_Baseline')
+        limit: Maximum number of trades to return (most recent first)
+
+    Returns:
+        DataFrame with trade data, sorted by exit_time descending
+    """
+    # Try multiple possible file patterns
+    patterns = [
+        f"trades_{strategy_name}.csv",
+        f"trades_{strategy_name.replace('Adaptive_', '')}.csv",
+        f"{strategy_name}_trades.csv",
+    ]
+
+    trades_df = None
+
+    for pattern in patterns:
+        trades_file = os.path.join(RESULTS_DIR, pattern)
+        if os.path.exists(trades_file):
+            try:
+                trades_df = pd.read_csv(trades_file)
+                break
+            except Exception as e:
+                continue
+
+    # Also check for combined trades file
+    if trades_df is None:
+        combined_file = os.path.join(RESULTS_DIR, 'all_trades.csv')
+        if os.path.exists(combined_file):
+            try:
+                all_trades = pd.read_csv(combined_file)
+                if 'strategy' in all_trades.columns:
+                    trades_df = all_trades[all_trades['strategy'] == strategy_name]
+            except Exception:
+                pass
+
+    if trades_df is None or len(trades_df) == 0:
+        return pd.DataFrame()
+
+    # Parse datetime columns
+    for col in ['entry_time', 'exit_time', 'entry_timestamp', 'exit_timestamp']:
+        if col in trades_df.columns:
+            trades_df[col] = pd.to_datetime(trades_df[col], errors='coerce')
+
+    # Determine sort column
+    sort_col = None
+    for col in ['exit_time', 'exit_timestamp', 'entry_time', 'entry_timestamp']:
+        if col in trades_df.columns:
+            sort_col = col
+            break
+
+    if sort_col:
+        trades_df = trades_df.sort_values(sort_col, ascending=False)
+
+    return trades_df.head(limit)
+
+
+def format_trade_log(trades_df: pd.DataFrame) -> pd.DataFrame:
+    """Format trade log for display.
+
+    Args:
+        trades_df: Raw trades DataFrame
+
+    Returns:
+        Formatted DataFrame ready for display
+    """
+    if trades_df.empty:
+        return pd.DataFrame()
+
+    display_df = pd.DataFrame()
+
+    # Entry time
+    if 'entry_time' in trades_df.columns:
+        display_df['Entry Time'] = pd.to_datetime(trades_df['entry_time']).dt.strftime('%Y-%m-%d %H:%M')
+
+    # Exit time
+    if 'exit_time' in trades_df.columns:
+        display_df['Exit Time'] = pd.to_datetime(trades_df['exit_time']).dt.strftime('%Y-%m-%d %H:%M')
+
+    # Entry price
+    if 'entry_price' in trades_df.columns:
+        display_df['Entry $'] = trades_df['entry_price'].apply(lambda x: f"${x:,.2f}" if pd.notna(x) else "-")
+
+    # Exit price
+    if 'exit_price' in trades_df.columns:
+        display_df['Exit $'] = trades_df['exit_price'].apply(lambda x: f"${x:,.2f}" if pd.notna(x) else "-")
+
+    # PnL with result indicator
+    if 'pnl' in trades_df.columns:
+        display_df['PnL'] = trades_df['pnl'].apply(
+            lambda x: f"${x:+,.2f}" if pd.notna(x) else "-"
+        )
+        display_df['Result'] = trades_df['pnl'].apply(
+            lambda x: "🟢 Win" if pd.notna(x) and x > 0 else "🔴 Loss" if pd.notna(x) and x < 0 else "⚪ BE"
+        )
+
+    # PnL percentage
+    if 'pnl_pct' in trades_df.columns:
+        display_df['PnL %'] = trades_df['pnl_pct'].apply(
+            lambda x: f"{x:+.2f}%" if pd.notna(x) else "-"
+        )
+
+    # Exit reason
+    if 'exit_reason' in trades_df.columns:
+        display_df['Exit Reason'] = trades_df['exit_reason'].apply(
+            lambda x: str(x).replace('_', ' ').title() if pd.notna(x) else "-"
+        )
+
+    # Bars held / Duration
+    if 'bars_held' in trades_df.columns:
+        display_df['Bars'] = trades_df['bars_held'].apply(
+            lambda x: f"{int(x)}" if pd.notna(x) else "-"
+        )
+        # Convert bars to hours (each bar is 15 min)
+        display_df['Duration'] = trades_df['bars_held'].apply(
+            lambda x: f"{x * 0.25:.1f}h" if pd.notna(x) else "-"
+        )
+
+    # Market regime at entry
+    if 'entry_regime' in trades_df.columns:
+        display_df['Regime'] = trades_df['entry_regime'].apply(
+            lambda x: "📈 Trend" if x == 'trending' else "📊 Range" if pd.notna(x) else "-"
+        )
+
+    # ADX at entry
+    if 'entry_adx' in trades_df.columns:
+        display_df['ADX'] = trades_df['entry_adx'].apply(
+            lambda x: f"{x:.1f}" if pd.notna(x) else "-"
+        )
+
+    # Streak level at entry
+    if 'streak_level_at_entry' in trades_df.columns:
+        display_df['Streak Lvl'] = trades_df['streak_level_at_entry'].apply(
+            lambda x: f"{int(x)}" if pd.notna(x) else "0"
+        )
+
+    # Consecutive losses at entry
+    if 'consecutive_losses_at_entry' in trades_df.columns:
+        display_df['Losses'] = trades_df['consecutive_losses_at_entry'].apply(
+            lambda x: f"{int(x)}" if pd.notna(x) else "0"
+        )
+
+    return display_df
+
+
+def display_trade_log(strategy_name: str, limit: int = 20):
+    """Display trade log for a strategy with styling.
+
+    Args:
+        strategy_name: Name of the strategy
+        limit: Number of trades to show
+    """
+    trades_df = load_trades_for_strategy(strategy_name, limit)
+
+    if trades_df.empty:
+        st.info(f"No trade data available for {strategy_name}. Run backtest to generate trades.")
+        return
+
+    formatted_df = format_trade_log(trades_df)
+
+    if formatted_df.empty:
+        st.warning("Could not format trade data. Check CSV column names.")
+        return
+
+    # Calculate summary stats from raw data
+    if 'pnl' in trades_df.columns:
+        total_pnl = trades_df['pnl'].sum()
+        wins = (trades_df['pnl'] > 0).sum()
+        losses = (trades_df['pnl'] < 0).sum()
+        breakeven = (trades_df['pnl'] == 0).sum()
+        win_rate = wins / (wins + losses) * 100 if (wins + losses) > 0 else 0
+
+        avg_win = trades_df[trades_df['pnl'] > 0]['pnl'].mean() if wins > 0 else 0
+        avg_loss = trades_df[trades_df['pnl'] < 0]['pnl'].mean() if losses > 0 else 0
+
+        # Summary metrics row 1
+        sum_col1, sum_col2, sum_col3, sum_col4, sum_col5 = st.columns(5)
+        with sum_col1:
+            delta_color = "normal" if total_pnl >= 0 else "inverse"
+            st.metric("Total PnL", f"${total_pnl:+,.2f}")
+        with sum_col2:
+            st.metric("Trades Shown", f"{len(trades_df)}")
+        with sum_col3:
+            st.metric("Win Rate", f"{win_rate:.1f}%")
+        with sum_col4:
+            st.metric("Wins", f"{wins}", f"Avg: ${avg_win:,.0f}" if wins > 0 else None)
+        with sum_col5:
+            st.metric("Losses", f"{losses}", f"Avg: ${avg_loss:,.0f}" if losses > 0 else None)
+
+    # Date range
+    if 'exit_time' in trades_df.columns:
+        try:
+            exit_times = pd.to_datetime(trades_df['exit_time'])
+            latest = exit_times.max()
+            earliest = exit_times.min()
+            st.caption(f"📅 Showing trades from {earliest.strftime('%Y-%m-%d')} to {latest.strftime('%Y-%m-%d')} (most recent first)")
+        except Exception:
+            pass
+
+    # Display the table with column configuration
+    st.dataframe(
+        formatted_df,
+        hide_index=True,
+        use_container_width=True,
+        height=min(500, len(formatted_df) * 38 + 50),
+        column_config={
+            "PnL": st.column_config.TextColumn("PnL", help="Profit/Loss in USD"),
+            "Result": st.column_config.TextColumn("Result", help="Win/Loss indicator"),
+            "Entry $": st.column_config.TextColumn("Entry $", help="Entry price"),
+            "Exit $": st.column_config.TextColumn("Exit $", help="Exit price"),
+            "Duration": st.column_config.TextColumn("Duration", help="Trade duration in hours"),
+            "Regime": st.column_config.TextColumn("Regime", help="Market regime at entry"),
+        }
+    )
+
+
 def create_price_chart(df, show_adx=True):
     """Create price chart with ADX overlay"""
     if len(df) == 0:
@@ -877,6 +1096,31 @@ def main():
     fig_perf = create_performance_comparison()
     if fig_perf:
         st.plotly_chart(fig_perf, width='stretch')
+
+    st.divider()
+
+    # ===============================
+    # Trade Logs by Strategy
+    # ===============================
+    st.header("📜 Trade Logs")
+
+    # Strategy tabs for trade logs
+    trade_log_tabs = st.tabs(list(ADAPTIVE_STRATEGIES.keys()))
+
+    for i, (strat_name, strat_config) in enumerate(ADAPTIVE_STRATEGIES.items()):
+        with trade_log_tabs[i]:
+            st.subheader(f"{strat_name}")
+            st.caption(strat_config['description'])
+
+            # Number of trades to show
+            num_trades = st.selectbox(
+                "Show trades:",
+                options=[10, 20, 50, 100],
+                index=1,
+                key=f"num_trades_{strat_name}"
+            )
+
+            display_trade_log(strat_name, limit=num_trades)
 
     st.divider()
 

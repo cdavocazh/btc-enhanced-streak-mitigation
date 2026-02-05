@@ -13,15 +13,15 @@
 START_TIME=$(date +%s)
 
 # Configuration - UPDATE THESE PATHS
-SCRIPT_DIR="/Users/kris.zhang/Github/btc-enhanced-streak-mitigation/binance-futures-data"
+SCRIPT_DIR="/Users/kriszhang/Github/btc-enhanced-streak-mitigation/binance-futures-data"
 LOG_DIR="${SCRIPT_DIR}/logs"
-PYTHON_PATH="/Users/kris.zhang/mambaforge/bin/python3"
+PYTHON_PATH="/Users/kriszhang/mambaforge/bin/python3"
 
 # Fallback Python paths (try in order)
 PYTHON_PATHS=(
     "/opt/anaconda3/bin/python3"
     "/opt/homebrew/Caskroom/mambaforge/base/bin/python3"
-    "/Users/kris.zhang/mambaforge/bin/python3"
+    "/Users/kriszhang/mambaforge/bin/python3"
     "/opt/homebrew/bin/python3"
     "/usr/local/bin/python3"
     "/usr/bin/python3"
