@@ -9,6 +9,8 @@ This framework provides automated:
 - **Performance Tracking**: SQLite-based historical tracking with degradation alerts
 - **Adaptive Learning**: Parameter adjustment based on performance trends
 - **Scheduled Evaluations**: Automated periodic checks (quick/full/adapt)
+- **Monte Carlo Validation**: Brute-force and stratified shuffle tests with antithetic variates for variance reduction
+- **Particle Filter**: Online Bayesian parameter estimation for regime-adaptive strategy parameters
 
 ## Quick Start
 

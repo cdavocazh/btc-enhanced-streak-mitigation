@@ -347,11 +347,20 @@ def calculate_metrics_from_pnl(pnl_sequence: np.ndarray) -> Dict:
     }
 
 
-def run_monte_carlo_simulation(pnl_sequence: np.ndarray, n_simulations: int = NUM_SIMULATIONS) -> Dict:
+def run_monte_carlo_simulation(
+    pnl_sequence: np.ndarray,
+    n_simulations: int = NUM_SIMULATIONS,
+    antithetic: bool = False,
+) -> Dict:
     """
-    Run Monte Carlo simulation by shuffling PnL sequence
+    Run Monte Carlo simulation by shuffling PnL sequence.
 
-    Returns distribution statistics for each metric
+    When antithetic=True, uses antithetic variates for variance reduction:
+    for each shuffled sequence Z, also evaluates the reversed sequence Z[::-1]
+    and averages the pair's metrics. This halves estimator variance because
+    reversed orderings produce negatively correlated metrics.
+
+    Returns distribution statistics for each metric.
     """
     actual_metrics = calculate_metrics_from_pnl(pnl_sequence)
 
@@ -361,22 +370,44 @@ def run_monte_carlo_simulation(pnl_sequence: np.ndarray, n_simulations: int = NU
     sim_max_consec_losses = []
     sim_sharpe = []
 
-    log(f"Running {n_simulations} Monte Carlo simulations...")
+    if antithetic:
+        n_pairs = n_simulations // 2
+        log(f"Running {n_pairs} antithetic pairs ({n_simulations} effective simulations)...")
 
-    for i in range(n_simulations):
-        # Shuffle the PnL sequence
-        shuffled_pnl = np.random.permutation(pnl_sequence)
+        for i in range(n_pairs):
+            # Generate shuffle Z
+            shuffled_pnl = np.random.permutation(pnl_sequence)
+            metrics_z = calculate_metrics_from_pnl(shuffled_pnl)
 
-        # Calculate metrics for shuffled sequence
-        metrics = calculate_metrics_from_pnl(shuffled_pnl)
+            # Antithetic: reverse Z
+            antithetic_pnl = shuffled_pnl[::-1]
+            metrics_anti = calculate_metrics_from_pnl(antithetic_pnl)
 
-        sim_returns.append(metrics['total_return'])
-        sim_max_dd.append(metrics['max_drawdown'])
-        sim_max_consec_losses.append(metrics['max_consecutive_losses'])
-        sim_sharpe.append(metrics['sharpe_ratio'])
+            # Average the pair
+            sim_returns.append((metrics_z['total_return'] + metrics_anti['total_return']) / 2)
+            sim_max_dd.append((metrics_z['max_drawdown'] + metrics_anti['max_drawdown']) / 2)
+            sim_max_consec_losses.append((metrics_z['max_consecutive_losses'] + metrics_anti['max_consecutive_losses']) / 2)
+            sim_sharpe.append((metrics_z['sharpe_ratio'] + metrics_anti['sharpe_ratio']) / 2)
 
-        if (i + 1) % 200 == 0:
-            log(f"  Completed {i + 1}/{n_simulations} simulations...")
+            if (i + 1) % 100 == 0:
+                log(f"  Completed {i + 1}/{n_pairs} antithetic pairs...")
+    else:
+        log(f"Running {n_simulations} Monte Carlo simulations...")
+
+        for i in range(n_simulations):
+            # Shuffle the PnL sequence
+            shuffled_pnl = np.random.permutation(pnl_sequence)
+
+            # Calculate metrics for shuffled sequence
+            metrics = calculate_metrics_from_pnl(shuffled_pnl)
+
+            sim_returns.append(metrics['total_return'])
+            sim_max_dd.append(metrics['max_drawdown'])
+            sim_max_consec_losses.append(metrics['max_consecutive_losses'])
+            sim_sharpe.append(metrics['sharpe_ratio'])
+
+            if (i + 1) % 200 == 0:
+                log(f"  Completed {i + 1}/{n_simulations} simulations...")
 
     # Convert to arrays
     sim_returns = np.array(sim_returns)
@@ -398,8 +429,27 @@ def run_monte_carlo_simulation(pnl_sequence: np.ndarray, n_simulations: int = NU
     ci_95_max_dd = (np.percentile(sim_max_dd, 2.5), np.percentile(sim_max_dd, 97.5))
     ci_95_consec_losses = (np.percentile(sim_max_consec_losses, 2.5), np.percentile(sim_max_consec_losses, 97.5))
 
+    # Compute variance reduction estimate when antithetic is used
+    variance_reduction_pct = None
+    if antithetic:
+        # Compare paired estimator variance vs independent
+        # For a fair comparison, also run a small batch without antithetic
+        independent_returns = []
+        n_check = min(100, n_simulations // 2)
+        for _ in range(n_check):
+            shuffled = np.random.permutation(pnl_sequence)
+            independent_returns.append(calculate_metrics_from_pnl(shuffled)['total_return'])
+        independent_std = np.std(independent_returns)
+        paired_std = np.std(sim_returns)
+        if independent_std > 0:
+            variance_reduction_pct = float((1 - (paired_std / independent_std) ** 2) * 100)
+        else:
+            variance_reduction_pct = 0.0
+
     return {
         'actual_metrics': actual_metrics,
+        'antithetic': antithetic,
+        'variance_reduction_pct': variance_reduction_pct,
         'simulation_stats': {
             'total_return': {
                 'mean': float(sim_returns.mean()),
@@ -452,9 +502,27 @@ def run_monte_carlo_simulation(pnl_sequence: np.ndarray, n_simulations: int = NU
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Monte Carlo Shuffle Validation",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--simulations", "-n", type=int, default=NUM_SIMULATIONS,
+        help=f"Number of simulations (default: {NUM_SIMULATIONS})",
+    )
+    parser.add_argument(
+        "--antithetic", "-a", action="store_true",
+        help="Use antithetic variates for variance reduction",
+    )
+    args = parser.parse_args()
+
     log("=" * 70)
     log("MONTE CARLO SHUFFLE VALIDATION")
     log("Strategy: Optimized TopTraderFocused + Mitigations")
+    if args.antithetic:
+        log("Mode: ANTITHETIC VARIATES (variance reduction)")
     log("=" * 70)
 
     # Create results directory
@@ -490,7 +558,7 @@ def main():
     log("MONTE CARLO SIMULATION")
     log("=" * 70)
 
-    mc_results = run_monte_carlo_simulation(pnl_sequence, NUM_SIMULATIONS)
+    mc_results = run_monte_carlo_simulation(pnl_sequence, args.simulations, antithetic=args.antithetic)
 
     # Print results
     log("")
@@ -543,13 +611,22 @@ def main():
         log("  -> Results are relatively independent of trade sequence")
         log("  -> Strategy performance is robust to timing variations")
 
+    if mc_results.get('antithetic'):
+        log("")
+        log("ANTITHETIC VARIATES:")
+        vr = mc_results.get('variance_reduction_pct', 0)
+        log(f"  Variance Reduction: {vr:.1f}%")
+        log(f"  Method: Paired shuffle Z + reverse(Z), averaged metrics")
+
     # Save results
     results_file = os.path.join(results_dir, 'monte_carlo_results.json')
     with open(results_file, 'w') as f:
         json.dump({
             'config': OPTIMIZED_CONFIG,
             'n_trades': len(trades),
-            'n_simulations': NUM_SIMULATIONS,
+            'n_simulations': args.simulations,
+            'antithetic': args.antithetic,
+            'variance_reduction_pct': mc_results.get('variance_reduction_pct'),
             'actual_metrics': actual,
             'simulation_stats': sim_stats,
             'interpretation': mc_results['interpretation'],

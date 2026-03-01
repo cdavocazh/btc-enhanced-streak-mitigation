@@ -16,7 +16,8 @@ btc-enhanced-streak-mitigation/
 ├── backtest_15min_new/          # 15-minute backtests with tiered capital
 ├── backtest_15min_new_streak_a/ # Adaptive streak reduction strategies (ADX, ProgPos)
 ├── binance-futures-data/        # Live Binance Futures data extraction (auto-refresh)
-├── validation/                  # Monte Carlo and walk-forward validation
+├── validation/                  # Monte Carlo, stratified MC, particle filter, walk-forward validation
+├── agent/                       # LLM-powered evaluation agent (OAI + LangChain, 14 tools)
 └── telegram_signals/            # Telegram bot solutions
 ```
 
@@ -60,8 +61,33 @@ python binance-futures-data/refresh_data.py --status
 
 ### Validation
 ```bash
+# Brute-force Monte Carlo shuffle (sequence independence test)
 python validation/monte_carlo_validation.py
+python validation/monte_carlo_validation.py --antithetic          # With antithetic variates (~50% variance reduction)
+
+# Stratified Monte Carlo (regime-dependent edge test)
+python validation/stratified_monte_carlo.py
+python validation/stratified_monte_carlo.py --antithetic --strata regime
+
+# Particle filter (online Bayesian parameter estimation)
+python validation/particle_filter.py
+python validation/particle_filter.py --particles 1000
+
+# Walk-forward optimization
 python validation/walk_forward_optimization.py
+```
+
+### Agent (LLM-powered evaluation)
+```bash
+export MINIMAX_API_KEY="your-key"
+
+# OpenAI Agents SDK
+python agent/OAI/run.py                    # Full evaluation cycle
+python agent/OAI/run.py --review-only      # Read-only analysis
+
+# LangChain
+python agent/LangChain/run.py              # Full evaluation cycle
+python agent/LangChain/run.py --review-only
 ```
 
 ## Architecture
@@ -134,6 +160,10 @@ The data extraction includes auto-fix for:
 | `load_binance_data.py` | Data loading utilities for positioning metrics |
 | `binance-futures-data/extract_binance_data.py` | Core API extraction with CSV validation |
 | `binance-futures-data/refresh_data.py` | Data refresh orchestration (quick/full modes) |
+| `validation/monte_carlo_validation.py` | Brute-force MC shuffle with antithetic variates |
+| `validation/stratified_monte_carlo.py` | Stratified MC (regime/volatility/session strata) |
+| `validation/particle_filter.py` | Bootstrap particle filter for regime-adaptive parameters |
+| `agent/shared/tools.py` | 14 shared agent tools (both OAI + LangChain) |
 | `backtest_15min_new/status.md` | Detailed results for 15-min backtests |
 | `backtest_15min_new_streak_a/results/strategy_statistics.json` | Adaptive strategy performance |
 

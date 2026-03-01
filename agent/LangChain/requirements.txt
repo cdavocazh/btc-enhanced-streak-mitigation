@@ -1,0 +1,9 @@
+langchain>=1.2.0
+langchain-openai>=0.3.0
+langchain-core>=0.3.0
+langgraph>=0.2.0
+python-dotenv>=1.0.0
+ddgs>=9.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0

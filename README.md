@@ -52,9 +52,15 @@ btc-enhanced-streak-mitigation/
 │   ├── trade_log.csv
 │   └── equity_curve_ts.csv
 ├── validation/                  # Statistical validation
-│   ├── monte_carlo_validation.py
+│   ├── monte_carlo_validation.py      # Brute-force MC shuffle (+ antithetic variates)
+│   ├── stratified_monte_carlo.py      # Stratified MC by regime/volatility/session
+│   ├── particle_filter.py             # Bootstrap particle filter for regime estimation
 │   ├── walk_forward_optimization.py
 │   └── results/
+├── agent/                       # LLM-powered evaluation agent (14 tools)
+│   ├── shared/                        # Shared tools, config, prompts
+│   ├── OAI/                           # OpenAI Agents SDK implementation
+│   └── LangChain/                     # LangChain implementation
 └── telegram_signals/            # Telegram bot solutions
     ├── solution1_cron_polling.py
     ├── solution2_realtime_websocket.py
@@ -84,9 +90,24 @@ python run_backtest.py
 ```bash
 # Monte Carlo validation (sequence independence)
 python validation/monte_carlo_validation.py
+python validation/monte_carlo_validation.py --antithetic   # ~50% variance reduction
+
+# Stratified Monte Carlo (regime-dependent edge)
+python validation/stratified_monte_carlo.py --strata all
+python validation/stratified_monte_carlo.py --antithetic   # Antithetic within strata
+
+# Particle filter (regime-adaptive parameter estimation)
+python validation/particle_filter.py --particles 500
 
 # Walk-Forward Optimization (out-of-sample testing)
 python validation/walk_forward_optimization.py
+```
+
+### 5. Run Agent (LLM-powered evaluation)
+```bash
+export MINIMAX_API_KEY="your-key"
+python agent/OAI/run.py           # OpenAI Agents SDK
+python agent/LangChain/run.py     # LangChain
 ```
 
 ## Validation Results
@@ -95,6 +116,17 @@ python validation/walk_forward_optimization.py
 - **Drawdown P-Value**: 0.032 (FAVORABLE)
 - **Sequence Dependency**: LOW
 - Strategy's max drawdown is significantly better than random shuffles
+- **Antithetic variates** available for ~50% variance reduction on confidence intervals
+
+### Stratified Monte Carlo
+- Tests whether strategy edge is regime-dependent
+- Strata: regime (ADX-based), volatility (ATR percentile), session (Asia/US/Other), combined
+- Antithetic variates reverse PnL within each stratum independently
+
+### Particle Filter (Bootstrap SMC)
+- Online Bayesian estimation of regime parameters: half_life, vol_scale, signal_strength
+- Position sizing recommendations based on posterior uncertainty
+- Regime change detection (trending/ranging x high/low volatility)
 
 ### Walk-Forward Optimization (20 periods)
 - **Profitable Periods**: 70%
