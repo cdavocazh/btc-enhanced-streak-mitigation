@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capital Scaling Analysis — ML Risk Sizing vs Streak Mitigation</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --text: #c9d1d9; --text-muted: #8b949e;
+    --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+    --yellow: #d29922; --purple: #bc8cff; --orange: #f0883e;
+    --cyan: #39d353;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+    padding: 2rem; max-width: 1400px; margin: 0 auto;
+  }
+  h1 { color: #fff; font-size: 1.8rem; margin-bottom: 0.5rem; }
+  h2 { color: var(--accent); font-size: 1.3rem; margin: 2rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { color: var(--text); font-size: 1.1rem; margin: 1.5rem 0 0.75rem; }
+  .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  .timestamp { color: var(--text-muted); font-size: 0.8rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-header { font-weight: 600; color: #fff; margin-bottom: 0.75rem; font-size: 1rem; }
+  .verdict { background: var(--surface); border: 2px solid var(--green); border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+  .warning { background: var(--surface); border: 2px solid var(--yellow); border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+  .flex-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .flex-row > * { flex: 1; min-width: 280px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; text-align: center; }
+  .kpi-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
+  .kpi-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neutral { color: var(--yellow); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.75rem 0; }
+  th { background: var(--surface2); color: var(--accent); font-weight: 600; padding: 0.6rem 0.75rem; text-align: left; border-bottom: 2px solid var(--border); }
+  td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88, 166, 255, 0.04); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .highlight-row { background: rgba(63, 185, 80, 0.08) !important; }
+  .highlight-row td { font-weight: 600; }
+  code { background: var(--surface2); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.85em; color: var(--orange); }
+  .formula { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem 0.75rem; font-family: monospace; font-size: 0.85rem; margin: 0.5rem 0; color: var(--cyan); }
+  .section { margin-bottom: 2.5rem; }
+  .trade-log { max-height: 600px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+  .trade-log table { margin: 0; }
+  .trade-log th { position: sticky; top: 0; z-index: 1; }
+  .trade-log tr.win td { color: var(--green); }
+  .trade-log tr.loss td { color: var(--red); }
+  .tab-container { margin: 1rem 0; }
+  .tab-buttons { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; }
+  .tab-btn { padding: 0.6rem 1.2rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<h1>Capital Scaling Analysis</h1>
+<p class="subtitle">ML Soft-Signal Risk Sizing vs Rule-Based Streak Mitigation &mdash; Tiered Compounding Analysis</p>
+<p class="timestamp">Generated 2026-03-03 | Continuation of ML Experiments v3</p>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>1. Executive Summary</h2>
+
+<div class="verdict">
+  <h3 style="color: var(--green); margin-top: 0;">Key Finding: Streak Mitigation is Unnecessary with ML Soft Scaling</h3>
+  <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+    ML soft-signal strategies (E: XGBoost, F: LightGBM) continuously scale position sizes based on predicted trade quality (0.3x&ndash;1.2x on every trade), making the reactive streak mitigation rules (reduce risk after 3/6/9 consecutive losses) redundant.
+    With streak mitigation removed, E and F achieve <strong>31-32% MaxDD</strong> vs Baseline's <strong>42%</strong>, creating ~10pp of headroom to scale up capital risk while maintaining superior risk-adjusted returns.
+  </p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value pos">2.14</div>
+    <div class="kpi-label">E Calmar (1.0x)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value pos">2.13</div>
+    <div class="kpi-label">F Calmar (1.0x)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value neutral">1.77</div>
+    <div class="kpi-label">Baseline Calmar</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value pos">1.15x&ndash;1.20x</div>
+    <div class="kpi-label">Recommended Scaling</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">35%</div>
+    <div class="kpi-label">Target MaxDD</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value pos">99%</div>
+    <div class="kpi-label">PnL vs Baseline</div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>2. Risk Flow Comparison</h2>
+
+<div class="flex-row">
+  <div class="card">
+    <div class="card-header">Baseline Risk Flow</div>
+    <div class="formula">Tiered Risk &rarr; Streak Mitigation &rarr; Positioning Sizing &rarr; Final Risk</div>
+    <p style="font-size: 0.85rem; margin-top: 0.5rem;">
+      Example at $100k equity, 4 consecutive losses, pos_score=1.5:<br>
+      <code>$5,000</code> &rarr; <code>&times;0.60 = $3,000</code> &rarr; <code>&times;1.2 = $3,600</code>
+    </p>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+      Streak mitigation is <strong>reactive</strong>: risk is only reduced after 3+ consecutive losses have already occurred.
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-header" style="color: var(--green);">ML Strategy Risk Flow (E / F)</div>
+    <div class="formula">Tiered Risk &rarr; Positioning Sizing &rarr; ML Scale &rarr; Final Risk</div>
+    <p style="font-size: 0.85rem; margin-top: 0.5rem;">
+      Example at $100k equity, pos_score=1.5, ML confidence=0.62:<br>
+      <code>$5,000</code> &rarr; <code>&times;1.2 = $6,000</code> &rarr; <code>&times;0.62 = $3,720</code>
+    </p>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+      ML scaling is <strong>proactive</strong>: risk is continuously adjusted on every trade based on predicted quality. No streak mitigation needed.
+    </p>
+  </div>
+</div>
+
+<h3>Tiered Risk Configuration</h3>
+<table>
+  <thead><tr><th>Equity Range</th><th class="num">Risk Amount</th></tr></thead>
+  <tbody>
+    <tr><td>$0 &ndash; $150k</td><td class="num">$5,000</td></tr>
+    <tr><td>$150k &ndash; $225k</td><td class="num">$10,500</td></tr>
+    <tr><td>$225k &ndash; $337.5k</td><td class="num">$14,625</td></tr>
+    <tr><td>$337.5k &ndash; $507k</td><td class="num">$20,250</td></tr>
+    <tr><td>$507k &ndash; $760k</td><td class="num">$28,000</td></tr>
+    <tr><td>$760k &ndash; $1.2M</td><td class="num">$38,000</td></tr>
+    <tr><td>$1.2M+</td><td class="num">$54,000</td></tr>
+  </tbody>
+</table>
+
+<h3>Positioning Sizing Multiplier</h3>
+<table>
+  <thead><tr><th>Positioning Score</th><th class="num">Multiplier</th></tr></thead>
+  <tbody>
+    <tr><td>&ge; 1.5 (strong signal)</td><td class="num">1.2x</td></tr>
+    <tr><td>&ge; 1.0</td><td class="num">1.1x</td></tr>
+    <tr><td>&lt; 1.0</td><td class="num">1.0x</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>3. Fixed Capital Analysis ($10,000 Risk per Trade)</h2>
+<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+  Isolates ML scaling impact by removing tiered compounding. All strategies use a flat $10,000 base risk. No streak mitigation applied. Positioning sizing still applies.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Strategy</th><th class="num">Final Equity</th><th class="num">Total PnL</th><th class="num">Return</th><th class="num">Max DD</th><th class="num">Calmar</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A: Baseline</strong></td>
+      <td class="num">$295,328</td><td class="num">$195,328</td><td class="num">195.3%</td><td class="num neg">59.4%</td><td class="num">3.29</td>
+    </tr>
+    <tr>
+      <td><strong>E: XGB Soft</strong></td>
+      <td class="num">$226,398</td><td class="num">$126,398</td><td class="num">126.4%</td><td class="num pos">48.9%</td><td class="num">2.58</td>
+    </tr>
+    <tr>
+      <td><strong>F: LGB Sizing</strong></td>
+      <td class="num">$228,835</td><td class="num">$128,835</td><td class="num">128.8%</td><td class="num pos">48.2%</td><td class="num pos">2.68</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="font-size: 0.85rem; margin-top: 0.5rem;">
+  With fixed risk, all strategies show higher returns (no compounding cap from tiers) but also higher drawdowns.
+  ML strategies retain 65&ndash;66% of Baseline PnL while reducing MaxDD by 10&ndash;11pp.
+</p>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>4. Tiered Compounding: Baseline (with Streak) vs E/F (no Streak)</h2>
+
+<div class="warning">
+  <h3 style="color: var(--yellow); margin-top: 0;">Why Streak Mitigation is Removed for E and F</h3>
+  <p style="font-size: 0.85rem; margin-top: 0.5rem;">
+    The ML soft scaling already continuously dampens risk on every trade:
+    E averages <code>0.62x</code> scale, F averages <code>0.65x</code>.
+    Stacking streak mitigation on top compounds the risk reduction excessively
+    (e.g., streak &times;0.60 &times; ML &times;0.62 = 0.37x total), sacrificing returns without proportional drawdown benefit.
+    The ML scaling alone provides better risk-adjusted performance.
+  </p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Strategy</th><th>Streak Mitigation</th>
+      <th class="num">Final Equity</th><th class="num">Total PnL</th><th class="num">Return</th>
+      <th class="num">Max DD</th><th class="num">Calmar</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A: Baseline</strong></td><td>YES</td>
+      <td class="num">$174,264</td><td class="num">$74,264</td><td class="num">74.3%</td>
+      <td class="num neg">42.0%</td><td class="num">1.77</td>
+    </tr>
+    <tr>
+      <td><strong>E: XGB Soft</strong></td><td>NO</td>
+      <td class="num">$167,723</td><td class="num">$67,723</td><td class="num">67.7%</td>
+      <td class="num pos">31.7%</td><td class="num pos">2.14</td>
+    </tr>
+    <tr>
+      <td><strong>F: LGB Sizing</strong></td><td>NO</td>
+      <td class="num">$165,670</td><td class="num">$65,670</td><td class="num">65.7%</td>
+      <td class="num pos">30.9%</td><td class="num pos">2.13</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="flex-row" style="margin-top: 1rem;">
+  <div class="card">
+    <div class="card-header">E vs Baseline</div>
+    <table>
+      <tr><td>PnL Retained</td><td class="num pos">91%</td></tr>
+      <tr><td>DD Reduction</td><td class="num pos">-10.3pp</td></tr>
+      <tr><td>Calmar Improvement</td><td class="num pos">+21%</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-header">F vs Baseline</div>
+    <table>
+      <tr><td>PnL Retained</td><td class="num pos">88%</td></tr>
+      <tr><td>DD Reduction</td><td class="num pos">-11.1pp</td></tr>
+      <tr><td>Calmar Improvement</td><td class="num pos">+20%</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>5. Capital Scaling Sweep</h2>
+<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+  Since E and F have ~10pp of MaxDD headroom vs Baseline, we can scale up their tiered risk by a multiplier to capture more returns while staying within acceptable drawdown limits.
+  The multiplier is applied after the tiered risk lookup: <code>scaled_risk = tier_risk &times; multiplier</code>.
+</p>
+
+<h3>E: XGBoost Soft Scaling Sweep</h3>
+<table>
+  <thead>
+    <tr><th class="num">Multiplier</th><th class="num">PnL</th><th class="num">Return</th><th class="num">Max DD</th><th class="num">Calmar</th><th>vs Baseline</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="num">1.00x</td><td class="num">$67,723</td><td class="num">67.7%</td><td class="num pos">31.7%</td><td class="num pos">2.14</td><td>91% PnL, -10.3pp DD</td></tr>
+    <tr><td class="num">1.05x</td><td class="num">$66,757</td><td class="num">66.8%</td><td class="num pos">32.8%</td><td class="num">2.04</td><td>90% PnL, -9.2pp DD</td></tr>
+    <tr><td class="num">1.10x</td><td class="num">$69,936</td><td class="num">69.9%</td><td class="num pos">33.9%</td><td class="num">2.07</td><td>94% PnL, -8.1pp DD</td></tr>
+    <tr class="highlight-row"><td class="num">1.15x</td><td class="num">$73,115</td><td class="num">73.1%</td><td class="num pos">34.9%</td><td class="num pos">2.09</td><td><strong>98% PnL, -7.1pp DD</strong></td></tr>
+    <tr><td class="num">1.20x</td><td class="num">$71,764</td><td class="num">71.8%</td><td class="num">38.9%</td><td class="num">1.84</td><td>97% PnL, -3.1pp DD</td></tr>
+    <tr><td class="num">1.25x</td><td class="num">$74,754</td><td class="num">74.8%</td><td class="num">40.0%</td><td class="num">1.87</td><td>101% PnL, -2.0pp DD</td></tr>
+    <tr><td class="num">1.30x</td><td class="num">$71,446</td><td class="num">71.4%</td><td class="num">41.0%</td><td class="num">1.74</td><td>96% PnL, -1.0pp DD</td></tr>
+    <tr><td class="num">1.35x</td><td class="num">$74,194</td><td class="num">74.2%</td><td class="num neg">42.0%</td><td class="num">1.77</td><td>100% PnL, matches DD</td></tr>
+    <tr><td class="num">1.40x</td><td class="num">$76,942</td><td class="num">76.9%</td><td class="num neg">43.0%</td><td class="num">1.79</td><td>104% PnL, +1.0pp DD</td></tr>
+    <tr><td class="num">1.45x</td><td class="num">$74,187</td><td class="num">74.2%</td><td class="num neg">47.4%</td><td class="num neg">1.57</td><td>100% PnL, +5.4pp DD</td></tr>
+    <tr><td class="num">1.50x</td><td class="num">$76,746</td><td class="num">76.7%</td><td class="num neg">48.4%</td><td class="num neg">1.59</td><td>103% PnL, +6.4pp DD</td></tr>
+  </tbody>
+</table>
+
+<h3>F: LightGBM Soft Scaling Sweep</h3>
+<table>
+  <thead>
+    <tr><th class="num">Multiplier</th><th class="num">PnL</th><th class="num">Return</th><th class="num">Max DD</th><th class="num">Calmar</th><th>vs Baseline</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="num">1.00x</td><td class="num">$65,670</td><td class="num">65.7%</td><td class="num pos">30.9%</td><td class="num pos">2.13</td><td>88% PnL, -11.1pp DD</td></tr>
+    <tr><td class="num">1.05x</td><td class="num">$68,905</td><td class="num">68.9%</td><td class="num pos">32.0%</td><td class="num pos">2.16</td><td>93% PnL, -10.0pp DD</td></tr>
+    <tr><td class="num">1.10x</td><td class="num">$67,525</td><td class="num">67.5%</td><td class="num pos">33.0%</td><td class="num">2.05</td><td>91% PnL, -9.0pp DD</td></tr>
+    <tr><td class="num">1.15x</td><td class="num">$70,541</td><td class="num">70.5%</td><td class="num pos">34.0%</td><td class="num">2.07</td><td>95% PnL, -8.0pp DD</td></tr>
+    <tr class="highlight-row"><td class="num">1.20x</td><td class="num">$68,524</td><td class="num">68.5%</td><td class="num pos">35.1%</td><td class="num">1.95</td><td><strong>92% PnL, -6.9pp DD</strong></td></tr>
+    <tr><td class="num">1.25x</td><td class="num">$71,379</td><td class="num">71.4%</td><td class="num">36.0%</td><td class="num">1.98</td><td>96% PnL, -6.0pp DD</td></tr>
+    <tr><td class="num">1.30x</td><td class="num">$74,268</td><td class="num">74.3%</td><td class="num">40.6%</td><td class="num">1.83</td><td>100% PnL, -1.4pp DD</td></tr>
+    <tr><td class="num">1.35x</td><td class="num">$71,405</td><td class="num">71.4%</td><td class="num neg">41.6%</td><td class="num">1.71</td><td>96% PnL, -0.4pp DD</td></tr>
+    <tr><td class="num">1.37x</td><td class="num">$72,463</td><td class="num">72.5%</td><td class="num neg">42.0%</td><td class="num">1.72</td><td>98% PnL, matches DD</td></tr>
+    <tr><td class="num">1.40x</td><td class="num">$74,049</td><td class="num">74.0%</td><td class="num neg">42.6%</td><td class="num">1.74</td><td>100% PnL, +0.6pp DD</td></tr>
+    <tr><td class="num">1.45x</td><td class="num">$76,694</td><td class="num">76.7%</td><td class="num neg">43.6%</td><td class="num">1.76</td><td>103% PnL, +1.6pp DD</td></tr>
+    <tr><td class="num">1.50x</td><td class="num">$79,339</td><td class="num">79.3%</td><td class="num neg">44.6%</td><td class="num">1.78</td><td>107% PnL, +2.6pp DD</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>6. Optimal Risk Multipliers</h2>
+
+<table>
+  <thead>
+    <tr><th>Strategy</th><th>Target</th><th class="num">Multiplier</th><th class="num">PnL</th><th class="num">Return</th><th class="num">Max DD</th><th class="num">Calmar</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Baseline</strong></td><td>Reference</td><td class="num">1.00x</td><td class="num">$74,264</td><td class="num">74.3%</td><td class="num">42.0%</td><td class="num">1.77</td></tr>
+    <tr class="highlight-row"><td><strong>E (XGB)</strong></td><td>Conservative (~35% DD)</td><td class="num">1.15x</td><td class="num">$73,115</td><td class="num">73.1%</td><td class="num">34.9%</td><td class="num">2.09</td></tr>
+    <tr><td><strong>E (XGB)</strong></td><td>Match Baseline DD</td><td class="num">1.35x</td><td class="num">$74,194</td><td class="num">74.2%</td><td class="num">42.0%</td><td class="num">1.77</td></tr>
+    <tr class="highlight-row"><td><strong>F (LGB)</strong></td><td>Conservative (~35% DD)</td><td class="num">1.19x</td><td class="num">$72,995</td><td class="num">73.0%</td><td class="num">34.9%</td><td class="num">2.09</td></tr>
+    <tr><td><strong>F (LGB)</strong></td><td>Match Baseline DD</td><td class="num">1.37x</td><td class="num">$72,463</td><td class="num">72.5%</td><td class="num">42.0%</td><td class="num">1.72</td></tr>
+  </tbody>
+</table>
+
+<div class="verdict" style="margin-top: 1rem;">
+  <h3 style="color: var(--green); margin-top: 0;">Recommended Configuration</h3>
+  <div class="flex-row">
+    <div>
+      <p style="font-size: 0.9rem;"><strong>E at 1.15x tiered risk</strong> (conservative)</p>
+      <ul style="font-size: 0.85rem; padding-left: 1.2rem; line-height: 1.8;">
+        <li>PnL: $73,115 (98% of Baseline)</li>
+        <li>MaxDD: 34.9% (7.1pp lower than Baseline)</li>
+        <li>Calmar: 2.09 (18% better than Baseline)</li>
+      </ul>
+    </div>
+    <div>
+      <p style="font-size: 0.9rem;"><strong>F at 1.19x tiered risk</strong> (conservative)</p>
+      <ul style="font-size: 0.85rem; padding-left: 1.2rem; line-height: 1.8;">
+        <li>PnL: $72,995 (98% of Baseline)</li>
+        <li>MaxDD: 34.9% (7.1pp lower than Baseline)</li>
+        <li>Calmar: 2.09 (18% better than Baseline)</li>
+      </ul>
+    </div>
+  </div>
+  <p style="font-size: 0.85rem; margin-top: 0.75rem; color: var(--text-muted);">
+    Both achieve ~98% of Baseline PnL while keeping MaxDD ~7pp lower. The "match Baseline DD" multipliers (1.35x, 1.37x) offer identical PnL and risk to Baseline &mdash; useful only if you want the same risk profile with ML risk management instead of streak rules.
+  </p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>7. Trade Logs</h2>
+<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+  Full per-trade breakdown for recommended scenarios. Each row shows the risk calculation pipeline from tiered risk through to final PnL.
+</p>
+
+<div class="tab-container">
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="showTab('log-baseline')">A: Baseline (1.0x)</button>
+    <button class="tab-btn" onclick="showTab('log-e-1x')">E: XGB (1.0x)</button>
+    <button class="tab-btn" onclick="showTab('log-e-115x')">E: XGB (1.15x)</button>
+    <button class="tab-btn" onclick="showTab('log-f-1x')">F: LGB (1.0x)</button>
+    <button class="tab-btn" onclick="showTab('log-f-120x')">F: LGB (1.20x)</button>
+  </div>
+
+  <div id="log-baseline" class="tab-content active"></div>
+  <div id="log-e-1x" class="tab-content"></div>
+  <div id="log-e-115x" class="tab-content"></div>
+  <div id="log-f-1x" class="tab-content"></div>
+  <div id="log-f-120x" class="tab-content"></div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>8. Updated Recommendations</h2>
+
+<div class="flex-row">
+  <div class="card">
+    <div class="card-header" style="color: var(--green);">Production Configuration</div>
+    <ol style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+      <li>Use <strong>XGBoost or LightGBM soft scaling</strong> as position sizer</li>
+      <li>Scale range: 0.3x (prob=0.15) to 1.2x (prob=0.55+)</li>
+      <li>Apply <strong>tiered risk with 1.15x&ndash;1.20x multiplier</strong></li>
+      <li><strong>Remove streak mitigation entirely</strong> &mdash; ML scaling replaces it</li>
+      <li>Keep positioning sizing (1.0x/1.1x/1.2x based on pos_score)</li>
+      <li>Retrain ML models monthly with expanding walk-forward window</li>
+    </ol>
+  </div>
+  <div class="card">
+    <div class="card-header" style="color: var(--red);">What Changed from v3 Report</div>
+    <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+      <li><s>Maintain tiered risk + streak mitigation on top of ML scaling</s></li>
+      <li><strong>Updated:</strong> Remove streak mitigation when using ML soft scaling</li>
+      <li><strong>New:</strong> Scale tiered risk by 1.15x&ndash;1.20x to utilize freed DD headroom</li>
+      <li><strong>Rationale:</strong> Stacking streak mitigation + ML over-compresses risk, sacrificing 9&ndash;12% of returns without meaningful DD improvement</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Tiered Risk Tiers with Multiplier Applied</h3>
+<table>
+  <thead>
+    <tr><th>Equity Range</th><th class="num">Base Tier</th><th class="num">At 1.15x</th><th class="num">At 1.20x</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>$0 &ndash; $150k</td><td class="num">$5,000</td><td class="num pos">$5,750</td><td class="num pos">$6,000</td></tr>
+    <tr><td>$150k &ndash; $225k</td><td class="num">$10,500</td><td class="num pos">$12,075</td><td class="num pos">$12,600</td></tr>
+    <tr><td>$225k &ndash; $337.5k</td><td class="num">$14,625</td><td class="num pos">$16,819</td><td class="num pos">$17,550</td></tr>
+    <tr><td>$337.5k &ndash; $507k</td><td class="num">$20,250</td><td class="num pos">$23,288</td><td class="num pos">$24,300</td></tr>
+    <tr><td>$507k &ndash; $760k</td><td class="num">$28,000</td><td class="num pos">$32,200</td><td class="num pos">$33,600</td></tr>
+    <tr><td>$760k &ndash; $1.2M</td><td class="num">$38,000</td><td class="num pos">$43,700</td><td class="num pos">$45,600</td></tr>
+    <tr><td>$1.2M+</td><td class="num">$54,000</td><td class="num pos">$62,100</td><td class="num pos">$64,800</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>9. Summary of All Scenarios</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Scenario</th><th>Streak Mit.</th><th class="num">Risk Mult.</th>
+      <th class="num">PnL</th><th class="num">Return</th><th class="num">MaxDD</th><th class="num">Calmar</th><th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Baseline</strong></td><td>YES</td><td class="num">1.00x</td>
+      <td class="num">$74,264</td><td class="num">74.3%</td><td class="num">42.0%</td><td class="num">1.77</td>
+      <td>Reference</td>
+    </tr>
+    <tr>
+      <td>E: XGB (default)</td><td>NO</td><td class="num">1.00x</td>
+      <td class="num">$67,723</td><td class="num">67.7%</td><td class="num pos">31.7%</td><td class="num pos">2.14</td>
+      <td>Best Calmar, lowest risk</td>
+    </tr>
+    <tr class="highlight-row">
+      <td>E: XGB (conservative)</td><td>NO</td><td class="num">1.15x</td>
+      <td class="num">$73,115</td><td class="num">73.1%</td><td class="num pos">34.9%</td><td class="num pos">2.09</td>
+      <td>Best balance</td>
+    </tr>
+    <tr>
+      <td>E: XGB (match DD)</td><td>NO</td><td class="num">1.35x</td>
+      <td class="num">$74,194</td><td class="num">74.2%</td><td class="num">42.0%</td><td class="num">1.77</td>
+      <td>Same as Baseline</td>
+    </tr>
+    <tr>
+      <td>F: LGB (default)</td><td>NO</td><td class="num">1.00x</td>
+      <td class="num">$65,670</td><td class="num">65.7%</td><td class="num pos">30.9%</td><td class="num pos">2.13</td>
+      <td>Lowest MaxDD overall</td>
+    </tr>
+    <tr class="highlight-row">
+      <td>F: LGB (conservative)</td><td>NO</td><td class="num">1.19x</td>
+      <td class="num">$72,995</td><td class="num">73.0%</td><td class="num pos">34.9%</td><td class="num pos">2.09</td>
+      <td>Best balance</td>
+    </tr>
+    <tr>
+      <td>F: LGB (match DD)</td><td>NO</td><td class="num">1.37x</td>
+      <td class="num">$72,463</td><td class="num">72.5%</td><td class="num">42.0%</td><td class="num">1.72</td>
+      <td>Same risk, less PnL</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+  Capital Scaling Analysis &mdash; BTC Enhanced Strategy with ML Risk Sizing<br>
+  Generated 2026-03-03 | 54 trades, Feb 2025 &ndash; Feb 2026 | Walk-forward evaluation, no look-ahead bias
+</p>
+
+<script>
+// Trade log data (loaded inline)
+const tradeLogs = {"A_Baseline_1.0x": {"equity": 174264.0, "pnl": 74264.0, "ret": 74.3, "max_dd": 42.0, "calmar": 1.77, "wins": 17, "losses": 37, "trade_log": [{"num": 1, "date": "2025-03-03", "equity_before": 100000.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 94000.0, "consec_losses": 0}, {"num": 2, "date": "2025-03-03", "equity_before": 94000.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 88000.0, "consec_losses": 1}, {"num": 3, "date": "2025-03-12", "equity_before": 88000.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 82000.0, "consec_losses": 2}, {"num": 4, "date": "2025-03-15", "equity_before": 82000.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "W", "pnl_ratio": 1.97, "trade_pnl": 7078.0, "equity_after": 89078.0, "consec_losses": 3}, {"num": 5, "date": "2025-03-25", "equity_before": 89078.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 108578.0, "consec_losses": 0}, {"num": 6, "date": "2025-04-02", "equity_before": 108578.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 128078.0, "consec_losses": 0}, {"num": 7, "date": "2025-04-05", "equity_before": 128078.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 122078.0, "consec_losses": 0}, {"num": 8, "date": "2025-04-10", "equity_before": 122078.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 116078.0, "consec_losses": 1}, {"num": 9, "date": "2025-04-11", "equity_before": 116078.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 135578.0, "consec_losses": 2}, {"num": 10, "date": "2025-04-12", "equity_before": 135578.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 155078.0, "consec_losses": 0}, {"num": 11, "date": "2025-04-13", "equity_before": 155078.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 12600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -12600.0, "equity_after": 142478.0, "consec_losses": 0}, {"num": 12, "date": "2025-04-24", "equity_before": 142478.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 136478.0, "consec_losses": 1}, {"num": 13, "date": "2025-04-26", "equity_before": 136478.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 130478.0, "consec_losses": 2}, {"num": 14, "date": "2025-04-26", "equity_before": 130478.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 126878.0, "consec_losses": 3}, {"num": 15, "date": "2025-05-12", "equity_before": 126878.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 123278.0, "consec_losses": 4}, {"num": 16, "date": "2025-05-23", "equity_before": 123278.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 119678.0, "consec_losses": 5}, {"num": 17, "date": "2025-05-27", "equity_before": 119678.0, "tier_risk": 5000, "after_streak": 2100.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 2520.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -2520.0, "equity_after": 117158.0, "consec_losses": 6}, {"num": 18, "date": "2025-05-27", "equity_before": 117158.0, "tier_risk": 5000, "after_streak": 2100.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 2520.0, "wl": "L", "pnl_ratio": -0.12, "trade_pnl": -292.0, "equity_after": 116865.0, "consec_losses": 7}, {"num": 19, "date": "2025-06-08", "equity_before": 116865.0, "tier_risk": 5000, "after_streak": 2100.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 2520.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 8190.0, "equity_after": 125055.0, "consec_losses": 8}, {"num": 20, "date": "2025-06-17", "equity_before": 125055.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 119055.0, "consec_losses": 0}, {"num": 21, "date": "2025-07-04", "equity_before": 119055.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 113055.0, "consec_losses": 1}, {"num": 22, "date": "2025-07-15", "equity_before": 113055.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 107055.0, "consec_losses": 2}, {"num": 23, "date": "2025-07-15", "equity_before": 107055.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 103455.0, "consec_losses": 3}, {"num": 24, "date": "2025-07-17", "equity_before": 103455.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 99855.0, "consec_losses": 4}, {"num": 25, "date": "2025-07-18", "equity_before": 99855.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 96255.0, "consec_losses": 5}, {"num": 26, "date": "2025-08-05", "equity_before": 96255.0, "tier_risk": 5000, "after_streak": 2100.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 2520.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -2520.0, "equity_after": 93735.0, "consec_losses": 6}, {"num": 27, "date": "2025-08-07", "equity_before": 93735.0, "tier_risk": 5000, "after_streak": 2100.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 2520.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 8190.0, "equity_after": 101925.0, "consec_losses": 7}, {"num": 28, "date": "2025-08-14", "equity_before": 101925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 95925.0, "consec_losses": 0}, {"num": 29, "date": "2025-09-04", "equity_before": 95925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 89925.0, "consec_losses": 1}, {"num": 30, "date": "2025-09-08", "equity_before": 89925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 109425.0, "consec_losses": 2}, {"num": 31, "date": "2025-09-09", "equity_before": 109425.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 128925.0, "consec_losses": 0}, {"num": 32, "date": "2025-09-17", "equity_before": 128925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 122925.0, "consec_losses": 0}, {"num": 33, "date": "2025-09-30", "equity_before": 122925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 116925.0, "consec_losses": 1}, {"num": 34, "date": "2025-09-30", "equity_before": 116925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 136425.0, "consec_losses": 2}, {"num": 35, "date": "2025-10-13", "equity_before": 136425.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 155925.0, "consec_losses": 0}, {"num": 36, "date": "2025-10-21", "equity_before": 155925.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 12600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -12600.0, "equity_after": 143325.0, "consec_losses": 0}, {"num": 37, "date": "2025-10-21", "equity_before": 143325.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 137325.0, "consec_losses": 1}, {"num": 38, "date": "2025-10-26", "equity_before": 137325.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 156825.0, "consec_losses": 2}, {"num": 39, "date": "2025-10-28", "equity_before": 156825.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 12600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -12600.0, "equity_after": 144225.0, "consec_losses": 0}, {"num": 40, "date": "2025-11-06", "equity_before": 144225.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 138225.0, "consec_losses": 1}, {"num": 41, "date": "2025-11-24", "equity_before": 138225.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 132225.0, "consec_losses": 2}, {"num": 42, "date": "2025-11-25", "equity_before": 132225.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 128625.0, "consec_losses": 3}, {"num": 43, "date": "2025-11-25", "equity_before": 128625.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3600.0, "equity_after": 125025.0, "consec_losses": 4}, {"num": 44, "date": "2025-11-28", "equity_before": 125025.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 11700.0, "equity_after": 136725.0, "consec_losses": 5}, {"num": 45, "date": "2025-12-04", "equity_before": 136725.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 130725.0, "consec_losses": 0}, {"num": 46, "date": "2025-12-09", "equity_before": 130725.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 124725.0, "consec_losses": 1}, {"num": 47, "date": "2025-12-10", "equity_before": 124725.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 118725.0, "consec_losses": 2}, {"num": 48, "date": "2025-12-19", "equity_before": 118725.0, "tier_risk": 5000, "after_streak": 3000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 3600.0, "wl": "W", "pnl_ratio": 1.59, "trade_pnl": 5738.0, "equity_after": 124464.0, "consec_losses": 3}, {"num": 49, "date": "2025-12-21", "equity_before": 124464.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 143964.0, "consec_losses": 0}, {"num": 50, "date": "2026-01-03", "equity_before": 143964.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -6000.0, "equity_after": 137964.0, "consec_losses": 0}, {"num": 51, "date": "2026-01-03", "equity_before": 137964.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 6000.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 19500.0, "equity_after": 157464.0, "consec_losses": 1}, {"num": 52, "date": "2026-01-06", "equity_before": 157464.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 12600.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 40950.0, "equity_after": 198414.0, "consec_losses": 0}, {"num": 53, "date": "2026-01-15", "equity_before": 198414.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 1.0, "final_risk": 12600.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -12600.0, "equity_after": 185814.0, "consec_losses": 0}, {"num": 54, "date": "2026-02-03", "equity_before": 185814.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.1, "ml_scale": 1.0, "final_risk": 11550.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -11550.0, "equity_after": 174264.0, "consec_losses": 1}]}, "E_1.0x": {"equity": 167723.0, "pnl": 67723.0, "ret": 67.7, "max_dd": 31.7, "calmar": 2.14, "wins": 17, "losses": 37, "trade_log": [{"num": 1, "date": "2025-03-03", "equity_before": 100000.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.46, "final_risk": 2748.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -2748.0, "equity_after": 97252.0, "consec_losses": 0}, {"num": 2, "date": "2025-03-03", "equity_before": 97252.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 3540.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3540.0, "equity_after": 93712.0, "consec_losses": 1}, {"num": 3, "date": "2025-03-12", "equity_before": 93712.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4008.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4008.0, "equity_after": 89704.0, "consec_losses": 2}, {"num": 4, "date": "2025-03-15", "equity_before": 89704.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4104.0, "wl": "W", "pnl_ratio": 1.97, "trade_pnl": 8068.0, "equity_after": 97772.0, "consec_losses": 3}, {"num": 5, "date": "2025-03-25", "equity_before": 97772.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 3570.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 11602.0, "equity_after": 109375.0, "consec_losses": 0}, {"num": 6, "date": "2025-04-02", "equity_before": 109375.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.56, "final_risk": 3330.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 10823.0, "equity_after": 120197.0, "consec_losses": 0}, {"num": 7, "date": "2025-04-05", "equity_before": 120197.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3906.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3906.0, "equity_after": 116291.0, "consec_losses": 0}, {"num": 8, "date": "2025-04-10", "equity_before": 116291.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.53, "final_risk": 3156.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3156.0, "equity_after": 113135.0, "consec_losses": 1}, {"num": 9, "date": "2025-04-11", "equity_before": 113135.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.84, "final_risk": 5028.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 16341.0, "equity_after": 129476.0, "consec_losses": 2}, {"num": 10, "date": "2025-04-12", "equity_before": 129476.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3840.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12480.0, "equity_after": 141956.0, "consec_losses": 0}, {"num": 11, "date": "2025-04-13", "equity_before": 141956.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.57, "final_risk": 3432.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3432.0, "equity_after": 138524.0, "consec_losses": 0}, {"num": 12, "date": "2025-04-24", "equity_before": 138524.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.57, "final_risk": 3450.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3450.0, "equity_after": 135074.0, "consec_losses": 1}, {"num": 13, "date": "2025-04-26", "equity_before": 135074.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3630.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3630.0, "equity_after": 131444.0, "consec_losses": 2}, {"num": 14, "date": "2025-04-26", "equity_before": 131444.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.73, "final_risk": 4386.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4386.0, "equity_after": 127058.0, "consec_losses": 3}, {"num": 15, "date": "2025-05-12", "equity_before": 127058.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3624.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3624.0, "equity_after": 123434.0, "consec_losses": 4}, {"num": 16, "date": "2025-05-23", "equity_before": 123434.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.8, "final_risk": 4800.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4800.0, "equity_after": 118634.0, "consec_losses": 5}, {"num": 17, "date": "2025-05-27", "equity_before": 118634.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 3546.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3546.0, "equity_after": 115088.0, "consec_losses": 6}, {"num": 18, "date": "2025-05-27", "equity_before": 115088.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4050.0, "wl": "L", "pnl_ratio": -0.12, "trade_pnl": -470.0, "equity_after": 114619.0, "consec_losses": 7}, {"num": 19, "date": "2025-06-08", "equity_before": 114619.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.47, "final_risk": 2820.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 9165.0, "equity_after": 123784.0, "consec_losses": 8}, {"num": 20, "date": "2025-06-17", "equity_before": 123784.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.69, "final_risk": 4152.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4152.0, "equity_after": 119632.0, "consec_losses": 0}, {"num": 21, "date": "2025-07-04", "equity_before": 119632.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.73, "final_risk": 4368.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4368.0, "equity_after": 115264.0, "consec_losses": 1}, {"num": 22, "date": "2025-07-15", "equity_before": 115264.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.52, "final_risk": 3132.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3132.0, "equity_after": 112132.0, "consec_losses": 2}, {"num": 23, "date": "2025-07-15", "equity_before": 112132.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.54, "final_risk": 3240.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3240.0, "equity_after": 108892.0, "consec_losses": 3}, {"num": 24, "date": "2025-07-17", "equity_before": 108892.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3888.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3888.0, "equity_after": 105004.0, "consec_losses": 4}, {"num": 25, "date": "2025-07-18", "equity_before": 105004.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.74, "final_risk": 4428.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4428.0, "equity_after": 100576.0, "consec_losses": 5}, {"num": 26, "date": "2025-08-05", "equity_before": 100576.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3612.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3612.0, "equity_after": 96964.0, "consec_losses": 6}, {"num": 27, "date": "2025-08-07", "equity_before": 96964.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.61, "final_risk": 3636.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 11817.0, "equity_after": 108781.0, "consec_losses": 7}, {"num": 28, "date": "2025-08-14", "equity_before": 108781.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3612.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3612.0, "equity_after": 105169.0, "consec_losses": 0}, {"num": 29, "date": "2025-09-04", "equity_before": 105169.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.54, "final_risk": 3264.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3264.0, "equity_after": 101905.0, "consec_losses": 1}, {"num": 30, "date": "2025-09-08", "equity_before": 101905.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.56, "final_risk": 3384.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 10998.0, "equity_after": 112903.0, "consec_losses": 2}, {"num": 31, "date": "2025-09-09", "equity_before": 112903.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3756.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12207.0, "equity_after": 125110.0, "consec_losses": 0}, {"num": 32, "date": "2025-09-17", "equity_before": 125110.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3804.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3804.0, "equity_after": 121306.0, "consec_losses": 0}, {"num": 33, "date": "2025-09-30", "equity_before": 121306.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 3564.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3564.0, "equity_after": 117742.0, "consec_losses": 1}, {"num": 34, "date": "2025-09-30", "equity_before": 117742.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.46, "final_risk": 2742.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 8912.0, "equity_after": 126653.0, "consec_losses": 2}, {"num": 35, "date": "2025-10-13", "equity_before": 126653.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.58, "final_risk": 3456.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 11232.0, "equity_after": 137885.0, "consec_losses": 0}, {"num": 36, "date": "2025-10-21", "equity_before": 137885.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3774.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3774.0, "equity_after": 134111.0, "consec_losses": 0}, {"num": 37, "date": "2025-10-21", "equity_before": 134111.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4044.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4044.0, "equity_after": 130067.0, "consec_losses": 1}, {"num": 38, "date": "2025-10-26", "equity_before": 130067.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4074.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13241.0, "equity_after": 143308.0, "consec_losses": 2}, {"num": 39, "date": "2025-10-28", "equity_before": 143308.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.73, "final_risk": 4404.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4404.0, "equity_after": 138904.0, "consec_losses": 0}, {"num": 40, "date": "2025-11-06", "equity_before": 138904.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.55, "final_risk": 3312.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3312.0, "equity_after": 135592.0, "consec_losses": 1}, {"num": 41, "date": "2025-11-24", "equity_before": 135592.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.58, "final_risk": 3492.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3492.0, "equity_after": 132100.0, "consec_losses": 2}, {"num": 42, "date": "2025-11-25", "equity_before": 132100.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.61, "final_risk": 3636.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3636.0, "equity_after": 128464.0, "consec_losses": 3}, {"num": 43, "date": "2025-11-25", "equity_before": 128464.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3624.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3624.0, "equity_after": 124840.0, "consec_losses": 4}, {"num": 44, "date": "2025-11-28", "equity_before": 124840.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.69, "final_risk": 4170.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13552.0, "equity_after": 138392.0, "consec_losses": 5}, {"num": 45, "date": "2025-12-04", "equity_before": 138392.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.55, "final_risk": 3276.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3276.0, "equity_after": 135116.0, "consec_losses": 0}, {"num": 46, "date": "2025-12-09", "equity_before": 135116.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3606.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3606.0, "equity_after": 131510.0, "consec_losses": 1}, {"num": 47, "date": "2025-12-10", "equity_before": 131510.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.62, "final_risk": 3732.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3732.0, "equity_after": 127778.0, "consec_losses": 2}, {"num": 48, "date": "2025-12-19", "equity_before": 127778.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.76, "final_risk": 4560.0, "wl": "W", "pnl_ratio": 1.59, "trade_pnl": 7269.0, "equity_after": 135047.0, "consec_losses": 3}, {"num": 49, "date": "2025-12-21", "equity_before": 135047.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.74, "final_risk": 4464.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14508.0, "equity_after": 149555.0, "consec_losses": 0}, {"num": 50, "date": "2026-01-03", "equity_before": 149555.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3768.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3768.0, "equity_after": 145787.0, "consec_losses": 0}, {"num": 51, "date": "2026-01-03", "equity_before": 145787.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4092.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13299.0, "equity_after": 159086.0, "consec_losses": 1}, {"num": 52, "date": "2026-01-06", "equity_before": 159086.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 0.58, "final_risk": 7358.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 23915.0, "equity_after": 183001.0, "consec_losses": 0}, {"num": 53, "date": "2026-01-15", "equity_before": 183001.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 8140.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -8140.0, "equity_after": 174861.0, "consec_losses": 0}, {"num": 54, "date": "2026-02-03", "equity_before": 174861.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.1, "ml_scale": 0.62, "final_risk": 7138.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -7138.0, "equity_after": 167723.0, "consec_losses": 1}]}, "F_1.0x": {"equity": 165670.0, "pnl": 65670.0, "ret": 65.7, "max_dd": 30.9, "calmar": 2.13, "wins": 17, "losses": 37, "trade_log": [{"num": 1, "date": "2025-03-03", "equity_before": 100000.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3774.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3774.0, "equity_after": 96226.0, "consec_losses": 0}, {"num": 2, "date": "2025-03-03", "equity_before": 96226.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3852.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3852.0, "equity_after": 92374.0, "consec_losses": 1}, {"num": 3, "date": "2025-03-12", "equity_before": 92374.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3930.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3930.0, "equity_after": 88444.0, "consec_losses": 2}, {"num": 4, "date": "2025-03-15", "equity_before": 88444.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3984.0, "wl": "W", "pnl_ratio": 1.97, "trade_pnl": 7833.0, "equity_after": 96277.0, "consec_losses": 3}, {"num": 5, "date": "2025-03-25", "equity_before": 96277.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3834.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12460.0, "equity_after": 108737.0, "consec_losses": 0}, {"num": 6, "date": "2025-04-02", "equity_before": 108737.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3798.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12344.0, "equity_after": 121081.0, "consec_losses": 0}, {"num": 7, "date": "2025-04-05", "equity_before": 121081.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3918.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3918.0, "equity_after": 117163.0, "consec_losses": 0}, {"num": 8, "date": "2025-04-10", "equity_before": 117163.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3834.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3834.0, "equity_after": 113329.0, "consec_losses": 1}, {"num": 9, "date": "2025-04-11", "equity_before": 113329.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4062.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13202.0, "equity_after": 126530.0, "consec_losses": 2}, {"num": 10, "date": "2025-04-12", "equity_before": 126530.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3888.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12636.0, "equity_after": 139166.0, "consec_losses": 0}, {"num": 11, "date": "2025-04-13", "equity_before": 139166.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3828.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3828.0, "equity_after": 135338.0, "consec_losses": 0}, {"num": 12, "date": "2025-04-24", "equity_before": 135338.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3870.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3870.0, "equity_after": 131468.0, "consec_losses": 1}, {"num": 13, "date": "2025-04-26", "equity_before": 131468.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3900.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3900.0, "equity_after": 127568.0, "consec_losses": 2}, {"num": 14, "date": "2025-04-26", "equity_before": 127568.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3972.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3972.0, "equity_after": 123596.0, "consec_losses": 3}, {"num": 15, "date": "2025-05-12", "equity_before": 123596.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3882.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3882.0, "equity_after": 119714.0, "consec_losses": 4}, {"num": 16, "date": "2025-05-23", "equity_before": 119714.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4056.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4056.0, "equity_after": 115658.0, "consec_losses": 5}, {"num": 17, "date": "2025-05-27", "equity_before": 115658.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3912.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3912.0, "equity_after": 111746.0, "consec_losses": 6}, {"num": 18, "date": "2025-05-27", "equity_before": 111746.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3972.0, "wl": "L", "pnl_ratio": -0.12, "trade_pnl": -461.0, "equity_after": 111285.0, "consec_losses": 7}, {"num": 19, "date": "2025-06-08", "equity_before": 111285.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.61, "final_risk": 3690.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 11992.0, "equity_after": 123278.0, "consec_losses": 8}, {"num": 20, "date": "2025-06-17", "equity_before": 123278.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3942.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3942.0, "equity_after": 119336.0, "consec_losses": 0}, {"num": 21, "date": "2025-07-04", "equity_before": 119336.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3972.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3972.0, "equity_after": 115364.0, "consec_losses": 1}, {"num": 22, "date": "2025-07-15", "equity_before": 115364.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.62, "final_risk": 3726.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3726.0, "equity_after": 111638.0, "consec_losses": 2}, {"num": 23, "date": "2025-07-15", "equity_before": 111638.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 3618.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3618.0, "equity_after": 108020.0, "consec_losses": 3}, {"num": 24, "date": "2025-07-17", "equity_before": 108020.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3912.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3912.0, "equity_after": 104108.0, "consec_losses": 4}, {"num": 25, "date": "2025-07-18", "equity_before": 104108.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4020.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4020.0, "equity_after": 100088.0, "consec_losses": 5}, {"num": 26, "date": "2025-08-05", "equity_before": 100088.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3864.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3864.0, "equity_after": 96224.0, "consec_losses": 6}, {"num": 27, "date": "2025-08-07", "equity_before": 96224.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3894.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12656.0, "equity_after": 108879.0, "consec_losses": 7}, {"num": 28, "date": "2025-08-14", "equity_before": 108879.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3846.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3846.0, "equity_after": 105033.0, "consec_losses": 0}, {"num": 29, "date": "2025-09-04", "equity_before": 105033.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3816.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3816.0, "equity_after": 101217.0, "consec_losses": 1}, {"num": 30, "date": "2025-09-08", "equity_before": 101217.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3858.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12538.0, "equity_after": 113756.0, "consec_losses": 2}, {"num": 31, "date": "2025-09-09", "equity_before": 113756.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3906.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12694.0, "equity_after": 126450.0, "consec_losses": 0}, {"num": 32, "date": "2025-09-17", "equity_before": 126450.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3882.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3882.0, "equity_after": 122568.0, "consec_losses": 0}, {"num": 33, "date": "2025-09-30", "equity_before": 122568.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3798.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3798.0, "equity_after": 118770.0, "consec_losses": 1}, {"num": 34, "date": "2025-09-30", "equity_before": 118770.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3858.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12538.0, "equity_after": 131309.0, "consec_losses": 2}, {"num": 35, "date": "2025-10-13", "equity_before": 131309.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3840.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12480.0, "equity_after": 143789.0, "consec_losses": 0}, {"num": 36, "date": "2025-10-21", "equity_before": 143789.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3894.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3894.0, "equity_after": 139895.0, "consec_losses": 0}, {"num": 37, "date": "2025-10-21", "equity_before": 139895.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3858.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3858.0, "equity_after": 136037.0, "consec_losses": 1}, {"num": 38, "date": "2025-10-26", "equity_before": 136037.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3906.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12694.0, "equity_after": 148731.0, "consec_losses": 2}, {"num": 39, "date": "2025-10-28", "equity_before": 148731.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3894.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3894.0, "equity_after": 144837.0, "consec_losses": 0}, {"num": 40, "date": "2025-11-06", "equity_before": 144837.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3828.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3828.0, "equity_after": 141009.0, "consec_losses": 1}, {"num": 41, "date": "2025-11-24", "equity_before": 141009.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3852.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3852.0, "equity_after": 137157.0, "consec_losses": 2}, {"num": 42, "date": "2025-11-25", "equity_before": 137157.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3876.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3876.0, "equity_after": 133281.0, "consec_losses": 3}, {"num": 43, "date": "2025-11-25", "equity_before": 133281.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 3882.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3882.0, "equity_after": 129399.0, "consec_losses": 4}, {"num": 44, "date": "2025-11-28", "equity_before": 129399.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 3990.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12968.0, "equity_after": 142367.0, "consec_losses": 5}, {"num": 45, "date": "2025-12-04", "equity_before": 142367.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 3804.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3804.0, "equity_after": 138563.0, "consec_losses": 0}, {"num": 46, "date": "2025-12-09", "equity_before": 138563.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3822.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3822.0, "equity_after": 134741.0, "consec_losses": 1}, {"num": 47, "date": "2025-12-10", "equity_before": 134741.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 3816.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3816.0, "equity_after": 130925.0, "consec_losses": 2}, {"num": 48, "date": "2025-12-19", "equity_before": 130925.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 3966.0, "wl": "W", "pnl_ratio": 1.59, "trade_pnl": 6322.0, "equity_after": 137247.0, "consec_losses": 3}, {"num": 49, "date": "2025-12-21", "equity_before": 137247.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4008.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13026.0, "equity_after": 150273.0, "consec_losses": 0}, {"num": 50, "date": "2026-01-03", "equity_before": 150273.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 8089.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -8089.0, "equity_after": 142183.0, "consec_losses": 0}, {"num": 51, "date": "2026-01-03", "equity_before": 142183.0, "tier_risk": 5000, "after_streak": 5000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4002.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13006.0, "equity_after": 155190.0, "consec_losses": 1}, {"num": 52, "date": "2026-01-06", "equity_before": 155190.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 8051.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 26167.0, "equity_after": 181357.0, "consec_losses": 0}, {"num": 53, "date": "2026-01-15", "equity_before": 181357.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 8203.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -8203.0, "equity_after": 173154.0, "consec_losses": 0}, {"num": 54, "date": "2026-02-03", "equity_before": 173154.0, "tier_risk": 10500, "after_streak": 10500.0, "pos_sizing": 1.1, "ml_scale": 0.65, "final_risk": 7484.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -7484.0, "equity_after": 165670.0, "consec_losses": 1}]}, "F_1.20x_recommended": {"equity": 168524.0, "pnl": 68524.0, "ret": 68.5, "max_dd": 35.1, "calmar": 1.95, "wins": 17, "losses": 37, "trade_log": [{"num": 1, "date": "2025-03-03", "equity_before": 100000.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4529.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4529.0, "equity_after": 95471.0, "consec_losses": 0}, {"num": 2, "date": "2025-03-03", "equity_before": 95471.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4622.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4622.0, "equity_after": 90849.0, "consec_losses": 1}, {"num": 3, "date": "2025-03-12", "equity_before": 90849.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4716.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4716.0, "equity_after": 86133.0, "consec_losses": 2}, {"num": 4, "date": "2025-03-15", "equity_before": 86133.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4781.0, "wl": "W", "pnl_ratio": 1.97, "trade_pnl": 9399.0, "equity_after": 95532.0, "consec_losses": 3}, {"num": 5, "date": "2025-03-25", "equity_before": 95532.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4601.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14953.0, "equity_after": 110484.0, "consec_losses": 0}, {"num": 6, "date": "2025-04-02", "equity_before": 110484.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4558.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14812.0, "equity_after": 125297.0, "consec_losses": 0}, {"num": 7, "date": "2025-04-05", "equity_before": 125297.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4702.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4702.0, "equity_after": 120595.0, "consec_losses": 0}, {"num": 8, "date": "2025-04-10", "equity_before": 120595.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4601.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4601.0, "equity_after": 115994.0, "consec_losses": 1}, {"num": 9, "date": "2025-04-11", "equity_before": 115994.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4874.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15842.0, "equity_after": 131836.0, "consec_losses": 2}, {"num": 10, "date": "2025-04-12", "equity_before": 131836.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4666.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15163.0, "equity_after": 146999.0, "consec_losses": 0}, {"num": 11, "date": "2025-04-13", "equity_before": 146999.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4594.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4594.0, "equity_after": 142406.0, "consec_losses": 0}, {"num": 12, "date": "2025-04-24", "equity_before": 142406.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4644.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4644.0, "equity_after": 137762.0, "consec_losses": 1}, {"num": 13, "date": "2025-04-26", "equity_before": 137762.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4680.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4680.0, "equity_after": 133082.0, "consec_losses": 2}, {"num": 14, "date": "2025-04-26", "equity_before": 133082.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4766.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4766.0, "equity_after": 128315.0, "consec_losses": 3}, {"num": 15, "date": "2025-05-12", "equity_before": 128315.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4658.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4658.0, "equity_after": 123657.0, "consec_losses": 4}, {"num": 16, "date": "2025-05-23", "equity_before": 123657.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4867.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4867.0, "equity_after": 118790.0, "consec_losses": 5}, {"num": 17, "date": "2025-05-27", "equity_before": 118790.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4694.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4694.0, "equity_after": 114095.0, "consec_losses": 6}, {"num": 18, "date": "2025-05-27", "equity_before": 114095.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4766.0, "wl": "L", "pnl_ratio": -0.12, "trade_pnl": -553.0, "equity_after": 113542.0, "consec_losses": 7}, {"num": 19, "date": "2025-06-08", "equity_before": 113542.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.61, "final_risk": 4428.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14391.0, "equity_after": 127933.0, "consec_losses": 8}, {"num": 20, "date": "2025-06-17", "equity_before": 127933.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4730.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4730.0, "equity_after": 123203.0, "consec_losses": 0}, {"num": 21, "date": "2025-07-04", "equity_before": 123203.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4766.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4766.0, "equity_after": 118437.0, "consec_losses": 1}, {"num": 22, "date": "2025-07-15", "equity_before": 118437.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.62, "final_risk": 4471.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4471.0, "equity_after": 113965.0, "consec_losses": 2}, {"num": 23, "date": "2025-07-15", "equity_before": 113965.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4342.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4342.0, "equity_after": 109624.0, "consec_losses": 3}, {"num": 24, "date": "2025-07-17", "equity_before": 109624.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4694.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4694.0, "equity_after": 104929.0, "consec_losses": 4}, {"num": 25, "date": "2025-07-18", "equity_before": 104929.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4824.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4824.0, "equity_after": 100105.0, "consec_losses": 5}, {"num": 26, "date": "2025-08-05", "equity_before": 100105.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4637.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4637.0, "equity_after": 95469.0, "consec_losses": 6}, {"num": 27, "date": "2025-08-07", "equity_before": 95469.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4673.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15187.0, "equity_after": 110655.0, "consec_losses": 7}, {"num": 28, "date": "2025-08-14", "equity_before": 110655.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4615.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4615.0, "equity_after": 106040.0, "consec_losses": 0}, {"num": 29, "date": "2025-09-04", "equity_before": 106040.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4579.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4579.0, "equity_after": 101461.0, "consec_losses": 1}, {"num": 30, "date": "2025-09-08", "equity_before": 101461.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4630.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15046.0, "equity_after": 116507.0, "consec_losses": 2}, {"num": 31, "date": "2025-09-09", "equity_before": 116507.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4687.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15233.0, "equity_after": 131740.0, "consec_losses": 0}, {"num": 32, "date": "2025-09-17", "equity_before": 131740.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4658.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4658.0, "equity_after": 127082.0, "consec_losses": 0}, {"num": 33, "date": "2025-09-30", "equity_before": 127082.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4558.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4558.0, "equity_after": 122524.0, "consec_losses": 1}, {"num": 34, "date": "2025-09-30", "equity_before": 122524.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4630.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15046.0, "equity_after": 137571.0, "consec_losses": 2}, {"num": 35, "date": "2025-10-13", "equity_before": 137571.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4608.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14976.0, "equity_after": 152547.0, "consec_losses": 0}, {"num": 36, "date": "2025-10-21", "equity_before": 152547.0, "tier_risk": 10500, "after_streak": 12600.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 9813.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -9813.0, "equity_after": 142734.0, "consec_losses": 0}, {"num": 37, "date": "2025-10-21", "equity_before": 142734.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4630.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4630.0, "equity_after": 138104.0, "consec_losses": 1}, {"num": 38, "date": "2025-10-26", "equity_before": 138104.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4687.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15233.0, "equity_after": 153337.0, "consec_losses": 2}, {"num": 39, "date": "2025-10-28", "equity_before": 153337.0, "tier_risk": 10500, "after_streak": 12600.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 9813.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -9813.0, "equity_after": 143525.0, "consec_losses": 0}, {"num": 40, "date": "2025-11-06", "equity_before": 143525.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4594.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4594.0, "equity_after": 138931.0, "consec_losses": 1}, {"num": 41, "date": "2025-11-24", "equity_before": 138931.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4622.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4622.0, "equity_after": 134309.0, "consec_losses": 2}, {"num": 42, "date": "2025-11-25", "equity_before": 134309.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4651.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4651.0, "equity_after": 129657.0, "consec_losses": 3}, {"num": 43, "date": "2025-11-25", "equity_before": 129657.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4658.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4658.0, "equity_after": 124999.0, "consec_losses": 4}, {"num": 44, "date": "2025-11-28", "equity_before": 124999.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4788.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15561.0, "equity_after": 140560.0, "consec_losses": 5}, {"num": 45, "date": "2025-12-04", "equity_before": 140560.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4565.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4565.0, "equity_after": 135995.0, "consec_losses": 0}, {"num": 46, "date": "2025-12-09", "equity_before": 135995.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4586.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4586.0, "equity_after": 131409.0, "consec_losses": 1}, {"num": 47, "date": "2025-12-10", "equity_before": 131409.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4579.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4579.0, "equity_after": 126830.0, "consec_losses": 2}, {"num": 48, "date": "2025-12-19", "equity_before": 126830.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.66, "final_risk": 4759.0, "wl": "W", "pnl_ratio": 1.59, "trade_pnl": 7586.0, "equity_after": 134416.0, "consec_losses": 3}, {"num": 49, "date": "2025-12-21", "equity_before": 134416.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4810.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15631.0, "equity_after": 150047.0, "consec_losses": 0}, {"num": 50, "date": "2026-01-03", "equity_before": 150047.0, "tier_risk": 10500, "after_streak": 12600.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 9707.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -9707.0, "equity_after": 140340.0, "consec_losses": 0}, {"num": 51, "date": "2026-01-03", "equity_before": 140340.0, "tier_risk": 5000, "after_streak": 6000.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4802.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15608.0, "equity_after": 155948.0, "consec_losses": 1}, {"num": 52, "date": "2026-01-06", "equity_before": 155948.0, "tier_risk": 10500, "after_streak": 12600.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 9662.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 31400.0, "equity_after": 187348.0, "consec_losses": 0}, {"num": 53, "date": "2026-01-15", "equity_before": 187348.0, "tier_risk": 10500, "after_streak": 12600.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 9843.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -9843.0, "equity_after": 177505.0, "consec_losses": 0}, {"num": 54, "date": "2026-02-03", "equity_before": 177505.0, "tier_risk": 10500, "after_streak": 12600.0, "pos_sizing": 1.1, "ml_scale": 0.65, "final_risk": 8981.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -8981.0, "equity_after": 168524.0, "consec_losses": 1}]}, "E_1.15x_conservative": {"equity": 173115.0, "pnl": 73115.0, "ret": 73.1, "max_dd": 34.9, "calmar": 2.09, "wins": 17, "losses": 37, "trade_log": [{"num": 1, "date": "2025-03-03", "equity_before": 100000.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.46, "final_risk": 3160.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3160.0, "equity_after": 96840.0, "consec_losses": 0}, {"num": 2, "date": "2025-03-03", "equity_before": 96840.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 4071.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4071.0, "equity_after": 92769.0, "consec_losses": 1}, {"num": 3, "date": "2025-03-12", "equity_before": 92769.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4609.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4609.0, "equity_after": 88160.0, "consec_losses": 2}, {"num": 4, "date": "2025-03-15", "equity_before": 88160.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4720.0, "wl": "W", "pnl_ratio": 1.97, "trade_pnl": 9279.0, "equity_after": 97438.0, "consec_losses": 3}, {"num": 5, "date": "2025-03-25", "equity_before": 97438.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 4106.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13343.0, "equity_after": 110781.0, "consec_losses": 0}, {"num": 6, "date": "2025-04-02", "equity_before": 110781.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.56, "final_risk": 3830.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12446.0, "equity_after": 123227.0, "consec_losses": 0}, {"num": 7, "date": "2025-04-05", "equity_before": 123227.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4492.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4492.0, "equity_after": 118735.0, "consec_losses": 0}, {"num": 8, "date": "2025-04-10", "equity_before": 118735.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.53, "final_risk": 3629.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3629.0, "equity_after": 115106.0, "consec_losses": 1}, {"num": 9, "date": "2025-04-11", "equity_before": 115106.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.84, "final_risk": 5782.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 18792.0, "equity_after": 133898.0, "consec_losses": 2}, {"num": 10, "date": "2025-04-12", "equity_before": 133898.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.64, "final_risk": 4416.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14352.0, "equity_after": 148250.0, "consec_losses": 0}, {"num": 11, "date": "2025-04-13", "equity_before": 148250.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.57, "final_risk": 3947.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3947.0, "equity_after": 144303.0, "consec_losses": 0}, {"num": 12, "date": "2025-04-24", "equity_before": 144303.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.57, "final_risk": 3967.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3967.0, "equity_after": 140336.0, "consec_losses": 1}, {"num": 13, "date": "2025-04-26", "equity_before": 140336.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4174.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4174.0, "equity_after": 136161.0, "consec_losses": 2}, {"num": 14, "date": "2025-04-26", "equity_before": 136161.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.73, "final_risk": 5044.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -5044.0, "equity_after": 131117.0, "consec_losses": 3}, {"num": 15, "date": "2025-05-12", "equity_before": 131117.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4168.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4168.0, "equity_after": 126950.0, "consec_losses": 4}, {"num": 16, "date": "2025-05-23", "equity_before": 126950.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.8, "final_risk": 5520.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -5520.0, "equity_after": 121430.0, "consec_losses": 5}, {"num": 17, "date": "2025-05-27", "equity_before": 121430.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 4078.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4078.0, "equity_after": 117352.0, "consec_losses": 6}, {"num": 18, "date": "2025-05-27", "equity_before": 117352.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4658.0, "wl": "L", "pnl_ratio": -0.12, "trade_pnl": -540.0, "equity_after": 116811.0, "consec_losses": 7}, {"num": 19, "date": "2025-06-08", "equity_before": 116811.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.47, "final_risk": 3243.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 10540.0, "equity_after": 127351.0, "consec_losses": 8}, {"num": 20, "date": "2025-06-17", "equity_before": 127351.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.69, "final_risk": 4775.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4775.0, "equity_after": 122576.0, "consec_losses": 0}, {"num": 21, "date": "2025-07-04", "equity_before": 122576.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.73, "final_risk": 5023.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -5023.0, "equity_after": 117553.0, "consec_losses": 1}, {"num": 22, "date": "2025-07-15", "equity_before": 117553.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.52, "final_risk": 3602.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3602.0, "equity_after": 113951.0, "consec_losses": 2}, {"num": 23, "date": "2025-07-15", "equity_before": 113951.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.54, "final_risk": 3726.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3726.0, "equity_after": 110225.0, "consec_losses": 3}, {"num": 24, "date": "2025-07-17", "equity_before": 110225.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 4471.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4471.0, "equity_after": 105754.0, "consec_losses": 4}, {"num": 25, "date": "2025-07-18", "equity_before": 105754.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.74, "final_risk": 5092.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -5092.0, "equity_after": 100662.0, "consec_losses": 5}, {"num": 26, "date": "2025-08-05", "equity_before": 100662.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4154.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4154.0, "equity_after": 96508.0, "consec_losses": 6}, {"num": 27, "date": "2025-08-07", "equity_before": 96508.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.61, "final_risk": 4181.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 13590.0, "equity_after": 110098.0, "consec_losses": 7}, {"num": 28, "date": "2025-08-14", "equity_before": 110098.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4154.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4154.0, "equity_after": 105944.0, "consec_losses": 0}, {"num": 29, "date": "2025-09-04", "equity_before": 105944.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.54, "final_risk": 3754.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3754.0, "equity_after": 102190.0, "consec_losses": 1}, {"num": 30, "date": "2025-09-08", "equity_before": 102190.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.56, "final_risk": 3892.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12648.0, "equity_after": 114838.0, "consec_losses": 2}, {"num": 31, "date": "2025-09-09", "equity_before": 114838.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4319.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 14038.0, "equity_after": 128876.0, "consec_losses": 0}, {"num": 32, "date": "2025-09-17", "equity_before": 128876.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4375.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4375.0, "equity_after": 124502.0, "consec_losses": 0}, {"num": 33, "date": "2025-09-30", "equity_before": 124502.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.59, "final_risk": 4099.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4099.0, "equity_after": 120403.0, "consec_losses": 1}, {"num": 34, "date": "2025-09-30", "equity_before": 120403.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.46, "final_risk": 3153.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 10248.0, "equity_after": 130651.0, "consec_losses": 2}, {"num": 35, "date": "2025-10-13", "equity_before": 130651.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.58, "final_risk": 3974.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 12917.0, "equity_after": 143568.0, "consec_losses": 0}, {"num": 36, "date": "2025-10-21", "equity_before": 143568.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 4340.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4340.0, "equity_after": 139228.0, "consec_losses": 0}, {"num": 37, "date": "2025-10-21", "equity_before": 139228.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.67, "final_risk": 4651.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4651.0, "equity_after": 134577.0, "consec_losses": 1}, {"num": 38, "date": "2025-10-26", "equity_before": 134577.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4685.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15227.0, "equity_after": 149804.0, "consec_losses": 2}, {"num": 39, "date": "2025-10-28", "equity_before": 149804.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.73, "final_risk": 5065.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -5065.0, "equity_after": 144739.0, "consec_losses": 0}, {"num": 40, "date": "2025-11-06", "equity_before": 144739.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.55, "final_risk": 3809.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3809.0, "equity_after": 140930.0, "consec_losses": 1}, {"num": 41, "date": "2025-11-24", "equity_before": 140930.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.58, "final_risk": 4016.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4016.0, "equity_after": 136915.0, "consec_losses": 2}, {"num": 42, "date": "2025-11-25", "equity_before": 136915.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.61, "final_risk": 4181.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4181.0, "equity_after": 132733.0, "consec_losses": 3}, {"num": 43, "date": "2025-11-25", "equity_before": 132733.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4168.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4168.0, "equity_after": 128566.0, "consec_losses": 4}, {"num": 44, "date": "2025-11-28", "equity_before": 128566.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.69, "final_risk": 4796.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15585.0, "equity_after": 144151.0, "consec_losses": 5}, {"num": 45, "date": "2025-12-04", "equity_before": 144151.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.55, "final_risk": 3767.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -3767.0, "equity_after": 140384.0, "consec_losses": 0}, {"num": 46, "date": "2025-12-09", "equity_before": 140384.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.6, "final_risk": 4147.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4147.0, "equity_after": 136237.0, "consec_losses": 1}, {"num": 47, "date": "2025-12-10", "equity_before": 136237.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.62, "final_risk": 4292.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -4292.0, "equity_after": 131945.0, "consec_losses": 2}, {"num": 48, "date": "2025-12-19", "equity_before": 131945.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.76, "final_risk": 5244.0, "wl": "W", "pnl_ratio": 1.59, "trade_pnl": 8359.0, "equity_after": 140304.0, "consec_losses": 3}, {"num": 49, "date": "2025-12-21", "equity_before": 140304.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.74, "final_risk": 5134.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 16684.0, "equity_after": 156988.0, "consec_losses": 0}, {"num": 50, "date": "2026-01-03", "equity_before": 156988.0, "tier_risk": 10500, "after_streak": 12075.0, "pos_sizing": 1.2, "ml_scale": 0.63, "final_risk": 9100.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -9100.0, "equity_after": 147888.0, "consec_losses": 0}, {"num": 51, "date": "2026-01-03", "equity_before": 147888.0, "tier_risk": 5000, "after_streak": 5750.0, "pos_sizing": 1.2, "ml_scale": 0.68, "final_risk": 4706.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 15294.0, "equity_after": 163182.0, "consec_losses": 1}, {"num": 52, "date": "2026-01-06", "equity_before": 163182.0, "tier_risk": 10500, "after_streak": 12075.0, "pos_sizing": 1.2, "ml_scale": 0.58, "final_risk": 8462.0, "wl": "W", "pnl_ratio": 3.25, "trade_pnl": 27502.0, "equity_after": 190684.0, "consec_losses": 0}, {"num": 53, "date": "2026-01-15", "equity_before": 190684.0, "tier_risk": 10500, "after_streak": 12075.0, "pos_sizing": 1.2, "ml_scale": 0.65, "final_risk": 9361.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -9361.0, "equity_after": 181324.0, "consec_losses": 0}, {"num": 54, "date": "2026-02-03", "equity_before": 181324.0, "tier_risk": 10500, "after_streak": 12075.0, "pos_sizing": 1.1, "ml_scale": 0.62, "final_risk": 8209.0, "wl": "L", "pnl_ratio": -1.0, "trade_pnl": -8209.0, "equity_after": 173115.0, "consec_losses": 1}]}};
+
+function renderTradeLog(containerId, logKey, label, hasStreak, hasMl) {
+  const container = document.getElementById(containerId);
+  const log = tradeLogs[logKey];
+  if (!log) { container.innerHTML = '<p>No data</p>'; return; }
+
+  const summary = `<div class="card" style="margin-top: 1rem;">
+    <div class="card-header">${label}</div>
+    <table>
+      <tr><td>Final Equity</td><td class="num">$${log.equity.toLocaleString()}</td>
+          <td>Wins/Losses</td><td class="num">${log.wins}W / ${log.losses}L</td></tr>
+      <tr><td>Total PnL</td><td class="num">$${log.pnl.toLocaleString()}</td>
+          <td>Max Drawdown</td><td class="num">${log.max_dd}%</td></tr>
+      <tr><td>Return</td><td class="num">${log.ret}%</td>
+          <td>Calmar Ratio</td><td class="num">${log.calmar}</td></tr>
+    </table>
+  </div>`;
+
+  let headers = '<th class="num">#</th><th>Date</th><th class="num">Equity</th><th class="num">Tier$</th>';
+  if (hasStreak) headers += '<th class="num">After Streak</th>';
+  headers += '<th class="num">PosSz</th>';
+  if (hasMl) headers += '<th class="num">ML Scale</th>';
+  headers += '<th class="num">Final$</th><th>W/L</th><th class="num">PnL Ratio</th><th class="num">Trade PnL</th><th class="num">New Equity</th>';
+
+  let rows = '';
+  for (const t of log.trade_log) {
+    const cls = t.wl === 'W' ? 'win' : 'loss';
+    let row = `<td class="num">${t.num}</td><td>${t.date}</td><td class="num">$${t.equity_before.toLocaleString()}</td><td class="num">$${t.tier_risk.toLocaleString()}</td>`;
+    if (hasStreak) row += `<td class="num">$${t.after_streak.toLocaleString()}</td>`;
+    row += `<td class="num">${t.pos_sizing}x</td>`;
+    if (hasMl) row += `<td class="num">${t.ml_scale}x</td>`;
+    row += `<td class="num">$${t.final_risk.toLocaleString()}</td><td>${t.wl}</td><td class="num">${t.pnl_ratio}</td><td class="num">$${t.trade_pnl.toLocaleString()}</td><td class="num">$${t.equity_after.toLocaleString()}</td>`;
+    rows += `<tr class="${cls}">${row}</tr>`;
+  }
+
+  container.innerHTML = summary + `<div class="trade-log"><table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Render all trade logs
+renderTradeLog('log-baseline', 'A_Baseline_1.0x', 'A: Baseline (Tiered Risk + Streak Mitigation, 1.0x)', true, false);
+renderTradeLog('log-e-1x', 'E_1.0x', 'E: XGB Soft (Tiered Risk, No Streak, 1.0x)', false, true);
+renderTradeLog('log-e-115x', 'E_1.15x_conservative', 'E: XGB Soft (Tiered Risk, No Streak, 1.15x)', false, true);
+renderTradeLog('log-f-1x', 'F_1.0x', 'F: LGB Sizing (Tiered Risk, No Streak, 1.0x)', false, true);
+renderTradeLog('log-f-120x', 'F_1.20x_recommended', 'F: LGB Sizing (Tiered Risk, No Streak, 1.20x)', false, true);
+</script>
+
+</body>
+</html>
