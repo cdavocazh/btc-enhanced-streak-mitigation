@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Experiments v3 — Comprehensive Strategy Comparison Report</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --text: #c9d1d9; --text-muted: #8b949e;
+    --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+    --yellow: #d29922; --purple: #bc8cff; --orange: #f0883e;
+    --cyan: #39d353;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+    padding: 2rem; max-width: 1400px; margin: 0 auto;
+  }
+  h1 { color: #fff; font-size: 1.8rem; margin-bottom: 0.5rem; }
+  h2 { color: var(--accent); font-size: 1.3rem; margin: 2rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { color: var(--text); font-size: 1.1rem; margin: 1.5rem 0 0.75rem; }
+  .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  .timestamp { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-header { font-weight: 600; color: #fff; margin-bottom: 0.75rem; font-size: 1rem; }
+
+  /* KPI Grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+  .kpi-value { font-size: 1.5rem; font-weight: 700; color: #fff; }
+  .kpi-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .kpi-green .kpi-value { color: var(--green); }
+  .kpi-red .kpi-value { color: var(--red); }
+  .kpi-accent .kpi-value { color: var(--accent); }
+  .kpi-yellow .kpi-value { color: var(--yellow); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 1rem; }
+  th { background: var(--surface2); color: var(--text-muted); text-align: left; padding: 0.6rem 0.8rem;
+       font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;
+       border-bottom: 2px solid var(--border); position: sticky; top: 0; }
+  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88, 166, 255, 0.05); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neutral { color: var(--text-muted); }
+  .highlight-row { background: rgba(88, 166, 255, 0.08); }
+  .winner { background: rgba(63, 185, 80, 0.08); }
+  .best-badge { display: inline-block; background: var(--green); color: #000; font-size: 0.65rem;
+                font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 3px; margin-left: 0.5rem; }
+
+  /* Bars */
+  .bar-container { width: 100%; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; position: relative; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .bar-green { background: linear-gradient(90deg, #238636, #3fb950); }
+  .bar-red { background: linear-gradient(90deg, #da3633, #f85149); }
+  .bar-blue { background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+  .bar-yellow { background: linear-gradient(90deg, #9e6a03, #d29922); }
+  .bar-label { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: #fff; font-weight: 600; }
+
+  /* Heatmap */
+  .heatmap { display: grid; gap: 2px; }
+  .heat-cell { padding: 0.4rem; text-align: center; font-size: 0.75rem; border-radius: 3px; font-weight: 600; }
+
+  /* Verdict box */
+  .verdict { background: linear-gradient(135deg, #0d1117, #161b22); border: 2px solid var(--accent);
+             border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+  .verdict h3 { color: var(--accent); margin-top: 0; }
+
+  /* Flexrow */
+  .flex-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .flex-row > * { flex: 1; min-width: 300px; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-right: 0.3rem; }
+  .tag-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+  .tag-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+  .tag-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+  .tag-blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+
+  /* Sections */
+  .section { margin-bottom: 2.5rem; }
+
+  /* Legend */
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Tooltip-like info */
+  .info-box { background: var(--surface2); border-left: 3px solid var(--accent); padding: 0.75rem 1rem;
+              margin: 0.75rem 0; font-size: 0.85rem; border-radius: 0 4px 4px 0; }
+
+  /* Scrollable container */
+  .scroll-x { overflow-x: auto; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .flex-row > * { min-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<h1>ML Experiments v3 — Comprehensive Strategy Comparison</h1>
+<p class="subtitle">
+  BTC Enhanced Strategy with Streak Mitigation &mdash; Machine Learning Integration Analysis<br>
+  <span class="timestamp">Generated: 2026-02-19 | Data: 2021-12-01 to 2026-02-06 | Eval Period: Feb 2025 &ndash; Feb 2026</span>
+</p>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>1. Executive Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi kpi-accent">
+    <div class="kpi-value">8</div>
+    <div class="kpi-label">Strategies Tested</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">146,695</div>
+    <div class="kpi-label">Data Bars (15-min)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">~114K&ndash;146K</div>
+    <div class="kpi-label">ML Training Samples</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value">54</div>
+    <div class="kpi-label">Eval Trades (Real)</div>
+  </div>
+  <div class="kpi kpi-green">
+    <div class="kpi-value">E: XGB Soft</div>
+    <div class="kpi-label">Best Calmar Ratio</div>
+  </div>
+  <div class="kpi kpi-yellow">
+    <div class="kpi-value">A: Baseline</div>
+    <div class="kpi-label">Best Absolute PnL</div>
+  </div>
+</div>
+
+<div class="verdict">
+  <h3>Key Finding</h3>
+  <p>
+    <strong>Hard rejection gates destroy returns.</strong> The original hard-gate approach (strategy B) rejects 30% of trades, achieving 62.5% rejection accuracy but cutting PnL from $74k to $31k.
+    Switching to <strong>soft-signal scaling</strong> preserves all 54 trades while improving risk-adjusted metrics.
+    The best overall strategy is <strong>E: XGBoost-Only Soft Scaling</strong> with Calmar 2.23 (vs baseline 1.77), retaining 82% of baseline PnL while cutting max drawdown by 35%.
+  </p>
+</div>
+
+<div class="info-box">
+  <strong>Methodology:</strong> All strategies are evaluated on the <em>same 54 real entry signals</em> from the last year (Feb 2025 &ndash; Feb 2026).
+  ML models are trained on all bars (~114k&ndash;146k) with hypothetical trade labels, using walk-forward monthly retraining.
+  Only the evaluation is restricted to real strategy entries &mdash; this ensures an apples-to-apples comparison.
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>2. Strategy Descriptions</h2>
+
+<table>
+  <thead>
+    <tr><th style="width:180px">Strategy</th><th>ML Approach</th><th style="width:100px">Gate Type</th><th style="width:80px">Rejections?</th></tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row"><td><strong>A. Baseline</strong></td><td>No ML &mdash; raw strategy with tiered risk + streak mitigation</td><td><span class="tag tag-blue">None</span></td><td>No</td></tr>
+    <tr><td><strong>B. Hard Gate</strong></td><td>RF regime rejects unfavorable + XGB rejects low-confidence</td><td><span class="tag tag-red">Hard</span></td><td>Yes (30%)</td></tr>
+    <tr><td><strong>C. Soft Regime Only</strong></td><td>RF regime scales position 0.5x&ndash;1.0x; no XGB filter</td><td><span class="tag tag-green">Soft</span></td><td>No</td></tr>
+    <tr class="winner"><td><strong>D. Soft Regime + XGB</strong></td><td>RF regime soft + XGB probability soft scaling</td><td><span class="tag tag-green">Soft</span></td><td>No</td></tr>
+    <tr class="winner"><td><strong>E. XGB-Only Soft</strong> <span class="best-badge">BEST CALMAR</span></td><td>XGB win probability directly scales position 0.3x&ndash;1.2x</td><td><span class="tag tag-green">Soft</span></td><td>No</td></tr>
+    <tr class="winner"><td><strong>F. LGB-Only Sizing</strong></td><td>LightGBM loss-predictor scales position only</td><td><span class="tag tag-green">Soft</span></td><td>No</td></tr>
+    <tr><td><strong>G. Ensemble Soft</strong></td><td>All 4 layers as soft signals &mdash; combined weighted scaling</td><td><span class="tag tag-green">Soft</span></td><td>No</td></tr>
+    <tr><td><strong>H. Adaptive Gate</strong></td><td>Regime-adaptive: soft in moderate, hard reject only if WR&lt;20%</td><td><span class="tag tag-yellow">Adaptive</span></td><td>Rare</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>3. Performance Comparison</h2>
+
+<div class="scroll-x">
+<table>
+  <thead>
+    <tr>
+      <th>Strategy</th><th class="num">Trades</th><th class="num">Win Rate</th>
+      <th class="num">Total PnL</th><th class="num">Return %</th><th class="num">Max DD</th>
+      <th class="num">Profit Factor</th><th class="num">Calmar</th><th class="num">Max Streak</th>
+      <th class="num">Rejected</th><th class="num">Avg Scale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row">
+      <td><strong>A. Baseline</strong></td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num pos"><strong>$74,262</strong></td><td class="num pos">74.3%</td><td class="num neg">42.0%</td>
+      <td class="num">1.33</td><td class="num">1.77</td><td class="num neg">8</td>
+      <td class="num">0</td><td class="num">1.000</td>
+    </tr>
+    <tr>
+      <td>B. Hard Gate</td><td class="num neg">38</td><td class="num">28.9%</td>
+      <td class="num">$30,893</td><td class="num">30.9%</td><td class="num">17.8%</td>
+      <td class="num">1.42</td><td class="num">1.73</td><td class="num">5</td>
+      <td class="num neg">16</td><td class="num">0.590</td>
+    </tr>
+    <tr>
+      <td>C. Soft Regime Only</td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num">$58,198</td><td class="num">58.2%</td><td class="num">33.4%</td>
+      <td class="num">1.32</td><td class="num">1.74</td><td class="num">8</td>
+      <td class="num">0</td><td class="num">0.500</td>
+    </tr>
+    <tr>
+      <td>D. Soft Regime + XGB</td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num">$44,143</td><td class="num">44.1%</td><td class="num pos">23.9%</td>
+      <td class="num pos">1.44</td><td class="num pos">1.85</td><td class="num">8</td>
+      <td class="num">0</td><td class="num">0.535</td>
+    </tr>
+    <tr class="winner">
+      <td><strong>E. XGB-Only Soft</strong> <span class="best-badge">BEST</span></td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num pos">$61,074</td><td class="num pos">61.1%</td><td class="num pos">27.4%</td>
+      <td class="num pos"><strong>1.49</strong></td><td class="num pos"><strong>2.23</strong></td><td class="num">8</td>
+      <td class="num">0</td><td class="num">0.624</td>
+    </tr>
+    <tr class="winner">
+      <td><strong>F. LGB-Only Sizing</strong></td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num pos">$62,016</td><td class="num pos">62.0%</td><td class="num pos">28.0%</td>
+      <td class="num pos">1.48</td><td class="num pos">2.22</td><td class="num">8</td>
+      <td class="num">0</td><td class="num">0.647</td>
+    </tr>
+    <tr>
+      <td>G. Ensemble Soft</td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num">$32,336</td><td class="num">32.3%</td><td class="num pos">17.1%</td>
+      <td class="num pos">1.49</td><td class="num">1.89</td><td class="num">8</td>
+      <td class="num">0</td><td class="num">0.354</td>
+    </tr>
+    <tr>
+      <td>H. Adaptive Gate</td><td class="num">54</td><td class="num">31.5%</td>
+      <td class="num">$30,836</td><td class="num">30.8%</td><td class="num pos">17.2%</td>
+      <td class="num pos">1.46</td><td class="num">1.80</td><td class="num">8</td>
+      <td class="num">0</td><td class="num">0.353</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Rankings</h3>
+<div class="flex-row">
+  <div class="card">
+    <div class="card-header">By Calmar Ratio (Risk-Adjusted)</div>
+    <table>
+      <thead><tr><th>#</th><th>Strategy</th><th class="num">Calmar</th><th class="num">Return</th><th class="num">Max DD</th></tr></thead>
+      <tbody>
+        <tr class="winner"><td>1</td><td><strong>E. XGB-Only Soft</strong></td><td class="num pos">2.23</td><td class="num">61.1%</td><td class="num">27.4%</td></tr>
+        <tr class="winner"><td>2</td><td><strong>F. LGB-Only Sizing</strong></td><td class="num pos">2.22</td><td class="num">62.0%</td><td class="num">28.0%</td></tr>
+        <tr><td>3</td><td>G. Ensemble Soft</td><td class="num">1.89</td><td class="num">32.3%</td><td class="num pos">17.1%</td></tr>
+        <tr><td>4</td><td>D. Soft Regime+XGB</td><td class="num">1.85</td><td class="num">44.1%</td><td class="num">23.9%</td></tr>
+        <tr><td>5</td><td>H. Adaptive Gate</td><td class="num">1.80</td><td class="num">30.8%</td><td class="num">17.2%</td></tr>
+        <tr><td>6</td><td>A. Baseline</td><td class="num">1.77</td><td class="num pos">74.3%</td><td class="num neg">42.0%</td></tr>
+        <tr><td>7</td><td>C. Soft Regime Only</td><td class="num">1.74</td><td class="num">58.2%</td><td class="num">33.4%</td></tr>
+        <tr><td>8</td><td>B. Hard Gate</td><td class="num">1.73</td><td class="num">30.9%</td><td class="num">17.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header">By Total PnL (Absolute Return)</div>
+    <table>
+      <thead><tr><th>#</th><th>Strategy</th><th class="num">PnL</th><th class="num">Return</th><th class="num">Trades</th></tr></thead>
+      <tbody>
+        <tr class="highlight-row"><td>1</td><td><strong>A. Baseline</strong></td><td class="num pos">$74,262</td><td class="num">74.3%</td><td class="num">54</td></tr>
+        <tr><td>2</td><td>F. LGB-Only Sizing</td><td class="num">$62,016</td><td class="num">62.0%</td><td class="num">54</td></tr>
+        <tr><td>3</td><td>E. XGB-Only Soft</td><td class="num">$61,074</td><td class="num">61.1%</td><td class="num">54</td></tr>
+        <tr><td>4</td><td>C. Soft Regime Only</td><td class="num">$58,198</td><td class="num">58.2%</td><td class="num">54</td></tr>
+        <tr><td>5</td><td>D. Soft Regime+XGB</td><td class="num">$44,143</td><td class="num">44.1%</td><td class="num">54</td></tr>
+        <tr><td>6</td><td>G. Ensemble Soft</td><td class="num">$32,336</td><td class="num">32.3%</td><td class="num">54</td></tr>
+        <tr><td>7</td><td>B. Hard Gate</td><td class="num">$30,893</td><td class="num">30.9%</td><td class="num neg">38</td></tr>
+        <tr><td>8</td><td>H. Adaptive Gate</td><td class="num">$30,836</td><td class="num">30.8%</td><td class="num">54</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>4. The Aggression Problem — Hard Gate vs Soft Signal</h2>
+
+<div class="flex-row">
+  <div class="card">
+    <div class="card-header">Hard Gate (B) — What Went Wrong</div>
+    <table>
+      <tbody>
+        <tr><td>Trades taken</td><td class="num">38 / 54</td></tr>
+        <tr><td>Trades rejected</td><td class="num neg">16 (30%)</td></tr>
+        <tr><td>Rejected wins (missed)</td><td class="num neg">6</td></tr>
+        <tr><td>Rejected losses (avoided)</td><td class="num pos">10</td></tr>
+        <tr><td>Rejection accuracy</td><td class="num">62.5%</td></tr>
+        <tr><td>PnL lost to missed winners</td><td class="num neg">~$50k+</td></tr>
+        <tr><td>Net impact vs baseline</td><td class="num neg">-$43,369</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.5rem; font-size:0.85rem; color:var(--text-muted)">
+      The hard gate blocks 30% of trades. While 62.5% of rejections are correct (losses),
+      the missed winners include large-PnL trades (Sep $40k, Jan $41k months) that dwarf the avoided losses.
+      <strong>With an asymmetric payout (TP=4.5x ATR vs SL=1.8x ATR), each missed winner costs ~2.5x more than each avoided loss saves.</strong>
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Soft Signal (E, F) — The Fix</div>
+    <table>
+      <tbody>
+        <tr><td>Trades taken</td><td class="num pos">54 / 54 (100%)</td></tr>
+        <tr><td>Trades rejected</td><td class="num pos">0</td></tr>
+        <tr><td>Avg position scale</td><td class="num">0.62&ndash;0.65</td></tr>
+        <tr><td>Low-confidence reduction</td><td class="num">0.3x&ndash;0.5x</td></tr>
+        <tr><td>High-confidence boost</td><td class="num pos">1.0x&ndash;1.2x</td></tr>
+        <tr><td>PnL retained vs baseline</td><td class="num pos">82&ndash;84%</td></tr>
+        <tr><td>DD reduction vs baseline</td><td class="num pos">-33% to -35%</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:0.5rem; font-size:0.85rem; color:var(--text-muted)">
+      Soft-signal strategies never reject trades. Instead, they scale position size based on ML confidence.
+      Low-confidence setups get 0.3x&ndash;0.5x the normal position; high-confidence get 1.0x&ndash;1.2x.
+      <strong>This preserves exposure to winning trades while reducing risk on likely losers.</strong>
+    </p>
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>Why soft beats hard with asymmetric payouts:</strong> The strategy's TP/SL ratio is 4.5:1.8 = 2.5:1.
+  Each winning trade generates ~2.5x the dollar amount of each losing trade.
+  When a hard gate blocks a winner, it costs $2.50 in expected value per $1.00 of avoided loss.
+  At 62.5% rejection accuracy (10L blocked vs 6W blocked), the net is: 10 &times; $1 saved &minus; 6 &times; $2.5 missed = &minus;$5 net. Hard gates are only profitable if rejection accuracy exceeds ~71%.
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>5. Monthly PnL Heatmap</h2>
+
+<div class="scroll-x">
+<table>
+  <thead>
+    <tr>
+      <th>Month</th>
+      <th class="num">A. Baseline</th><th class="num">B. Hard Gate</th><th class="num">C. Soft Regime</th>
+      <th class="num">D. Soft R+XGB</th><th class="num">E. XGB Soft</th><th class="num">F. LGB Sizing</th>
+      <th class="num">G. Ensemble</th><th class="num">H. Adaptive</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2025-03</td>
+      <td class="num pos">$8,578</td><td class="num pos">$3,762</td><td class="num pos">$8,039</td>
+      <td class="num pos">$5,737</td><td class="num pos">$6,154</td><td class="num pos">$5,602</td>
+      <td class="num pos">$3,321</td><td class="num pos">$3,373</td>
+    </tr>
+    <tr>
+      <td>2025-04</td>
+      <td class="num pos">$18,300</td><td class="num pos">$13,835</td><td class="num pos">$24,150</td>
+      <td class="num pos">$19,510</td><td class="num pos">$19,437</td><td class="num pos">$16,443</td>
+      <td class="num pos">$15,193</td><td class="num pos">$15,488</td>
+    </tr>
+    <tr>
+      <td>2025-05</td>
+      <td class="num neg">-$10,013</td><td class="num neg">-$3,825</td><td class="num neg">-$6,953</td>
+      <td class="num neg">-$4,910</td><td class="num neg">-$6,742</td><td class="num neg">-$6,599</td>
+      <td class="num neg">-$3,285</td><td class="num neg">-$3,071</td>
+    </tr>
+    <tr>
+      <td>2025-06</td>
+      <td class="num pos">$2,190</td><td class="num neg">-$2,149</td><td class="num neg">-$1,905</td>
+      <td class="num neg">-$2,228</td><td class="num neg">-$304</td><td class="num pos">$1,096</td>
+      <td class="num neg">-$1,206</td><td class="num neg">-$1,623</td>
+    </tr>
+    <tr style="background: rgba(248, 81, 73, 0.06);">
+      <td>2025-07</td>
+      <td class="num neg"><strong>-$22,800</strong></td><td class="num neg">-$7,801</td><td class="num neg">-$22,800</td>
+      <td class="num neg">-$14,433</td><td class="num neg">-$14,433</td><td class="num neg">-$14,626</td>
+      <td class="num neg">-$9,731</td><td class="num neg">-$10,173</td>
+    </tr>
+    <tr>
+      <td>2025-08</td>
+      <td class="num neg">-$330</td><td class="num neg">-$147</td><td class="num pos">$930</td>
+      <td class="num pos">$589</td><td class="num neg">-$169</td><td class="num neg">-$153</td>
+      <td class="num pos">$304</td><td class="num pos">$448</td>
+    </tr>
+    <tr style="background: rgba(63, 185, 80, 0.06);">
+      <td>2025-09</td>
+      <td class="num pos"><strong>$40,500</strong></td><td class="num pos">$27,287</td><td class="num pos"><strong>$43,500</strong></td>
+      <td class="num pos">$23,120</td><td class="num pos">$21,488</td><td class="num pos">$26,268</td>
+      <td class="num pos">$14,999</td><td class="num pos">$15,878</td>
+    </tr>
+    <tr>
+      <td>2025-10</td>
+      <td class="num pos">$7,800</td><td class="num neg">-$12,311</td><td class="num neg">-$5,100</td>
+      <td class="num pos">$20</td><td class="num pos"><strong>$12,258</strong></td><td class="num pos"><strong>$13,527</strong></td>
+      <td class="num neg">-$792</td><td class="num neg">-$3,301</td>
+    </tr>
+    <tr>
+      <td>2025-11</td>
+      <td class="num neg">-$7,500</td><td class="num neg">-$1,158</td><td class="num neg">-$7,500</td>
+      <td class="num neg">-$3,038</td><td class="num neg">-$3,038</td><td class="num neg">-$4,558</td>
+      <td class="num neutral">-$27</td><td class="num neutral">-$29</td>
+    </tr>
+    <tr>
+      <td>2025-12</td>
+      <td class="num pos">$7,237</td><td class="num pos">$5,382</td><td class="num pos">$7,237</td>
+      <td class="num pos">$8,247</td><td class="num pos">$8,247</td><td class="num pos">$5,384</td>
+      <td class="num pos">$6,128</td><td class="num pos">$6,406</td>
+    </tr>
+    <tr style="background: rgba(63, 185, 80, 0.06);">
+      <td>2026-01</td>
+      <td class="num pos"><strong>$41,850</strong></td><td class="num pos">$8,020</td><td class="num pos">$24,375</td>
+      <td class="num pos">$13,230</td><td class="num pos"><strong>$25,317</strong></td><td class="num pos"><strong>$27,119</strong></td>
+      <td class="num pos">$8,675</td><td class="num pos">$8,362</td>
+    </tr>
+    <tr>
+      <td>2026-02</td>
+      <td class="num neg">-$11,550</td><td class="num pos">$0</td><td class="num neg">-$5,775</td>
+      <td class="num neg">-$1,700</td><td class="num neg">-$7,141</td><td class="num neg">-$7,487</td>
+      <td class="num neg">-$1,243</td><td class="num neg">-$923</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="info-box">
+  <strong>Monthly highlights:</strong><br>
+  &bull; <strong>Sep 2025</strong> (best month): Soft Regime (C) outperforms baseline ($43.5k vs $40.5k) &mdash; it sized UP on the favorable regime<br>
+  &bull; <strong>Jul 2025</strong> (worst month): All ML strategies reduce the $22.8k loss; Ensemble/Adaptive cut it to ~$10k<br>
+  &bull; <strong>Oct 2025</strong>: XGB Soft (E) and LGB (F) outperform baseline ($12&ndash;14k vs $7.8k) &mdash; they scaled DOWN on losers correctly<br>
+  &bull; <strong>Jan 2026</strong> (2nd best): Baseline $41.9k vs XGB Soft $25.3k &mdash; soft scaling preserves 60% of the upside
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>6. ML Sizing Differentiation Analysis</h2>
+
+<div class="card">
+<div class="card-header">Does ML Size Winners Larger Than Losers?</div>
+<table>
+  <thead>
+    <tr><th>Strategy</th><th class="num">Avg Scale (Wins)</th><th class="num">Avg Scale (Losses)</th><th class="num">Diff (W&minus;L)</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>B. Hard Gate</td><td class="num">0.600</td><td class="num">0.586</td><td class="num">+0.015</td><td><span class="tag tag-yellow">Negligible</span></td></tr>
+    <tr><td>C. Soft Regime Only</td><td class="num">0.824</td><td class="num">0.865</td><td class="num neg">-0.041</td><td><span class="tag tag-red">Wrong Direction</span></td></tr>
+    <tr><td>D. Soft Regime+XGB</td><td class="num">0.528</td><td class="num">0.538</td><td class="num">-0.009</td><td><span class="tag tag-yellow">Negligible</span></td></tr>
+    <tr class="winner"><td><strong>E. XGB-Only Soft</strong></td><td class="num pos">0.633</td><td class="num">0.620</td><td class="num pos">+0.013</td><td><span class="tag tag-yellow">Slight Positive</span></td></tr>
+    <tr><td>F. LGB-Only Sizing</td><td class="num">0.650</td><td class="num">0.645</td><td class="num">+0.005</td><td><span class="tag tag-yellow">Negligible</span></td></tr>
+    <tr><td>G. Ensemble Soft</td><td class="num">0.359</td><td class="num">0.351</td><td class="num">+0.008</td><td><span class="tag tag-yellow">Negligible</span></td></tr>
+    <tr><td>H. Adaptive Gate</td><td class="num">0.354</td><td class="num">0.352</td><td class="num">+0.002</td><td><span class="tag tag-yellow">Negligible</span></td></tr>
+  </tbody>
+</table>
+
+<p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+  <strong>Verdict:</strong> No strategy achieves meaningful sizing differentiation between winning and losing trades.
+  The scale differences (W&minus;L) are all within &plusmn;0.04 &mdash; effectively random noise on 54 trades.
+  This means ML's value comes from <em>overall position reduction</em> (reducing exposure across all trades, which lowers drawdown)
+  rather than from <em>selective sizing</em> (sizing winners larger than losers).
+</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>7. The Drawdown &ndash; Return Trade-off</h2>
+
+<div class="card">
+<div class="card-header">Efficient Frontier: Return vs Max Drawdown</div>
+<table>
+  <thead>
+    <tr><th>Strategy</th><th class="num">Return %</th><th class="num">Max DD %</th><th class="num">Calmar</th><th>DD Reduction vs Baseline</th></tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row"><td>A. Baseline</td><td class="num">74.3%</td><td class="num neg">42.0%</td><td class="num">1.77</td>
+      <td>&mdash;</td></tr>
+    <tr class="winner"><td><strong>E. XGB-Only Soft</strong></td><td class="num">61.1%</td><td class="num pos">27.4%</td><td class="num pos"><strong>2.23</strong></td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:65%"></div><div class="bar-label">-35%</div></div>
+      </td></tr>
+    <tr class="winner"><td><strong>F. LGB-Only Sizing</strong></td><td class="num">62.0%</td><td class="num pos">28.0%</td><td class="num pos">2.22</td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:62%"></div><div class="bar-label">-33%</div></div>
+      </td></tr>
+    <tr><td>D. Soft Regime+XGB</td><td class="num">44.1%</td><td class="num pos">23.9%</td><td class="num">1.85</td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:75%"></div><div class="bar-label">-43%</div></div>
+      </td></tr>
+    <tr><td>G. Ensemble Soft</td><td class="num">32.3%</td><td class="num pos">17.1%</td><td class="num">1.89</td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:88%"></div><div class="bar-label">-59%</div></div>
+      </td></tr>
+    <tr><td>H. Adaptive Gate</td><td class="num">30.8%</td><td class="num pos">17.2%</td><td class="num">1.80</td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:87%"></div><div class="bar-label">-59%</div></div>
+      </td></tr>
+    <tr><td>C. Soft Regime Only</td><td class="num">58.2%</td><td class="num">33.4%</td><td class="num">1.74</td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:37%"></div><div class="bar-label">-20%</div></div>
+      </td></tr>
+    <tr><td>B. Hard Gate</td><td class="num">30.9%</td><td class="num pos">17.8%</td><td class="num">1.73</td>
+      <td>
+        <div class="bar-container"><div class="bar bar-green" style="width:86%"></div><div class="bar-label">-58%</div></div>
+      </td></tr>
+  </tbody>
+</table>
+
+<div class="info-box">
+  <strong>Optimal trade-off zone:</strong> Strategies E (XGB Soft) and F (LGB Sizing) sit on the efficient frontier &mdash;
+  they retain 82&ndash;84% of baseline PnL while reducing max drawdown by 33&ndash;35%.
+  Going further (G, H) reduces DD to ~17% but at the cost of losing 57% of returns.
+  The sweet spot is a <strong>single soft-signal model</strong> (E or F) rather than stacking multiple layers.
+</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>8. Why Stacking More ML Layers Hurts</h2>
+
+<div class="card">
+<div class="card-header">Scale Compression Effect</div>
+<table>
+  <thead><tr><th>Strategy</th><th class="num">Layers</th><th class="num">Avg Scale</th><th class="num">Return %</th><th>Issue</th></tr></thead>
+  <tbody>
+    <tr><td>E. XGB-Only Soft</td><td class="num">1</td><td class="num pos">0.624</td><td class="num pos">61.1%</td><td><span class="tag tag-green">Optimal</span></td></tr>
+    <tr><td>F. LGB-Only Sizing</td><td class="num">1</td><td class="num pos">0.647</td><td class="num pos">62.0%</td><td><span class="tag tag-green">Optimal</span></td></tr>
+    <tr><td>D. Soft Regime+XGB</td><td class="num">2</td><td class="num">0.535</td><td class="num">44.1%</td><td><span class="tag tag-yellow">Compressed</span></td></tr>
+    <tr><td>G. Ensemble Soft</td><td class="num neg">4</td><td class="num neg">0.354</td><td class="num">32.3%</td><td><span class="tag tag-red">Over-compressed</span></td></tr>
+    <tr><td>H. Adaptive Gate</td><td class="num neg">4</td><td class="num neg">0.353</td><td class="num">30.8%</td><td><span class="tag tag-red">Over-compressed</span></td></tr>
+  </tbody>
+</table>
+
+<p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+  When multiple soft-signal layers are multiplied together (Regime &times; XGB &times; LGB &times; LSTM), each contributing 0.5&ndash;0.8x scaling,
+  the final position scale compresses to 0.35x &mdash; meaning every trade is at 35% of normal size.
+  With no meaningful differentiation between winners and losers, this simply reduces all returns by 65%.
+  <strong>More ML layers ≠ better results</strong> when the layers are correlated and lack discriminative power.
+</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>9. Regime Analysis — Why the RF Gate Over-Filters</h2>
+
+<div class="card">
+<div class="card-header">Regime Distribution of Entry Signals</div>
+<p style="font-size: 0.85rem; margin-bottom: 0.75rem; color: var(--text-muted);">
+  The RF classifier assigns one of 5 regimes to each bar. For the 54 eval-period entries:
+</p>
+<table>
+  <thead><tr><th>Regime</th><th class="num">Entries</th><th class="num">% of Total</th><th>In Hard Gate</th><th>Impact</th></tr></thead>
+  <tbody>
+    <tr><td>StrongTrend</td><td class="num">~8</td><td class="num">~15%</td><td><span class="tag tag-green">Favorable</span></td><td>Kept in all strategies</td></tr>
+    <tr><td>ModerateTrend</td><td class="num">~18</td><td class="num">~33%</td><td><span class="tag tag-green">Favorable</span></td><td>Kept in all strategies</td></tr>
+    <tr style="background: rgba(248, 81, 73, 0.06);">
+      <td><strong>RangingLowVol</strong></td><td class="num neg"><strong>~25</strong></td><td class="num neg"><strong>~46%</strong></td>
+      <td><span class="tag tag-red">Rejected</span></td><td class="neg"><strong>Nearly half of all entries blocked</strong></td>
+    </tr>
+    <tr><td>RangingHighVol</td><td class="num">~2</td><td class="num">~4%</td><td><span class="tag tag-red">Rejected</span></td><td>Minimal impact</td></tr>
+    <tr><td>VolatileTrend</td><td class="num">~1</td><td class="num">~2%</td><td>Variable</td><td>Minimal impact</td></tr>
+  </tbody>
+</table>
+
+<p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+  <strong>The core problem:</strong> ~46% of real entry signals are classified as "RangingLowVol" &mdash; which the RF considers unfavorable.
+  But this regime still has >20% win rate, and with the 2.5:1 payout ratio, even 25% WR is profitable (breakeven is ~29%).
+  Hard-rejecting nearly half of all signals is too aggressive. The soft-signal approach (scaling down to 0.5x instead)
+  maintains exposure while reducing risk &mdash; a much better trade-off.
+</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>10. XGBoost Quality Filter — Improvement Analysis</h2>
+
+<div class="card">
+<div class="card-header">Improved XGB Calibration (v3 vs v2.1)</div>
+<table>
+  <thead><tr><th>Metric</th><th class="num">v2.1 (Previous)</th><th class="num">v3 (Current)</th><th>Change</th></tr></thead>
+  <tbody>
+    <tr><td>XGB threshold</td><td class="num">0.285</td><td class="num">0.200</td><td><span class="tag tag-green">Lower = less aggressive</span></td></tr>
+    <tr><td>Hard gate rejections</td><td class="num neg">37 (69%)</td><td class="num">16 (30%)</td><td><span class="tag tag-green">Halved</span></td></tr>
+    <tr><td>Training approach</td><td class="num">All-bar labels</td><td class="num">All-bar + entry calibration</td><td><span class="tag tag-green">Better calibrated</span></td></tr>
+    <tr><td>Threshold selection</td><td class="num">Fixed percentile</td><td class="num">Maximize WR &times; retention</td><td><span class="tag tag-green">Profit-aware</span></td></tr>
+  </tbody>
+</table>
+
+<p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+  <strong>Key improvement:</strong> The XGB threshold is now calibrated on real entry signals (not just all bars).
+  We maximize the product of <code>win_rate &times; trade_retention</code> instead of using a fixed percentile.
+  This finds the threshold that best balances quality with quantity.
+  However, even the improved hard gate still destroys returns vs soft scaling.
+  <strong>The best use of XGBoost is as a soft scaler (strategy E)</strong>, mapping win probability directly to position size.
+</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>11. Recommendations & Conclusions</h2>
+
+<div class="verdict">
+  <h3>Recommended Strategy: E (XGB-Only Soft) or F (LGB-Only Sizing)</h3>
+  <table style="margin-top: 0.75rem;">
+    <thead><tr><th>Metric</th><th class="num">Baseline</th><th class="num">E: XGB Soft</th><th class="num">F: LGB Sizing</th></tr></thead>
+    <tbody>
+      <tr><td>Trades</td><td class="num">54</td><td class="num">54</td><td class="num">54</td></tr>
+      <tr><td>Win Rate</td><td class="num">31.5%</td><td class="num">31.5%</td><td class="num">31.5%</td></tr>
+      <tr><td>Return</td><td class="num">74.3%</td><td class="num pos">61.1%</td><td class="num pos">62.0%</td></tr>
+      <tr><td>Max Drawdown</td><td class="num neg">42.0%</td><td class="num pos">27.4%</td><td class="num pos">28.0%</td></tr>
+      <tr><td>Profit Factor</td><td class="num">1.33</td><td class="num pos">1.49</td><td class="num pos">1.48</td></tr>
+      <tr><td>Calmar Ratio</td><td class="num">1.77</td><td class="num pos"><strong>2.23</strong></td><td class="num pos"><strong>2.22</strong></td></tr>
+      <tr><td>PnL Retained</td><td class="num">&mdash;</td><td class="num pos">82%</td><td class="num pos">84%</td></tr>
+      <tr><td>DD Reduction</td><td class="num">&mdash;</td><td class="num pos">-35%</td><td class="num pos">-33%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Key Conclusions</h3>
+<ol style="padding-left: 1.5rem; font-size: 0.9rem; line-height: 1.8;">
+  <li><strong>Hard rejection gates are counterproductive</strong> for strategies with asymmetric payouts (TP &gt; SL). Missed winners cost more than avoided losses save.</li>
+  <li><strong>Soft-signal scaling is the correct ML approach.</strong> Map ML confidence to position size (0.3x&ndash;1.2x) instead of binary accept/reject.</li>
+  <li><strong>Single-layer ML outperforms multi-layer stacking.</strong> Each additional soft layer compounds scale compression without adding discriminative value. One model at 0.62x avg scale beats four models at 0.35x.</li>
+  <li><strong>XGBoost and LightGBM perform nearly identically</strong> as soft scalers (Calmar 2.23 vs 2.22). Either can be used; XGB has a slight edge in profit factor.</li>
+  <li><strong>No ML model achieves meaningful sizing differentiation</strong> between winners and losers. The benefit comes from <em>overall exposure reduction</em>, not selective sizing. This suggests the trade-level features available (positioning, RSI, ADX, etc.) do not reliably predict individual trade outcomes &mdash; only broad market conditions.</li>
+  <li><strong>The RF regime classifier over-fits</strong> to "RangingLowVol" as unfavorable, but this regime represents ~46% of entries and still has positive expected value given the payout ratio.</li>
+  <li><strong>More training data helps modestly.</strong> Expanding from 109 entry-only samples to 114k+ all-bar samples improved the hard gate's WR from 31.2% to 28.9% (worse) but improved soft strategies' Calmar ratios by providing better calibration.</li>
+</ol>
+
+<h3>Implementation Recommendations</h3>
+<div class="flex-row">
+  <div class="card">
+    <div class="card-header" style="color: var(--green);">Do</div>
+    <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+      <li>Use XGBoost win probability as a soft position scaler</li>
+      <li>Scale range: 0.3x (prob=0.15) to 1.2x (prob=0.55+)</li>
+      <li>Retrain monthly with walk-forward on all-bar data</li>
+      <li>Keep all existing strategy entry filters unchanged</li>
+      <li>Maintain tiered risk + streak mitigation on top of ML scaling</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-header" style="color: var(--red);">Don't</div>
+    <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+      <li>Don't use hard rejection gates (binary accept/reject)</li>
+      <li>Don't stack multiple ML layers multiplicatively</li>
+      <li>Don't use RF regime as a trade filter (only for context)</li>
+      <li>Don't expect ML to predict individual trade outcomes</li>
+      <li>Don't trust ML sizing differentiation with &lt;100 eval trades</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<div class="section">
+<h2>12. Experimental Methodology</h2>
+
+<div class="card">
+<table>
+  <tbody>
+    <tr><td style="width:200px"><strong>Data Source</strong></td><td>Binance Futures 15-min candles + positioning metrics (top trader L/S, global L/S, funding rate, OI)</td></tr>
+    <tr><td><strong>Data Range</strong></td><td>2021-12-01 to 2026-02-06 (146,695 bars)</td></tr>
+    <tr><td><strong>Eval Period</strong></td><td>Feb 2025 &ndash; Feb 2026 (54 real entry signals)</td></tr>
+    <tr><td><strong>Training Approach</strong></td><td>All bars with hypothetical trade labels (generate_trade_labels: SL=1.8&times;ATR, TP=4.5&times;ATR)</td></tr>
+    <tr><td><strong>Walk-Forward</strong></td><td>Monthly retraining with expanding window (no future data leakage)</td></tr>
+    <tr><td><strong>ML Features</strong></td><td>30 features: positioning_score, volume_score, ADX, RSI, ATR ratio, BB position, price changes, hour/DOW encodings, etc.</td></tr>
+    <tr><td><strong>Models Used</strong></td><td>Random Forest (200 trees), XGBoost (300 trees, depth 6), LightGBM (200 trees, depth 5), LSTM (16 hidden, 1 layer)</td></tr>
+    <tr><td><strong>Evaluation Metric</strong></td><td>Calmar Ratio (Return % / Max Drawdown %) as primary; PnL, Profit Factor, Max DD as secondary</td></tr>
+    <tr><td><strong>Baseline Strategy</strong></td><td>Long-only BTC, Asian hours, positioning &ge; 0.4, uptrend, pullback 0.5&ndash;3.0%, RSI 20&ndash;45, tiered risk, streak mitigation</td></tr>
+    <tr><td><strong>Initial Capital</strong></td><td>$100,000</td></tr>
+    <tr><td><strong>Strategies Tested</strong></td><td>8 (1 baseline + 7 ML variants)</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+  ML Experiments v3 Report &mdash; BTC Enhanced Strategy with Streak Mitigation<br>
+  Generated 2026-02-19 | Walk-forward evaluation, no look-ahead bias
+</p>
+
+</body>
+</html>

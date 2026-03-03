@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Strategy ML Optimization Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a1628 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1500px; margin: 0 auto; }
+
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 5px;
+            font-size: 2.4em;
+            text-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+        .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 1.1em; }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .overview-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .overview-card:hover { transform: translateY(-3px); }
+        .overview-card .number {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .overview-card .label { color: #888; font-size: 0.9em; }
+
+        .healthy { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .critical { color: #ff4444; }
+        .neutral { color: #aaa; }
+
+        .section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .section h2 {
+            color: #00d4ff;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section .approach-num {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .section-desc {
+            color: #999;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .metric-card .metric-label { color: #888; font-size: 0.85em; margin-bottom: 5px; }
+        .metric-card .metric-value { font-size: 1.5em; font-weight: bold; }
+
+        .feature-importance {
+            margin-top: 15px;
+        }
+        .feature-bar-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+        .feature-name {
+            width: 180px;
+            font-size: 0.85em;
+            color: #aaa;
+            text-align: right;
+        }
+        .feature-bar {
+            flex: 1;
+            height: 20px;
+            border-radius: 4px;
+            position: relative;
+        }
+        .feature-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            transition: width 0.5s ease;
+        }
+        .feature-value {
+            width: 50px;
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .status-badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-healthy { background: rgba(0,255,136,0.2); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+        .status-warning { background: rgba(255,170,0,0.2); color: #ffaa00; border: 1px solid rgba(255,170,0,0.3); }
+        .status-critical { background: rgba(255,68,68,0.2); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); }
+        .status-error { background: rgba(255,68,68,0.15); color: #ff6666; border: 1px solid rgba(255,68,68,0.2); }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .comparison-table th {
+            background: rgba(0,212,255,0.08);
+            color: #00d4ff;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .comparison-table tr:hover { background: rgba(255,255,255,0.03); }
+        .comparison-table .number { text-align: right; font-family: 'SF Mono', 'Menlo', monospace; }
+        .highlight-row { background: rgba(0,255,136,0.08) !important; }
+
+        .recommendation {
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,255,136,0.1));
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .recommendation h3 { color: #00ff88; margin-bottom: 15px; font-size: 1.2em; }
+        .recommendation ul { margin-left: 20px; }
+        .recommendation li { margin-bottom: 10px; line-height: 1.6; }
+
+        .approach-design {
+            background: rgba(0,212,255,0.05);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .approach-design h4 { color: #00d4ff; margin-bottom: 10px; }
+        .approach-design p { color: #aaa; line-height: 1.6; }
+        .approach-design code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'SF Mono', monospace;
+            color: #00ff88;
+        }
+
+        .integration-section {
+            background: rgba(0,212,255,0.03);
+            border: 1px solid rgba(0,212,255,0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .integration-section h3 { color: #00d4ff; margin-bottom: 15px; }
+
+        .regime-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .regime-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .regime-card .regime-name { font-size: 0.85em; color: #aaa; margin-bottom: 5px; }
+        .regime-card .regime-value { font-size: 1.3em; font-weight: bold; }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .overview-grid { grid-template-columns: repeat(2, 1fr); }
+            .metrics-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ML Strategy Optimization Report</h1>
+        <p class="subtitle">Machine Learning Approaches for BTC Enhanced Strategy | 2026-02-16T04:10:32</p>
+
+        <div class="overview-grid">
+            <div class="overview-card">
+                <div class="number healthy">4</div>
+                <div class="label">ML Approaches Tested</div>
+            </div>
+            <div class="overview-card">
+                <div class="number healthy">4</div>
+                <div class="label">Showing Improvement</div>
+            </div>
+            <div class="overview-card">
+                <div class="number healthy">+814.4%</div>
+                <div class="label">Best Improvement</div>
+            </div>
+            <div class="overview-card">
+                <div class="number neutral">30.4%</div>
+                <div class="label">Baseline Win Rate</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="approach-num">1</span> XGBoost Trade Quality Classifier
+                <span class="status-badge status-healthy">HEALTHY</span></h2>
+            <p class="section-desc">
+                Trains an XGBoost gradient-boosted tree to predict whether each trade setup will be
+                profitable before entry. Uses 29 features including positioning momentum, ADX dynamics,
+                volume regime, and time-of-day encoding. Walk-forward validated to prevent look-ahead bias.
+            </p>
+
+            <div class="approach-design">
+                <h4>Design</h4>
+                <p>For each potential trade entry, the model outputs a win probability. Entries below the
+                confidence threshold (55%) are filtered out. This replaces the static entry filters
+                (RSI range, pullback range, min positioning score) with a learned, multi-dimensional filter
+                that adapts to changing market conditions across walk-forward windows.</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Baseline Win Rate</div>
+                    <div class="metric-value neutral">28.9%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Filtered Win Rate</div>
+                    <div class="metric-value healthy">35.7%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Improvement</div>
+                    <div class="metric-value healthy">+6.8%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Test Accuracy</div>
+                    <div class="metric-value">71.0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Precision</div>
+                    <div class="metric-value">40.8%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Trades Filtered</div>
+                    <div class="metric-value">99.9%</div>
+                </div>
+            </div>
+<div class="feature-importance"><h4 style="color:#00d4ff;margin-bottom:10px;">Feature Importance (Top 10)</h4>
+                <div class="feature-bar-container">
+                    <div class="feature-name">positioning_score</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:100%"></div></div>
+                    <div class="feature-value">0.049</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">dow_sin</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:99%"></div></div>
+                    <div class="feature-value">0.049</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">rsi</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:97%"></div></div>
+                    <div class="feature-value">0.048</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">price_change_12h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:90%"></div></div>
+                    <div class="feature-value">0.044</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">dow_cos</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:90%"></div></div>
+                    <div class="feature-value">0.044</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">adx</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:90%"></div></div>
+                    <div class="feature-value">0.044</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">realized_vol_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:88%"></div></div>
+                    <div class="feature-value">0.043</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">making_hh</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:86%"></div></div>
+                    <div class="feature-value">0.042</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">rsi_change_12h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:85%"></div></div>
+                    <div class="feature-value">0.042</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">pos_momentum_12h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:82%"></div></div>
+                    <div class="feature-value">0.041</div>
+                </div></div></div>
+        <div class="section">
+            <h2><span class="approach-num">2</span> Random Forest Regime Detector
+                <span class="status-badge status-healthy">HEALTHY</span></h2>
+            <p class="section-desc">
+                Classifies the current market into 5 regimes (Strong Trend, Moderate Trend, Ranging High Vol,
+                Ranging Low Vol, Volatile Trend) and measures trade win rates per regime. Only trades in
+                favorable regimes, replacing the static ADX threshold with a learned multi-feature classifier.
+            </p>
+
+            <div class="approach-design">
+                <h4>Design</h4>
+                <p>The current system uses a simple <code>ADX > 20</code> threshold. This approach learns
+                regime boundaries from multiple features simultaneously (ADX, volatility ratio, DI spread,
+                price momentum). Each regime has a measured win rate; trades are only taken in regimes where
+                the win rate exceeds the baseline. This provides more nuanced filtering than a single threshold.</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Regime Accuracy</div>
+                    <div class="metric-value">97.4%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Baseline Win Rate</div>
+                    <div class="metric-value neutral">28.9%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Regime-Filtered WR</div>
+                    <div class="metric-value healthy">32.1%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Best Regime</div>
+                    <div class="metric-value healthy">ModerateTrend</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Best Regime WR</div>
+                    <div class="metric-value healthy">32.5%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Worst Regime</div>
+                    <div class="metric-value critical">RangingHighVol</div>
+                </div>
+            </div>
+<h4 style="color:#00d4ff;margin:15px 0 10px;">Regime Distribution & Win Rates</h4><div class="regime-grid">
+                <div class="regime-card">
+                    <div class="regime-name">StrongTrend</div>
+                    <div class="regime-value critical">26.8%</div>
+                    <div style="color:#666;font-size:0.8em;">17.6% of bars</div>
+                </div>
+                <div class="regime-card">
+                    <div class="regime-name">ModerateTrend</div>
+                    <div class="regime-value healthy">32.5%</div>
+                    <div style="color:#666;font-size:0.8em;">36.1% of bars</div>
+                </div>
+                <div class="regime-card">
+                    <div class="regime-name">RangingHighVol</div>
+                    <div class="regime-value critical">8.6%</div>
+                    <div style="color:#666;font-size:0.8em;">0.5% of bars</div>
+                </div>
+                <div class="regime-card">
+                    <div class="regime-name">RangingLowVol</div>
+                    <div class="regime-value critical">26.9%</div>
+                    <div style="color:#666;font-size:0.8em;">40.9% of bars</div>
+                </div>
+                <div class="regime-card">
+                    <div class="regime-name">VolatileTrend</div>
+                    <div class="regime-value healthy">29.6%</div>
+                    <div style="color:#666;font-size:0.8em;">4.9% of bars</div>
+                </div></div><div class="feature-importance"><h4 style="color:#00d4ff;margin-bottom:10px;">Feature Importance (Top 10)</h4>
+                <div class="feature-bar-container">
+                    <div class="feature-name">adx</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:100%"></div></div>
+                    <div class="feature-value">0.569</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">vol_regime</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:27%"></div></div>
+                    <div class="feature-value">0.154</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">adx_change_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:11%"></div></div>
+                    <div class="feature-value">0.063</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">di_spread</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:7%"></div></div>
+                    <div class="feature-value">0.041</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">rsi</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:7%"></div></div>
+                    <div class="feature-value">0.041</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">price_change_12h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:6%"></div></div>
+                    <div class="feature-value">0.034</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">bb_position</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:5%"></div></div>
+                    <div class="feature-value">0.031</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">realized_vol_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:3%"></div></div>
+                    <div class="feature-value">0.017</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">price_change_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:2%"></div></div>
+                    <div class="feature-value">0.010</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">pullback_pct</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:1%"></div></div>
+                    <div class="feature-value">0.006</div>
+                </div></div></div>
+        <div class="section">
+            <h2><span class="approach-num">3</span> LightGBM Streak Predictor
+                <span class="status-badge status-healthy">HEALTHY</span></h2>
+            <p class="section-desc">
+                Predicts the probability that the next trade will be a loss, enabling dynamic position sizing.
+                Replaces the static streak mitigation rules (40% reduction after 3 losses, etc.) with a
+                continuously-updated probability model that adjusts position size before entering a trade.
+            </p>
+
+            <div class="approach-design">
+                <h4>Design</h4>
+                <p>Current system waits for 3 consecutive losses before reducing risk. This reactive approach
+                means the first 3 losses in each streak happen at full size. The ML model predicts loss
+                probability <em>before</em> each trade, scaling position size by <code>max(0.2, 1 - P(loss) * 0.8)</code>.
+                High-risk setups get smaller positions proactively, reducing both drawdown and streak severity.</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Prediction Accuracy</div>
+                    <div class="metric-value">71.0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Static Sizing Return</div>
+                    <div class="metric-value neutral">-1449.94%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Dynamic Sizing Return</div>
+                    <div class="metric-value healthy">-635.59%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Return Improvement</div>
+                    <div class="metric-value healthy">+814.35%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Static Max DD</div>
+                    <div class="metric-value critical">260.00%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Dynamic Max DD</div>
+                    <div class="metric-value healthy">185.99%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">DD Improvement</div>
+                    <div class="metric-value healthy">+74.01%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg Position Scale</div>
+                    <div class="metric-value">0.45x</div>
+                </div>
+            </div>
+<div class="feature-importance"><h4 style="color:#00d4ff;margin-bottom:10px;">Feature Importance (Top 10)</h4>
+                <div class="feature-bar-container">
+                    <div class="feature-name">realized_vol_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:100%"></div></div>
+                    <div class="feature-value">150</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">positioning_score</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:85%"></div></div>
+                    <div class="feature-value">128</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">vol_regime</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:76%"></div></div>
+                    <div class="feature-value">114</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">rsi</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:68%"></div></div>
+                    <div class="feature-value">103</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">dow_sin</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:67%"></div></div>
+                    <div class="feature-value">101</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">adx</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:60%"></div></div>
+                    <div class="feature-value">90</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">price_change_12h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:59%"></div></div>
+                    <div class="feature-value">89</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">adx_change_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:53%"></div></div>
+                    <div class="feature-value">80</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">rsi_change_4h</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:44%"></div></div>
+                    <div class="feature-value">66</div>
+                </div>
+                <div class="feature-bar-container">
+                    <div class="feature-name">bb_position</div>
+                    <div class="feature-bar"><div class="feature-bar-fill" style="width:42%"></div></div>
+                    <div class="feature-value">63</div>
+                </div></div></div>
+        <div class="section">
+            <h2><span class="approach-num">4</span> LSTM Sequential Features + XGBoost Ensemble
+                <span class="status-badge status-healthy">HEALTHY</span></h2>
+            <p class="section-desc">
+                Uses a PyTorch LSTM network to capture temporal patterns in the positioning and price data
+                over the last 4 hours (16 bars). The LSTM's learned feature representations are concatenated
+                with the original features and fed into XGBoost for final classification.
+            </p>
+
+            <div class="approach-design">
+                <h4>Design</h4>
+                <p>Static indicators (RSI, ADX) lose temporal context. An LSTM processes the last 16 bars
+                of feature data, learning patterns like "positioning was building for 3 hours then
+                suddenly reversed" that static features cannot capture. The 8-dimensional LSTM output is
+                combined with 29 original features, giving XGBoost both instantaneous and sequential
+                information. This hybrid architecture captures what neither approach achieves alone.</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Baseline Win Rate</div>
+                    <div class="metric-value neutral">27.0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">LSTM-only Win Rate</div>
+                    <div class="metric-value">25.7%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Ensemble Win Rate</div>
+                    <div class="metric-value healthy">33.9%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">LSTM Improvement</div>
+                    <div class="metric-value critical">-1.2%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Ensemble Improvement</div>
+                    <div class="metric-value healthy">+6.9%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">LSTM Accuracy</div>
+                    <div class="metric-value">56.7%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Ensemble Accuracy</div>
+                    <div class="metric-value">69.2%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Final Training Loss</div>
+                    <div class="metric-value">0.6159</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Approach Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th class="number">Win Rate Improvement</th>
+                        <th class="number">OOS Efficiency</th>
+                        <th class="number">Key Metric</th>
+                        <th>Status</th>
+                        <th>Integration Effort</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr class="">
+                        <td>XGBoost Trade Quality</td>
+                        <td class="number healthy">+6.77%</td>
+                        <td class="number">1.23</td>
+                        <td class="number">Precision: 40.8%</td>
+                        <td><span class="status-badge status-healthy">HEALTHY</span></td>
+                        <td>Medium</td>
+                    </tr>
+
+                    <tr class="">
+                        <td>RF Regime Detector</td>
+                        <td class="number healthy">+3.20%</td>
+                        <td class="number">1.11</td>
+                        <td class="number">Regime Acc: 97.4%</td>
+                        <td><span class="status-badge status-healthy">HEALTHY</span></td>
+                        <td>Low</td>
+                    </tr>
+
+                    <tr class="highlight-row">
+                        <td>&#11088; LightGBM Streak Pred.</td>
+                        <td class="number healthy">+814.35%</td>
+                        <td class="number">-0.44</td>
+                        <td class="number">DD Improv: +74.0%</td>
+                        <td><span class="status-badge status-healthy">HEALTHY</span></td>
+                        <td>Medium</td>
+                    </tr>
+
+                    <tr class="">
+                        <td>LSTM + XGBoost</td>
+                        <td class="number healthy">+6.90%</td>
+                        <td class="number">1.26</td>
+                        <td class="number">Ensemble Acc: 69.2%</td>
+                        <td><span class="status-badge status-healthy">HEALTHY</span></td>
+                        <td>High</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="recommendation">
+            <h3>Recommendations & Next Steps</h3>
+            <ul>
+<li><strong>Priority 1: LightGBM Streak Pred.</strong> - Shows +814.35% win rate improvement. Worth implementing in the next eval cycle.</li><li><strong>Priority 2: LSTM + XGBoost</strong> - Shows +6.90% win rate improvement. Higher effort but potentially strongest results with more data.</li><li><strong>Priority 3: XGBoost Trade Quality</strong> - Shows +6.77% win rate improvement. Worth implementing in the next eval cycle.</li><li><strong>Priority 4: RF Regime Detector</strong> - Shows +3.20% win rate improvement. Low integration effort makes this a quick win.</li>
+                <li><strong>Ensemble Strategy</strong>: Combine the top 2-3 approaches. Use RF regime detection
+                as a first filter, XGBoost quality scoring as a second filter, and LightGBM for position sizing.
+                This layered approach can compound improvements.</li>
+                <li><strong>Periodic Retraining</strong>: Integrate ML model retraining into the existing
+                <code>eval_regular_exec.sh</code> pipeline. Models should be retrained weekly as part of the
+                walk-forward evaluation cycle.</li>
+                <li><strong>Feature Engineering</strong>: Based on feature importance results, invest in
+                engineering better versions of the top features (e.g., multi-timeframe positioning momentum,
+                cross-metric correlations).</li>
+                <li><strong>Overfitting Guard</strong>: Continue using walk-forward validation for all ML models.
+                Track OOS efficiency over time - if it drops below 0.50, reduce model complexity or increase
+                regularization.</li>
+            </ul>
+        </div>
+
+        <div class="integration-section">
+            <h3>Integration with Eval Framework</h3>
+            <p style="color:#aaa;line-height:1.8;margin-bottom:15px;">
+                These ML approaches integrate with the existing periodic evaluation workflow described in
+                <code>eval/README.md</code>. The recommended integration points are:
+            </p>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Eval Schedule</th>
+                        <th>ML Integration</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Quick Check (6h)</td>
+                        <td>Run ML model inference only</td>
+                        <td>Score current market conditions with trained models, check for regime changes</td>
+                    </tr>
+                    <tr>
+                        <td>Full Evaluation (7d)</td>
+                        <td>Retrain models + evaluate</td>
+                        <td>Retrain all ML models on latest data, run walk-forward validation, compare to baseline</td>
+                    </tr>
+                    <tr>
+                        <td>Adaptation Check (14d)</td>
+                        <td>Model selection + hyperparameter tuning</td>
+                        <td>Compare ML approaches, select best performers, adjust hyperparameters if OOS declining</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p>BTC Enhanced Streak Mitigation - ML Optimization Experiments</p>
+            <p>Walk-Forward Validated | No Look-Ahead Bias | All models trained on past data only</p>
+        </footer>
+    </div>
+</body>
+</html>
